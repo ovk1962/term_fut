@@ -164,6 +164,21 @@ class Class_TERM():
         #
         return [0, 'OK']
     #-------------------------------------------------------------------
+    def rd_hist(self):
+        #--- check file cntr.file_path_HIST ----------------------------
+        if not os.path.isfile(self.path_hist):
+            err_msg = 'can not find file'
+            #cntr.log.wr_log_error(err_msg)
+            return [1, err_msg]
+        buf_stat = os.stat(self.path_hist)
+        #
+        #--- check size of file ----------------------------------------
+        if buf_stat.st_size == 0:
+            err_msg = 'size DATA file is NULL'
+            #cntr.log.wr_log_error(err_msg)
+            return [2, err_msg]
+        #
+    #-------------------------------------------------------------------
     def parse_str_in_file(self):
         try:
             self.data_fut = []
@@ -360,6 +375,11 @@ class Class_CONTR():
         self.log  = Class_LOGGER(log_path)
         self.log.wr_log_info('*** START ***')
 #=======================================================================
+def error_msg_popup(cntr, msg_log, msg_rq_1, PopUp = True):
+    err_msg = msg_log + msg_rq_1
+    cntr.log.wr_log_error(err_msg)
+    if PopUp:  sg.PopupError('Error !', err_msg)
+#=======================================================================
 def get_table_data(cntr):
     # read table DATA / init cntr.data_fut & cntr.account
     rq  = cntr.db_FUT_data.get_table_db_with('data_FUT')
@@ -379,9 +399,10 @@ def init_cntr(cntr):
     #--- init FUT cntr.data_fut & cntr.account -------------
     rq  = get_table_data(cntr)
     if rq[0] != 0:
-        err_msg = 'init_cntr => ' + rq[1]
-        cntr.log.wr_log_error(err_msg)
-        sg.PopupError('Error !', err_msg)
+        #err_msg = 'init_cntr => get_table_data => ' + rq[1]
+        #cntr.log.wr_log_error(err_msg)
+        #sg.PopupError('Error !', err_msg)
+        error_msg_popup(cntr, 'init_cntr => get_table_data => ', str(rq[1]), PopUp = True)
         return [1, err_msg]
 
     print('init_cntr - OK')
@@ -420,7 +441,8 @@ def main():
                 ['Mode',    ['auto', 'manual', ],],
                 ['Service',
                     [
-                        ['Test SQL',      ['SQL tbl DATA', 'SQL tbl TODAY'],
+                        ['Test TERM',     ['term DATA', 'term HIST'],
+                         'Test SQL',      ['SQL tbl DATA', 'SQL tbl TODAY'],
                          'Hist FUT today',['Convert tbl TODAY', 'VACUUM tbl TODAY'],],
                     ],
                 ],
@@ -467,7 +489,20 @@ def main():
         if event is None        : break
         if event == 'Quit'      : break
         if event == 'Exit'      : break
+        if event == 'auto'      : mode = 'auto'
+        if event == 'manual'    : mode = 'manual'
 
+        if event == 'term DATA'  :
+            print('term DATA')
+            rq  = cntr.db_FUT_data.get_table_db_with('data_FUT')
+            if rq[0] == 0:
+                cntr.term.str_in_file = rq[1]
+            else:
+                err_msg = 'get_table_db_with(data) ' + rq[1]
+                sg.PopupError('Error !', err_msg)
+
+        if event == 'term HIST'  :
+            print('term HIST')
 
         window.FindElement('txt_data').Update('\n'.join(stroki))
         txt_frmt = '%Y.%m.%d  %H:%M:%S'
