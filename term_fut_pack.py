@@ -69,6 +69,7 @@ class Class_TERM():
         self.dt_hist = 0        # curv stamptime data file path_hist
         self.hist_in_file = []  # list of strings from path_hist
         self.data_fut = []      # list of Class_FUT() from trm
+
         self.account  = ''      # obj Class_ACCOUNT() from trm
         self.str_for_hist = ''  # str for hist table
         self.delay_tm = 10      # min period to get data for DB (10 sec)
@@ -494,8 +495,10 @@ def service_term_DATA(cntr): # 'Service\Test TERM\term DATA'
     print('term DATA')
     # read DATA file
     rq = cntr.term.rd_term()
-    if rq[0] != 0:
+    if rq[0] > 4 :
         # there is not new DATA
+        err_msg = 'service_cfg_PACK => ' + str(rq[1])
+        error_msg_popup(cntr, err_msg, rq[1], PopUp = False)
         return [1, 'rd_term => '+rq[1]]
     else:
         for item in cntr.term.data_in_file: print(item)
@@ -538,14 +541,14 @@ def read_data_hist_files(cntr):
     # read DATA file
     rq = cntr.term.rd_term()
     if rq[0] != 0:
-        # there is not new DATA
-        return [1, 'rd_term => '+rq[1]]
-
+        return [1, 'read_data_hist_files...rd_term => '+rq[1]]
+    rq  = cntr.term.parse_data_in_file()
+    if rq[0] != 0:
+        return [1, 'read_data_hist_files...parse_str_data_fut => ' + rq[1]]
     # read HIST file
     rq = cntr.term.rd_hist()
     if rq[0] != 0:
-        # there is not new HIST
-        return [1, 'rd_hist => '+rq[1]]
+        return [1, 'read_data_hist_files...rd_hist => '+rq[1]]
 
     return [0, 'ok']
 #=======================================================================
