@@ -556,6 +556,7 @@ def main():
     # init program config
     dirr, sub_dirr = os.path.abspath(os.curdir), '\\DB\\'
     path_FUT_PACK = 'term_fut_pack.sqlite'
+    path_FUT_ARCH = 'term_fut_archiv.sqlite'
     db_path_FUT_PACK  = dirr + sub_dirr + path_FUT_PACK
     nm_trm, file_path_DATA, file_path_HIST, log_path = '', '', '', ''
 
@@ -597,6 +598,7 @@ def main():
 
     def_txt, frm = [], '{: <15}  => {: ^15}\n'
     def_txt.append(frm.format('path_db_FUT'   , path_FUT_PACK))
+    def_txt.append(frm.format('path_db_ARC'   , path_FUT_ARCH))
     def_txt.append(frm.format('path_file_DATA', file_path_DATA))
     def_txt.append(frm.format('path_file_HIST', file_path_HIST))
 
