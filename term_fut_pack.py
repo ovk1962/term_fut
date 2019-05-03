@@ -386,15 +386,18 @@ class Class_CONTR():
     file_path_HIST  - file hist(today) from terminal QUIK
     db_path_FUT     - TABLE s_hist_1, ask/bid from TERMINAL 1 today (TF = 15 sec)
     '''
-    def __init__(self, file_path_DATA, file_path_HIST, db_path_FUT, log_path):
+    def __init__(self, file_path_DATA, file_path_HIST, db_path_FUT, db_path_FUT_arc, log_path):
         self.name_trm = ''
         #
         self.file_path_DATA  = file_path_DATA    # path file DATA
         self.file_path_HIST  = file_path_HIST    # path file HIST
         self.term            = Class_TERM(self.file_path_DATA, self.file_path_HIST)
         #
-        self.db_path_FUT  = db_path_FUT       # path DB data & hist
+        self.db_path_FUT  = db_path_FUT          # path DB data & hist
         self.db_FUT_data  = Class_SQLite(self.db_path_FUT)
+        #
+        self.db_path_FUT_arc  = db_path_FUT_arc  # path DB ARCHIV hist
+        self.db_FUT_data_arc  = Class_SQLite(self.db_path_FUT_arc)
         #
         self.hist_fut        = []   # массив котировок фьючей  60 s (archiv)
         self.hist_fut_today  = []   # массив котировок фьючей  60 s (today)
@@ -458,8 +461,9 @@ def service_cfg_PACK(cntr): # 'Service\Test SQL\cfg_PACK'
     cntr.koef_pack = []
     rq  = get_cfg_PACK(cntr)
     if rq[0] != 0:
-        error_msg_popup(cntr, 'service_cfg_PACK => ', str(rq[1]), PopUp = True)
-        return
+        err_msg = 'service_cfg_PACK => '
+        error_msg_popup(cntr, err_msg, str(rq[1]), PopUp = True)
+        return [1, err_msg + str(rq[1])]
 
     for item in cntr.koef_pack :
         s_jtem = ''
@@ -467,10 +471,28 @@ def service_cfg_PACK(cntr): # 'Service\Test SQL\cfg_PACK'
             if type(jtem) is list:  s_jtem += ' ; '.join(jtem) + '  '
             else:                   s_jtem += str(jtem) + '  '
         s_koef.append(s_jtem)
-    sg.Popup(
-             'cfg_PACK',
-             '\n'.join(s_koef)
-            )
+    sg.Popup( 'cfg_PACK', '\n'.join(s_koef) )
+
+    return [0, 'OK']
+#=======================================================================
+def service_cfg_SOFT(cntr, db_path_FUT_PACK): # 'Service\Test SQL\cfg_SOFT'
+    path_DB  = Class_SQLite(db_path_FUT_PACK)
+    rq  = path_DB.get_table_db_with('cfg_SOFT')
+    if rq[0] != 0:
+        err_msg = 'service_cfg_SOFT => '
+        error_msg_popup(cntr, err_msg, str(rq[1]), PopUp = True)
+        return [1, err_msg + str(rq[1])]
+
+    s_cfg_soft = []
+    for item in rq[1] :
+        s_jtem = ''
+        for jtem in item:
+            if type(jtem) is list:  s_jtem += '  ;  '.join(jtem) + '  '
+            else:                   s_jtem += str(jtem) + '      '
+        s_cfg_soft.append(s_jtem)
+    sg.Popup( 'cfg_SOFT', '\n'.join(s_cfg_soft) )
+
+    return [0, 'OK']
 #=======================================================================
 def service_data_FUT(cntr): # 'Service\Test SQL\data_FUT'
     print('data_FUT')
@@ -480,6 +502,9 @@ def service_data_FUT(cntr): # 'Service\Test SQL\data_FUT'
     else:
         err_msg = 'get_table_db_with(data_FUT) ' + rq[1]
         sg.PopupError('Error !', err_msg)
+        return [1, err_msg]
+
+    return [0, 'OK']
 #=======================================================================
 def service_hist_FUT_TODAY(cntr): # 'Service\Test SQL\data_FUT'
     print('hist_FUT_TODAY')
@@ -490,14 +515,30 @@ def service_hist_FUT_TODAY(cntr): # 'Service\Test SQL\data_FUT'
     else:
         err_msg = 'get_table_db_with(hist_FUT_today) ' + rq[1]
         sg.PopupError('Error !', err_msg)
+        return [1, err_msg]
+
+    return [0, len(rq[1])]
+#=======================================================================
+def service_hist_FUT(cntr): # 'Service\Test SQL\hist_FUT'
+    print('hist_FUT_ARCHIV')
+    rq  = cntr.db_FUT_data_arc.get_table_db_with('hist_FUT')
+    if rq[0] == 0:
+        if len(rq[1]) == 0:  print('hist_FUT is EMPTY')
+        #for item in rq[1] :  print(item)
+    else:
+        err_msg = 'get_table_db_with(hist_FUT) ' + rq[1]
+        sg.PopupError('Error !', err_msg)
+        return [1, err_msg]
+
+    return [0, len(rq[1])]
 #=======================================================================
 def service_term_DATA(cntr): # 'Service\Test TERM\term DATA'
     print('term DATA')
     # read DATA file
     rq = cntr.term.rd_term()
-    if rq[0] > 4 :
+    if rq[0] > 0 :
         # there is not new DATA
-        err_msg = 'service_cfg_PACK => ' + str(rq[1])
+        err_msg = 'term DATA => ' + str(rq[1])
         error_msg_popup(cntr, err_msg, rq[1], PopUp = False)
         return [1, 'rd_term => '+rq[1]]
     else:
@@ -519,6 +560,34 @@ def service_term_HIST(cntr): # 'Service\Test TERM\term HIST'
         print(cntr.term.hist_in_file[-2])
         print(cntr.term.hist_in_file[-1])
     return [0, 'ok']
+#=======================================================================
+def service_term_TERM(cntr): # 'Service\Test TERM\term TERM'
+    print('term TERM')
+    s_term = []
+    s_term.append('___ read DATA file ___')
+    rq = cntr.term.rd_term()
+    if rq[0] != 0 :
+        s_term.append('rd_term => ' + str(rq[1]))
+    else:
+        for item in cntr.term.data_in_file:
+            s_term.append(item)
+    s_term.append(' ')
+
+    s_term.append('___ read HIST file ___')
+    rq = cntr.term.rd_hist()
+    if rq[0] != 0:
+        s_term.append('rd_hist => ' + str(rq[1]))
+    else:
+        if len (cntr.term.hist_in_file) > 5:
+            s_term.append(cntr.term.hist_in_file[0].split('|')[0])
+            s_term.append(cntr.term.hist_in_file[1].split('|')[0])
+            s_term.append('...')
+            s_term.append(cntr.term.hist_in_file[-1].split('|')[0])
+        else:
+            s_term.append('hist_in_file is EMPTY')
+    s_term.append(' ')
+
+    sg.Popup( 'term TERM', '\n'.join(s_term) )
 #=======================================================================
 
 def init_cntr(cntr):
@@ -558,6 +627,7 @@ def main():
     path_FUT_PACK = 'term_fut_pack.sqlite'
     path_FUT_ARCH = 'term_fut_archiv.sqlite'
     db_path_FUT_PACK  = dirr + sub_dirr + path_FUT_PACK
+    db_path_FUT_PACK_arc  = dirr + sub_dirr + path_FUT_ARCH
     nm_trm, file_path_DATA, file_path_HIST, log_path = '', '', '', ''
 
     path_DB  = Class_SQLite(db_path_FUT_PACK)
@@ -574,7 +644,7 @@ def main():
         if item[0] == 'path_file_LOG' : log_path        = dirr + item[1]
 
     # init CONTR
-    cntr = Class_CONTR(file_path_DATA, file_path_HIST, db_path_FUT_PACK, log_path)
+    cntr = Class_CONTR(file_path_DATA, file_path_HIST, db_path_FUT_PACK, db_path_FUT_PACK_arc, log_path)
     cntr.name_trm = nm_trm
     init_cntr(cntr)
 
@@ -583,8 +653,8 @@ def main():
                 ['Mode',    ['auto', 'manual', ],],
                 ['Service',
                     [
-                        ['Test TERM',     ['term DATA', 'term HIST'],
-                         'Test SQL',      ['data_FUT', 'hist_FUT', 'hist_FUT_TODAY', 'cfg_PACK'],
+                        ['Test TERM',     ['term TERM', 'term DATA', 'term HIST'],
+                         'Test SQL',      ['data_FUT', 'hist_FUT', 'hist_FUT_TODAY', 'cfg_PACK', 'cfg_SOFT'],
                          'Hist FUT today',['Convert tbl TODAY', 'VACUUM tbl TODAY'],],
                     ],
                 ],
@@ -628,19 +698,64 @@ def main():
         else:
             event, values = window.Read(timeout=240000) # period 4 min
         #print('event = ', event, ' ..... values = ', values)
-
+        #---------------------------------------------------------------
         if event is None        : break
         if event == 'Quit'      : break
         if event == 'Exit'      : break
         if event == 'auto'      : mode = 'auto'
         if event == 'manual'    : mode = 'manual'
-
-        if event == 'term DATA'     : service_term_DATA(cntr)
-        if event == 'term HIST'     : service_term_HIST(cntr)
-        if event == 'cfg_PACK'      : service_cfg_PACK(cntr)
-        if event == 'data_FUT'      : service_data_FUT(cntr)
-        if event == 'hist_FUT_TODAY': service_hist_FUT_TODAY(cntr)
-
+        #---------------------------------------------------------------
+        if event == 'term TERM' : service_term_TERM(cntr)
+        #---------------------------------------------------------------
+        if event == 'term DATA' :
+            rq = service_term_DATA(cntr)
+            if rq[0] == 0:
+                stroki.append('term DATA - it is OK')
+            else:
+                stroki.append('ERORR => ' + rq[1])
+        #---------------------------------------------------------------
+        if event == 'term HIST' :
+            rq = service_term_HIST(cntr)
+            if rq[0] == 0:
+                stroki.append('term HIST - it is OK')
+            else:
+                stroki.append('ERORR => ' + rq[1])
+        #---------------------------------------------------------------
+        if event == 'cfg_PACK'      :
+            rq = service_cfg_PACK(cntr)
+            if rq[0] == 0:
+                stroki.append('cfg_PACK - it is OK')
+            else:
+                stroki.append('ERORR => ' + rq[1])
+        #---------------------------------------------------------------
+        if event == 'cfg_SOFT'      :
+            rq = service_cfg_SOFT(cntr, db_path_FUT_PACK)
+            if rq[0] == 0:
+                stroki.append('cfg_SOFT - it is OK')
+            else:
+                stroki.append('ERORR => ' + rq[1])
+        #---------------------------------------------------------------
+        if event == 'data_FUT'      :
+            rq = service_data_FUT(cntr)
+            if rq[0] == 0:
+                stroki.append('data_FUT - it is OK')
+            else:
+                stroki.append('ERORR => ' + rq[1])
+        #---------------------------------------------------------------
+        if event == 'hist_FUT_TODAY':
+            rq = service_hist_FUT_TODAY(cntr)
+            if rq[0] == 0:
+                stroki.append('hist_FUT_TODAY  = ' + str(rq[1]) + ' strings' )
+            else:
+                stroki.append('ERORR => ' + rq[1])
+        #---------------------------------------------------------------
+        if event == 'hist_FUT':
+            rq = service_hist_FUT(cntr)
+            if rq[0] == 0:
+                stroki.append('hist_FUT  = ' + str(rq[1]) + ' strings' )
+            else:
+                stroki.append('ERORR => ' + rq[1])
+        #---------------------------------------------------------------
         if event == '__TIMEOUT__':
             rq = read_data_hist_files(cntr)
             if rq[0] == 0:
@@ -649,7 +764,7 @@ def main():
                 stroki.append('Have got new data/hist')
             else:
                 stroki.append(rq[1])
-
+        #---------------------------------------------------------------
         window.FindElement('txt_data').Update('\n'.join(stroki))
         txt_frmt = '%Y.%m.%d  %H:%M:%S'
         stts  = time.strftime(txt_frmt, time.localtime()) + '\n'
