@@ -902,85 +902,85 @@ def error_msg_popup(cntr, msg_log, msg_rq_1, PopUp = True):
     cntr.log.wr_log_error(err_msg)
     if PopUp:  sg.PopupError('Error !', err_msg)
 #=======================================================================
-def get_table_data(cntr):
-    # read table DATA / init cntr.data_fut & cntr.account
-    rq  = cntr.term_fut_pack.get_table_db_with('data_FUT')
-    if rq[0] == 0:
-        cntr.term.data_in_file = rq[1]
+#def get_table_data(cntr):
+    ##read table DATA / init cntr.data_fut & cntr.account
+    #rq  = cntr.term_fut_pack.get_table_db_with('data_FUT')
+    #if rq[0] == 0:
+        #cntr.term.data_in_file = rq[1]
         #print('term_fut_pack.get_table_db_with(data) \n', rq[1])
-        rq  = cntr.term.parse_data_in_file()
-        if rq[0] != 0:
-            err_msg = 'get_table_data...parse_str_data_fut => ' + rq[1]
-            return [1, err_msg]
-    else:
-        err_msg = 'get_table_db_with(data) ' + rq[1]
-        return [1, err_msg]
-    return [0, 'ok']
+        #rq  = cntr.term.parse_data_in_file()
+        #if rq[0] != 0:
+            #err_msg = 'get_table_data...parse_str_data_fut => ' + rq[1]
+            #return [1, err_msg]
+    #else:
+        #err_msg = 'get_table_db_with(data) ' + rq[1]
+        #return [1, err_msg]
+    #return [0, 'ok']
 #=======================================================================
-def get_cfg_SOFT_obj(cntr):
-    print(cntr.cfg_SOFT_obj.titul)
-    print(cntr.cfg_SOFT_obj.file_path_DATA)
-    print(cntr.cfg_SOFT_obj.file_path_HIST)
-    print(cntr.cfg_SOFT_obj.log_path)
-    print(cntr.cfg_SOFT_obj.dt_start)
-    print('init cfg_SOFT_obj => OK')
-    return [0, 'ok']
+#def get_cfg_SOFT_obj(cntr):
+    #print(cntr.cfg_SOFT_obj.titul)
+    #print(cntr.cfg_SOFT_obj.file_path_DATA)
+    #print(cntr.cfg_SOFT_obj.file_path_HIST)
+    #print(cntr.cfg_SOFT_obj.log_path)
+    #print(cntr.cfg_SOFT_obj.dt_start)
+    #print('init cfg_SOFT_obj => OK')
+    #return [0, 'ok']
 #=======================================================================
-def get_cfg_PACK_obj(cntr):
-    # read table cfg_PACK from DB cntr.db_PACK
-    # init cntr.koef_pack
-    rq  = cntr.term_fut_pack.get_table_db_with('cfg_PACK')
-    if rq[0] != 0:
-        sg.Popup('Error cfg_PACK!',  rq[1])
-        return [1, rq[1]]
-    else:
-        cntr.cfg_PACK_obj.parse_arr(rq[1])
-        print('init cfg_PACK_obj => OK')
-    return [0, 'ok']
-#=======================================================================
-def service_data_FUT(cntr): # 'Service\Test SQL\data_FUT'
-    print('data_FUT')
-    rq  = cntr.term_fut_pack.get_table_db_with('data_FUT')
-    if rq[0] == 0:
-        for item in rq[1]:  print(item)
-        cntr.data_fut = rq[1][:]
-        rq  = cntr.parse_data_FUT()
-        if rq[0] != 0:
-            err_msg = 'parse_data_FUT() ' + rq[1]
-            sg.PopupError('Error !', err_msg)
-            return [1, err_msg]
-    else:
-        err_msg = 'get_table_db_with(data_FUT) ' + rq[1]
-        sg.PopupError('Error !', err_msg)
-        return [1, err_msg]
+#def get_cfg_PACK_obj(cntr):
+    ##read table cfg_PACK from DB cntr.db_PACK
+    ##init cntr.koef_pack
+    #rq  = cntr.term_fut_pack.get_table_db_with('cfg_PACK')
+    #if rq[0] != 0:
+        #sg.Popup('Error cfg_PACK!',  rq[1])
+        #return [1, rq[1]]
+    #else:
+        #cntr.cfg_PACK_obj.parse_arr(rq[1])
+        #print('init cfg_PACK_obj => OK')
+    #return [0, 'ok']
+##=======================================================================
+#def service_data_FUT(cntr): # 'Service\Test SQL\data_FUT'
+    #print('data_FUT')
+    #rq  = cntr.term_fut_pack.get_table_db_with('data_FUT')
+    #if rq[0] == 0:
+        #for item in rq[1]:  print(item)
+        #cntr.data_fut = rq[1][:]
+        #rq  = cntr.parse_data_FUT()
+        #if rq[0] != 0:
+            #err_msg = 'parse_data_FUT() ' + rq[1]
+            #sg.PopupError('Error !', err_msg)
+            #return [1, err_msg]
+    #else:
+        #err_msg = 'get_table_db_with(data_FUT) ' + rq[1]
+        #sg.PopupError('Error !', err_msg)
+        #return [1, err_msg]
 
-    return [0, 'OK']
-#=======================================================================
-def service_hist_FUT_TODAY(cntr): # 'Service\Test SQL\data_FUT'
-    print('hist_FUT_TODAY')
-    rq  = cntr.term_fut_pack.get_table_db_with('hist_FUT_today')
-    if rq[0] == 0:
-        if len(rq[1]) == 0:  print('hist_FUT_today is EMPTY')
-        for item in rq[1] :  print(item)
-    else:
-        err_msg = 'get_table_db_with(hist_FUT_today) ' + rq[1]
-        sg.PopupError('Error !', err_msg)
-        return [1, err_msg]
-
-    return [0, len(rq[1])]
-#=======================================================================
-def service_hist_FUT(cntr): # 'Service\Test SQL\hist_FUT'
-    print('hist_FUT_ARCHIV')
-    rq  = cntr.term_fut_archiv.get_table_db_with('hist_FUT')
-    if rq[0] == 0:
-        if len(rq[1]) == 0:  print('hist_FUT is EMPTY')
+    #return [0, 'OK']
+##=======================================================================
+#def service_hist_FUT_TODAY(cntr): # 'Service\Test SQL\data_FUT'
+    #print('hist_FUT_TODAY')
+    #rq  = cntr.term_fut_pack.get_table_db_with('hist_FUT_today')
+    #if rq[0] == 0:
+        #if len(rq[1]) == 0:  print('hist_FUT_today is EMPTY')
         #for item in rq[1] :  print(item)
-    else:
-        err_msg = 'get_table_db_with(hist_FUT) ' + rq[1]
-        sg.PopupError('Error !', err_msg)
-        return [1, err_msg]
+    #else:
+        #err_msg = 'get_table_db_with(hist_FUT_today) ' + rq[1]
+        #sg.PopupError('Error !', err_msg)
+        #return [1, err_msg]
 
-    return [0, len(rq[1])]
+    #return [0, len(rq[1])]
+##=======================================================================
+#def service_hist_FUT(cntr): # 'Service\Test SQL\hist_FUT'
+    #print('hist_FUT_ARCHIV')
+    #rq  = cntr.term_fut_archiv.get_table_db_with('hist_FUT')
+    #if rq[0] == 0:
+        #if len(rq[1]) == 0:  print('hist_FUT is EMPTY')
+        ##for item in rq[1] :  print(item)
+    #else:
+        #err_msg = 'get_table_db_with(hist_FUT) ' + rq[1]
+        #sg.PopupError('Error !', err_msg)
+        #return [1, err_msg]
+
+    #return [0, len(rq[1])]
 #=======================================================================
 def service_term_TERM(cntr): # 'Service\Test TERM\term TERM'
     print('term TERM')
@@ -1015,53 +1015,53 @@ def service_term_TERM(cntr): # 'Service\Test TERM\term TERM'
     s_term.append(' ')
 
     sg.Popup( 'term TERM', '\n'.join(s_term) )
-#=======================================================================
-def init_cntr(cntr):
-    # init cntr.koef_pack
-    rq  = get_cfg_SOFT_obj(cntr)
-    if rq[0] != 0:
-        error_msg_popup(cntr, 'get_cfg_SOFT_obj => ', str(rq[1]), PopUp = True)
-        return [1, 'get_cfg_SOFT_obj => ' + str(rq[1])]
-
-    # init cntr.koef_pack
-    rq  = get_cfg_PACK_obj(cntr)
-    if rq[0] != 0:
-        error_msg_popup(cntr, 'get_cfg_PACK_obj => ', str(rq[1]), PopUp = True)
-        return [1, 'get_cfg_PACK_obj => ' + str(rq[1])]
+##=======================================================================
+#def init_cntr(cntr):
+    ## init cntr.koef_pack
+    #rq  = get_cfg_SOFT_obj(cntr)
+    #if rq[0] != 0:
+        #error_msg_popup(cntr, 'get_cfg_SOFT_obj => ', str(rq[1]), PopUp = True)
+        #return [1, 'get_cfg_SOFT_obj => ' + str(rq[1])]
 
     ## init cntr.koef_pack
-    #rq  = get_cfg_PACK(cntr)
+    #rq  = get_cfg_PACK_obj(cntr)
     #if rq[0] != 0:
-        #error_msg_popup(cntr, 'get_cfg_PACK => ', str(rq[1]), PopUp = True)
-        #return [1, 'get_cfg_PACK => ' + str(rq[1])]
+        #error_msg_popup(cntr, 'get_cfg_PACK_obj => ', str(rq[1]), PopUp = True)
+        #return [1, 'get_cfg_PACK_obj => ' + str(rq[1])]
 
-    #--- init FUT cntr.data_fut & cntr.account -------------
-    rq  = get_table_data(cntr)
-    if rq[0] != 0:
-        error_msg_popup(cntr, 'init_cntr => get_table_data => ', str(rq[1]), PopUp = True)
-        return [1, err_msg]
+    ### init cntr.koef_pack
+    ##rq  = get_cfg_PACK(cntr)
+    ##if rq[0] != 0:
+        ##error_msg_popup(cntr, 'get_cfg_PACK => ', str(rq[1]), PopUp = True)
+        ##return [1, 'get_cfg_PACK => ' + str(rq[1])]
 
-    print('init_cntr - OK')
-    return [0, 'OK']
-#=======================================================================
-def read_data_hist_files(cntr):
-    # read DATA file
-    rq = cntr.term.rd_term()
-    if rq[0] != 0:
-        return [1, 'read_data_hist_files...rd_term => '+rq[1]]
-    rq  = cntr.term.parse_data_in_file()
-    if rq[0] != 0:
-        return [1, 'read_data_hist_files...parse_str_data_fut => ' + rq[1]]
-    # read HIST file
-    rq = cntr.term.rd_hist()
-    if rq[0] != 0:
-        return [1, 'read_data_hist_files...rd_hist => '+rq[1]]
-    # prepare HIST file to write into table hist_FUT_today
+    ##--- init FUT cntr.data_fut & cntr.account -------------
+    #rq  = get_table_data(cntr)
+    #if rq[0] != 0:
+        #error_msg_popup(cntr, 'init_cntr => get_table_data => ', str(rq[1]), PopUp = True)
+        #return [1, err_msg]
 
-    # write DATA & HIST files into tables data_FUT & hist_FUT_today
+    #print('init_cntr - OK')
+    #return [0, 'OK']
+##=======================================================================
+#def read_data_hist_files(cntr):
+    ## read DATA file
+    #rq = cntr.term.rd_term()
+    #if rq[0] != 0:
+        #return [1, 'read_data_hist_files...rd_term => '+rq[1]]
+    #rq  = cntr.term.parse_data_in_file()
+    #if rq[0] != 0:
+        #return [1, 'read_data_hist_files...parse_str_data_fut => ' + rq[1]]
+    ## read HIST file
+    #rq = cntr.term.rd_hist()
+    #if rq[0] != 0:
+        #return [1, 'read_data_hist_files...rd_hist => '+rq[1]]
+    ## prepare HIST file to write into table hist_FUT_today
 
-    return [0, 'ok']
-#=======================================================================
+    ## write DATA & HIST files into tables data_FUT & hist_FUT_today
+
+    #return [0, 'ok']
+##=======================================================================
 def main():
     # init
     cntr = Class_CONTROLER()
@@ -1134,9 +1134,10 @@ def main():
         #---------------------------------------------------------------
         if event == 'reserv' :
             #rq = cntr.hist_fut_today.rewrite_tbl([])                           # Empty table
-            #rq = cntr.hist_fut_today.rewrite_tbl(cntr.trm_hist.hist_in_file)   # Rewrite table
+            rq = cntr.hist_fut_today.rewrite_tbl(cntr.trm_hist.hist_in_file)   # Rewrite table
+            print('hist_fut_today.rewrite_tbl => ', rq)
             rq = cntr.hist_fut_today.read_tbl()                                # Read table
-            print(rq)
+            print('hist_fut_today.read_tbl => ', rq)
         #---------------------------------------------------------------
         if event == 'cfg_PACK _ SOFT' :
             get_cfg_PACK_obj(cntr)
