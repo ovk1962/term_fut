@@ -233,7 +233,7 @@ class Class_TERM_data():
                 return [5, err_msg]
         except Exception as ex:
             err_msg = dt_str + ' => ' + str(ex)
-            #cntr.log.wr_log_error(err_msg)
+            cntr.log.wr_log_error(err_msg)
             return [6, err_msg]
         #
         #--- check MARKET time from 10:00 to 23:45 ---------------------
@@ -316,7 +316,7 @@ class Class_TERM_data():
         except Exception as ex:
             err_msg = 'parse_data_in_file / ' + str(ex)
             print(err_msg)
-            #cntr.log.wr_log_error(err_msg)
+            cntr.log.wr_log_error(err_msg)
             return [1, err_msg]
         return [0, 'ok']
 #=======================================================================
@@ -542,9 +542,10 @@ class Class_TABLE_hist_pack():
 #=======================================================================
 class Class_CONTROLER():
     def __init__(self):
-        dirr = os.path.abspath(os.curdir) + '\\DB\\'
-        path_TERM_FUT_PACK   = dirr + 'term_fut_pack.sqlite'
-        path_TERM_FUT_ARCHIV = dirr + 'term_fut_archiv.sqlite'
+        c_dir = os.path.abspath(os.curdir)
+        self.log = Class_LOGGER(c_dir + '\\LOG\\term_fut_pack_logger.log')
+        path_TERM_FUT_PACK    = c_dir + '\\DB\\term_fut_pack.sqlite'
+        path_TERM_FUT_ARCHIV  = c_dir + '\\DB\\term_fut_archiv.sqlite'
 
         self.cfg_soft = Class_TABLE_cfg_soft(path_TERM_FUT_PACK)
         rq = self.cfg_soft.read_tbl()
@@ -573,7 +574,9 @@ def service_term_TERM(cntr): # 'Service\Test TERM\term TERM'
     s_term.append('___ read DATA file ___')
     rq = cntr.trm_data.rd_term()
     if rq[0] != 0 :
-        s_term.append('rd_term => ' + '  '.join(str(e) for e in rq))
+        err_msg = 'rd_term => ' + '  '.join(str(e) for e in rq)
+        cntr.log.wr_log_error(err_msg)
+        s_term.append(err_msg)
     else:
         for item in cntr.trm_data.data_in_file:
             s_term.append(item)
@@ -582,7 +585,9 @@ def service_term_TERM(cntr): # 'Service\Test TERM\term TERM'
     s_term.append('___ read HIST file ___')
     rq = cntr.trm_hist.rd_hist()
     if rq[0] != 0:
-        s_term.append('rd_hist => ' + '  '.join(str(e) for e in rq))
+        err_msg = 'rd_hist => ' + '  '.join(str(e) for e in rq)
+        cntr.log.wr_log_error(err_msg)
+        s_term.append(err_msg)
     else:
         arr = cntr.trm_hist.hist_in_file
         if len (cntr.trm_hist.hist_in_file) > 5:
@@ -673,16 +678,17 @@ def main():
         #---------------------------------------------------------------
         if event == 'term TERM' : service_term_TERM(cntr)
         #---------------------------------------------------------------
+        if event == 'cfg_PACK _ SOFT' :
+            get_cfg_PACK_obj(cntr)
+            get_cfg_SOFT_obj(cntr)
+        #---------------------------------------------------------------
         if event == 'reserv' :
             #rq = cntr.hist_fut_today.rewrite_tbl([])                           # Empty table
             rq = cntr.hist_fut_today.rewrite_tbl(cntr.trm_hist.hist_in_file)   # Rewrite table
             print('hist_fut_today.rewrite_tbl => ', rq)
             rq = cntr.hist_fut_today.read_tbl()                                # Read table
             print('hist_fut_today.read_tbl => ', rq)
-        #---------------------------------------------------------------
-        if event == 'cfg_PACK _ SOFT' :
-            get_cfg_PACK_obj(cntr)
-            get_cfg_SOFT_obj(cntr)
+
         #---------------------------------------------------------------
         if event == 'data_FUT'      :
             rq = service_data_FUT(cntr)
