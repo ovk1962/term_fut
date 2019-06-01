@@ -167,6 +167,7 @@ class Class_SQLite():
         return r_get_table_db
 #=======================================================================
 class Class_TERM_data():
+    #///////////////////////////////////////////////////////////////////
     def __init__(self, path_trm):
         self.path_trm  = path_trm
         #
@@ -183,7 +184,7 @@ class Class_TERM_data():
         self.sec_18_45 = 67500      # seconds from 00:00 to 18:45
         self.sec_19_05 = 68700      # seconds from 00:00 to 19:05
         self.sec_23_45 = 85500      # seconds from 00:00 to 23:45
-    #-------------------------------------------------------------------
+    #///////////////////////////////////////////////////////////////////
     def rd_term(self):
         #--- check file cntr.file_path_DATA ----------------------------
         if not os.path.isfile(self.path_trm):
@@ -274,7 +275,7 @@ class Class_TERM_data():
             err_msg = 'parse_data_in_file / ' + str(ex)
             return [9, err_msg]
         return [0, 'OK']
-    #-------------------------------------------------------------------
+    #///////////////////////////////////////////////////////////////////
     def parse_data_in_file(self):
         try:
             self.data_fut = []
@@ -321,10 +322,11 @@ class Class_TERM_data():
         return [0, 'ok']
 #=======================================================================
 class Class_TERM_hist():
+    #///////////////////////////////////////////////////////////////////
     def __init__(self, path_hist):
         self.path_hist  = path_hist
         self.hist_in_file = []  # list of strings from path_hist
-    #-------------------------------------------------------------------
+    #///////////////////////////////////////////////////////////////////
     def rd_hist(self):
         #--- check file cntr.file_path_DATA ----------------------------
         if not os.path.isfile(self.path_hist):
@@ -353,12 +355,13 @@ class Class_TERM_hist():
         return [0, 'ok']
 #=======================================================================
 class Class_TABLE_cfg_pack():
+    #///////////////////////////////////////////////////////////////////
     def __init__(self, path_term_fut_pack):
         self.obj_table = Class_SQLite(path_term_fut_pack)
         self.nm   = []  # list NM   of packets
         self.koef = []  # list KOEF of packets
         self.ema  = []  # list EMA  of packets
-    #-------------------------------------------------------------------
+    #///////////////////////////////////////////////////////////////////
     def read_tbl(self):
         rq  = self.obj_table.get_table_db_with('cfg_PACK')
         if rq[0] != 0:
@@ -377,13 +380,14 @@ class Class_TABLE_cfg_pack():
         return [0, 'ok']
 #=======================================================================
 class Class_TABLE_cfg_soft():
+    #///////////////////////////////////////////////////////////////////
     def __init__(self, path_term_fut_pack):
         self.obj_table = Class_SQLite(path_term_fut_pack)
         self.titul = self.dt_start = ''
         self.dt_start_sec = 0
         self.path_file_DATA = self.path_file_HIST = ''
         self.path_file_LOG = ''
-    #-------------------------------------------------------------------
+    #///////////////////////////////////////////////////////////////////
     def read_tbl(self):
         rq  = self.obj_table.get_table_db_with('cfg_SOFT')
         if rq[0] != 0:
@@ -409,11 +413,12 @@ class Class_TABLE_cfg_soft():
         return [0, 'ok']
 #=======================================================================
 class Class_TABLE_data_fut():
+    #///////////////////////////////////////////////////////////////////
     def __init__(self, path_term_fut_pack):
         self.obj_table = Class_SQLite(path_term_fut_pack)
         self.data_fut = []                  # list of Class_FUT()
         self.account  = Class_ACCOUNT()     # obj Class_ACCOUNT()
-    #-------------------------------------------------------------------
+    #///////////////////////////////////////////////////////////////////
     def rewrite_tbl(self, buf_tbl):
         # rewrite table DATA
         duf_list = []
@@ -425,7 +430,7 @@ class Class_TABLE_data_fut():
             err_msg = 'rewrite_tbl data_FUT ' + rq[1]
             return [1, err_msg]
         return [0, 'ok']
-    #-------------------------------------------------------------------
+    #///////////////////////////////////////////////////////////////////
     def read_tbl(self):
         rq  = self.obj_table.get_table_db_with('data_FUT')
         if rq[0] != 0:
@@ -471,6 +476,7 @@ class Class_TABLE_data_fut():
         return [0, 'ok']
 #=======================================================================
 class Class_TABLE_hist_fut_today():
+    #///////////////////////////////////////////////////////////////////
     def __init__(self, path_term_fut_pack):
         self.obj_table = Class_SQLite(path_term_fut_pack)
         self.hist_fut_today = []      # list of [[ind_sec string] ... ]
@@ -481,7 +487,7 @@ class Class_TABLE_hist_fut_today():
         self.sec_18_45 = 67500      # seconds from 00:00 to 18:45
         self.sec_19_05 = 68700      # seconds from 00:00 to 19:05
         self.sec_23_45 = 85500      # seconds from 00:00 to 23:45
-    #-------------------------------------------------------------------
+    #///////////////////////////////////////////////////////////////////
     def read_tbl(self):
         rq  = self.obj_table.get_table_db_with('hist_FUT_today')
         if rq[0] != 0:
@@ -493,7 +499,7 @@ class Class_TABLE_hist_fut_today():
         self.hist_fut_today = rq[1][:]
         print('read hist_fut_today => ', len(self.hist_fut_today), ' strings')
         return [0, 'ok']
-    #-------------------------------------------------------------------
+    #///////////////////////////////////////////////////////////////////
     def rewrite_tbl(self, term_hist):
         self.hist_fut_today = []
         buf_60_sec = 666
@@ -529,18 +535,22 @@ class Class_TABLE_hist_fut_today():
         return [0, 'ok']
 #=======================================================================
 class Class_TABLE_hist_pack_today():
+    #///////////////////////////////////////////////////////////////////
     def __init__(self, path_term_fut_pack):
         self.path_term_fut_pack  = path_term_fut_pack
 #=======================================================================
 class Class_TABLE_hist_fut():
+    #///////////////////////////////////////////////////////////////////
     def __init__(self, path_term_fut_archiv):
         self.path_term_fut_archiv  = path_term_fut_archiv
 #=======================================================================
 class Class_TABLE_hist_pack():
+    #///////////////////////////////////////////////////////////////////
     def __init__(self, path_term_fut_archiv):
         self.path_term_fut_archiv  = path_term_fut_archiv
 #=======================================================================
 class Class_CONTROLER():
+    #///////////////////////////////////////////////////////////////////
     def __init__(self):
         c_dir = os.path.abspath(os.curdir)
         self.log = Class_LOGGER(c_dir + '\\LOG\\term_fut_pack_logger.log')
@@ -624,36 +634,37 @@ def main():
 
     # init MENU
     menu_def = [
-                ['Mode',    ['auto', 'manual', ],],
-                ['Service',
-                    [
-                        ['Test TERM',     ['term TERM', 'reserv'],
-                         'Test SQL',      ['data_FUT', 'hist_FUT', 'hist_FUT_TODAY', 'cfg_PACK _ SOFT'],
-                         'Hist FUT today',['Convert tbl TODAY', 'VACUUM tbl TODAY'],],
-                    ],
-                ],
-                ['Help', 'About...'],
-                ['Exit', 'Exit']
-                ]
+        ['Mode',    ['auto', 'manual', ],],
+        ['Service',
+            [
+                ['Tests', ['term TERM', 'cfg_PACK', 'cfg_SOFT', 'data_FUT', 'hist_FUT', 'hist_FUT_TODAY', 'reserv'],
+                 'Hist FUT today',['Convert tbl TODAY', 'VACUUM tbl TODAY'],],
+            ],
+        ],
+        ['Help', 'About...'],
+        ['Exit', 'Exit']
+        ]
 
-    tab_BALANCE =  [
-                    [sg.T('{: ^12}'.format(str(cntr.data_fut.account.acc_profit)), font='Helvetica 48', key='txt_bal')],
-                   ]
+    #tab_BALANCE =  [
+                    #[sg.T('{: ^12}'.format(str(cntr.data_fut.account.acc_profit)), font='Helvetica 48', key='txt_bal')],
+                   #]
 
     def_txt, frm = [], '{: <15}  => {: ^15}\n'
     #def_txt.append(frm.format('path_db_FUT'   , path_TERM_FUT_PACK))
 
-    tab_DATA    =  [
-                    [sg.Multiline( default_text=''.join(def_txt),
-                        size=(50, 5), key='txt_data', autoscroll=False, focus=False),],
-                   ]
+    #tab_DATA    =  [
+                    #[sg.Multiline( default_text=''.join(def_txt),
+                        #size=(50, 5), key='txt_data', autoscroll=False, focus=False),],
+                   #]
 
     # Display data
     sg.SetOptions(element_padding=(0,0))
 
     layout = [
                 [sg.Menu(menu_def, tearoff=False, key='menu_def')],
-                [sg.TabGroup([[sg.Tab('DATA', tab_DATA), sg.Tab('BALANCE', tab_BALANCE)]], key='tab_group')],
+                #[sg.TabGroup([[sg.Tab('DATA', tab_DATA), sg.Tab('BALANCE', tab_BALANCE)]], key='tab_group')],
+                [sg.Multiline( default_text=''.join(def_txt),
+                    size=(50, 5), key='txt_data', autoscroll=False, focus=False),],
                 [sg.T('',size=(60,2), font='Helvetica 8', key='txt_status'), sg.Quit(auto_size_button=True)],
              ]
 
@@ -678,9 +689,9 @@ def main():
         #---------------------------------------------------------------
         if event == 'term TERM' : service_term_TERM(cntr)
         #---------------------------------------------------------------
-        if event == 'cfg_PACK _ SOFT' :
-            get_cfg_PACK_obj(cntr)
-            get_cfg_SOFT_obj(cntr)
+        if event == 'cfg_PACK'  : get_cfg_PACK_obj(cntr)
+        #---------------------------------------------------------------
+        if event == 'cfg_SOFT'  : get_cfg_SOFT_obj(cntr)
         #---------------------------------------------------------------
         if event == 'reserv' :
             #rq = cntr.hist_fut_today.rewrite_tbl([])                           # Empty table
