@@ -486,7 +486,8 @@ class Class_TABLE_hist_fut_today():
     #///////////////////////////////////////////////////////////////////
     def __init__(self, path_term_fut_pack):
         self.obj_table = Class_SQLite(path_term_fut_pack)
-        self.hist_fut_today = []    # list of [[ind_sec string] ... ]
+        self.hist_fut_today   = []  # list of [[ind_sec string] ... ]
+        self.hist_1_fut_today = []  # list period 1 minute
 
         self.sec_10_00 = 36000      # seconds from 00:00 to 10:00
         self.sec_14_00 = 50400      # seconds from 00:00 to 14:00
@@ -505,6 +506,20 @@ class Class_TABLE_hist_fut_today():
         self.hist_fut_today = []
         self.hist_fut_today = rq[1][:]
         print('read hist_fut_today => ', len(self.hist_fut_today), ' strings')
+
+        self.hist_1_fut_today = []
+        if len(self.hist_fut_today) != 0:
+            self.hist_1_fut_today.append(self.hist_fut_today[0])
+            frm = '%d.%m.%Y %H:%M:%S'
+            dtt = datetime.strptime(str(self.hist_fut_today[0][1].split('|')[0]), frm)
+            buf_60_sec = dtt.minute
+            for item in self.hist_fut_today:
+                dtt = datetime.strptime(str(item[1].split('|')[0]), frm)
+                if dtt.minute != buf_60_sec:
+                    self.hist_1_fut_today.append(item)
+                    buf_60_sec = dtt.minute
+        print('parse hist_1_fut_today => ', len(self.hist_1_fut_today), ' strings')
+
         return [0, 'ok']
     #///////////////////////////////////////////////////////////////////
     def rewrite_tbl(self, term_hist):
@@ -622,17 +637,16 @@ def service_cfg_PACK(cntr): # 'Service\Tests\cfg_PACK'
     print('cfg_PACK')
     s_term = []
     s_term.append('___ read cfg_PACK ___')
-    rq = cntr.cfg_pack.read_tbl()
+    cfg = cntr.cfg_pack
+    rq = cfg.read_tbl()
     if rq[0] != 0 :
         err_msg = 'read cfg_PACK => ' + '  '.join(str(e) for e in rq)
         cntr.log.wr_log_error(err_msg)
         s_term.append(err_msg)
     else:
-        for name, koeff, null, ema_k in zip(cntr.cfg_pack.nm, cntr.cfg_pack.koef, cntr.cfg_pack.nul, cntr.cfg_pack.ema):
-            s_term.append(name)
+        for name, koeff, nul_prc, ema_k in zip(cfg.nm, cfg.koef, cfg.nul, cfg.ema):
+            s_term.append(name + '___' + str(nul_prc)+ '___' + ('  '.join(str(e) for e in ema_k)))
             s_term.append('  '.join(str(e) for e in koeff))
-            s_term.append(str(null))
-            s_term.append('  '.join(str(e) for e in ema_k))
 
     s_term.append(' ')
     sg.Popup( 'cfg_PACK', '\n'.join(s_term))
@@ -689,7 +703,8 @@ def service_hist_fut_today(cntr): # 'Service\Tests\hist_fut_today'
         cntr.log.wr_log_error(err_msg)
         s_term.append(err_msg)
     else:
-        arr = cntr.h_fut_today.hist_fut_today
+        arr   = cntr.h_fut_today.hist_fut_today
+        arr_1 = cntr.h_fut_today.hist_1_fut_today
         if len (arr) > 5:
             s_term.append(str(int(arr[0][0])) + '   '+ arr[0][1].split('|')[0])
             s_term.append(str(int(arr[1][0])) + '   '+ arr[1][1].split('|')[0])
@@ -697,7 +712,15 @@ def service_hist_fut_today(cntr): # 'Service\Tests\hist_fut_today'
             s_term.append('...')
             s_term.append(str(int(arr[-2][0])) + '   '+ arr[-2][1].split('|')[0])
             s_term.append(str(int(arr[-1][0])) + '   '+ arr[-1][1].split('|')[0])
-            s_term.append('\n hist_fut_today => ' + str(len(arr)) + ' strings')
+            s_term.append('\n hist_fut_today => ' + str(len(arr)) + ' strings\n ')
+
+            s_term.append(str(int(arr_1[0][0])) + '   '+ arr_1[0][1].split('|')[0])
+            s_term.append(str(int(arr_1[1][0])) + '   '+ arr_1[1][1].split('|')[0])
+            s_term.append(str(int(arr_1[2][0])) + '   '+ arr_1[2][1].split('|')[0])
+            s_term.append('...')
+            s_term.append(str(int(arr_1[-2][0])) + '   '+ arr_1[-2][1].split('|')[0])
+            s_term.append(str(int(arr_1[-1][0])) + '   '+ arr_1[-1][1].split('|')[0])
+            s_term.append('\n hist_1_fut_today => ' + str(len(arr_1)) + ' strings')
         else:
             s_term.append('\n hist_fut_today is EMPTY')
 
