@@ -360,9 +360,11 @@ class Class_TABLE_cfg_pack():
         self.obj_table = Class_SQLite(path_term_fut_pack)
         self.nm   = []  # list NM   of packets
         self.koef = []  # list KOEF of packets
+        self.nul  = []  # list NUL  of packets
         self.ema  = []  # list EMA  of packets
     #///////////////////////////////////////////////////////////////////
     def read_tbl(self):
+        self.nm, self.koef, self.nul, self.ema = [], [], [], []
         rq  = self.obj_table.get_table_db_with('cfg_PACK')
         if rq[0] != 0:
             err_msg = 'Can not read TBL cfg_PACK !'
@@ -371,12 +373,17 @@ class Class_TABLE_cfg_pack():
             return [1, rq[1]]
 
         for item in rq[1]:
+            print(item)
             self.nm.append(item[0])             # just ex ['pckt0']
-            self.koef.append(item[1].split(','))# just ex ['0:3:SR','9:-20:MX']
-            self.ema.append(item[2].split(':')) # just ex ['1111:15']
-        # for test
-        #for (item, jtem, ztem) in (self.nm, self.koef, self.ema):
-        #    print(item, jtem, ztem)
+            self.koef.append(item[1].split(','))# just ex ['0:3:SR','9:-20:MX
+            self.nul.append(item[2])            # just ex [0]
+            self.ema.append(item[3].split(':')) # just ex ['1111:15']
+
+        #print(self.nm)
+        #print(self.koef)
+        #print(self.ema)
+        #print(self.nul)
+
         return [0, 'ok']
 #=======================================================================
 class Class_TABLE_cfg_soft():
@@ -446,16 +453,16 @@ class Class_TABLE_data_fut():
                 list_item = ''.join(item).replace(',','.').split('|')
                 if   i == 0:
                     self.account.acc_date  = list_item[0]
-                    self.data_fut.append(self.account.acc_date)
+                    #self.data_fut.append(self.account.acc_date)
                 elif i == 1:
                     self.account.acc_balance = float(list_item[0])
                     self.account.acc_profit  = float(list_item[1])
                     self.account.acc_go      = float(list_item[2])
                     self.account.acc_depo    = float(list_item[3])
-                    self.data_fut.append([self.account.acc_balance,
-                                            self.account.acc_profit,
-                                            self.account.acc_go,
-                                            self.account.acc_depo ])
+                    #self.data_fut.append([self.account.acc_balance,
+                    #                        self.account.acc_profit,
+                    #                        self.account.acc_go,
+                    #                        self.account.acc_depo ])
                 else:
                     b_fut = Class_FUT()
                     b_fut.sP_code      = list_item[0]
@@ -479,7 +486,7 @@ class Class_TABLE_hist_fut_today():
     #///////////////////////////////////////////////////////////////////
     def __init__(self, path_term_fut_pack):
         self.obj_table = Class_SQLite(path_term_fut_pack)
-        self.hist_fut_today = []      # list of [[ind_sec string] ... ]
+        self.hist_fut_today = []    # list of [[ind_sec string] ... ]
 
         self.sec_10_00 = 36000      # seconds from 00:00 to 10:00
         self.sec_14_00 = 50400      # seconds from 00:00 to 14:00
@@ -567,15 +574,14 @@ class Class_CONTROLER():
         else:
             print('cfg_SOFT = > ', rq)
 
-
         self.trm_data = Class_TERM_data(self.cfg_soft.path_file_DATA)
         self.trm_hist = Class_TERM_hist(self.cfg_soft.path_file_HIST)
         self.cfg_pack = Class_TABLE_cfg_pack(path_TERM_FUT_PACK)
-        self.data_fut = Class_TABLE_data_fut(path_TERM_FUT_PACK)
-        self.hist_fut_today  = Class_TABLE_hist_fut_today(path_TERM_FUT_PACK)
-        self.hist_pack_today = Class_TABLE_hist_pack_today(path_TERM_FUT_PACK)
+        self.dt_fut   = Class_TABLE_data_fut(path_TERM_FUT_PACK)
+        self.h_fut_today  = Class_TABLE_hist_fut_today(path_TERM_FUT_PACK)
+        self.h_pack_today = Class_TABLE_hist_pack_today(path_TERM_FUT_PACK)
 #=======================================================================
-def service_term_TERM(cntr): # 'Service\Test TERM\term TERM'
+def service_term_TERM(cntr): # 'Service\Tests\term TERM'
     print('term TERM')
     cntr.trm_data.dt_file = 0
     cntr.trm_data.dt_data = 0
@@ -588,8 +594,7 @@ def service_term_TERM(cntr): # 'Service\Test TERM\term TERM'
         cntr.log.wr_log_error(err_msg)
         s_term.append(err_msg)
     else:
-        for item in cntr.trm_data.data_in_file:
-            s_term.append(item)
+        s_term = cntr.trm_data.data_in_file[:]
     s_term.append(' ')
 
     s_term.append('___ read HIST file ___')
@@ -611,7 +616,93 @@ def service_term_TERM(cntr): # 'Service\Test TERM\term TERM'
             s_term.append('hist_in_file is EMPTY')
     s_term.append(' ')
 
-    sg.Popup( 'term TERM', '\n'.join(s_term) )
+    sg.Popup( 'term TERM', '\n'.join(s_term))
+#=======================================================================
+def service_cfg_PACK(cntr): # 'Service\Tests\cfg_PACK'
+    print('cfg_PACK')
+    s_term = []
+    s_term.append('___ read cfg_PACK ___')
+    rq = cntr.cfg_pack.read_tbl()
+    if rq[0] != 0 :
+        err_msg = 'read cfg_PACK => ' + '  '.join(str(e) for e in rq)
+        cntr.log.wr_log_error(err_msg)
+        s_term.append(err_msg)
+    else:
+        for name, koeff, null, ema_k in zip(cntr.cfg_pack.nm, cntr.cfg_pack.koef, cntr.cfg_pack.nul, cntr.cfg_pack.ema):
+            s_term.append(name)
+            s_term.append('  '.join(str(e) for e in koeff))
+            s_term.append(str(null))
+            s_term.append('  '.join(str(e) for e in ema_k))
+
+    s_term.append(' ')
+    sg.Popup( 'cfg_PACK', '\n'.join(s_term))
+#=======================================================================
+def service_cfg_SOFT(cntr): # 'Service\Tests\cfg_SOFT'
+    print('cfg_SOFT')
+    s_term = []
+    s_term.append('___ read cfg_SOFT ___')
+    rq = cntr.cfg_soft.read_tbl()
+    if rq[0] != 0 :
+        err_msg = 'read cfg_SOFT => ' + '  '.join(str(e) for e in rq)
+        cntr.log.wr_log_error(err_msg)
+        s_term.append(err_msg)
+    else:
+        s_term.append('titul          =>  ' + cntr.cfg_soft.titul)
+        s_term.append('path_file_DATA =>  ' + cntr.cfg_soft.path_file_DATA)
+        s_term.append('path_file_HIST =>  ' + cntr.cfg_soft.path_file_HIST)
+        s_term.append('path_file_LOG  =>  ' + cntr.cfg_soft.log_path)
+        s_term.append('dt_start       =>  ' + cntr.cfg_soft.dt_start)
+        s_term.append('dt_start_sec   =>  ' + str(cntr.cfg_soft.dt_start_sec))
+
+    s_term.append(' ')
+    sg.Popup( 'cfg_SOFT', '\n'.join(s_term))
+#=======================================================================
+def service_data_FUT(cntr): # 'Service\Tests\data_FUT'
+    print('data_FUT')
+    s_term = []
+    s_term.append('___ read data_FUT ___')
+    rq = cntr.dt_fut.read_tbl()
+    if rq[0] != 0 :
+        err_msg = 'read dt_fut => ' + '  '.join(str(e) for e in rq)
+        cntr.log.wr_log_error(err_msg)
+        s_term.append(err_msg)
+    else:
+        s_term.append('acc_date    =>  ' + cntr.dt_fut.account.acc_date)
+        s_term.append('acc_balance =>  ' + str(cntr.dt_fut.account.acc_balance))
+        s_term.append('acc_profit  =>  ' + str(cntr.dt_fut.account.acc_profit))
+        s_term.append('acc_go      =>  ' + str(cntr.dt_fut.account.acc_go))
+        s_term.append('acc_depo    =>  ' + str(cntr.dt_fut.account.acc_depo))
+
+        for item in cntr.dt_fut.data_fut:
+            print(item)
+
+    s_term.append(' ')
+    sg.Popup( 'data_FUT', '\n'.join(s_term))
+#=======================================================================
+def service_hist_fut_today(cntr): # 'Service\Tests\hist_fut_today'
+    print('hist_fut_today')
+    s_term = []
+    s_term.append('___ read hist_fut_today ___')
+    rq = cntr.h_fut_today.read_tbl()
+    if rq[0] != 0 :
+        err_msg = 'read hist_fut_today => ' + '  '.join(str(e) for e in rq)
+        cntr.log.wr_log_error(err_msg)
+        s_term.append(err_msg)
+    else:
+        arr = cntr.h_fut_today.hist_fut_today
+        if len (arr) > 5:
+            s_term.append(str(int(arr[0][0])) + '   '+ arr[0][1].split('|')[0])
+            s_term.append(str(int(arr[1][0])) + '   '+ arr[1][1].split('|')[0])
+            s_term.append(str(int(arr[2][0])) + '   '+ arr[2][1].split('|')[0])
+            s_term.append('...')
+            s_term.append(str(int(arr[-2][0])) + '   '+ arr[-2][1].split('|')[0])
+            s_term.append(str(int(arr[-1][0])) + '   '+ arr[-1][1].split('|')[0])
+            s_term.append('\n hist_fut_today => ' + str(len(arr)) + ' strings')
+        else:
+            s_term.append('\n hist_fut_today is EMPTY')
+
+    s_term.append(' ')
+    sg.Popup( 'hist_fut_today', '\n'.join(s_term))
 #=======================================================================
 def error_msg_popup(cntr, msg_log, msg_rq_1, PopUp = True):
     err_msg = msg_log + msg_rq_1
@@ -621,57 +712,47 @@ def error_msg_popup(cntr, msg_log, msg_rq_1, PopUp = True):
 def main():
     # init
     cntr = Class_CONTROLER()
+    while True:
+        rq = cntr.trm_data.rd_term()
+        if rq[0] != 0:  print('Could not parse_data_in_file !')
+        else:           print('trm_data = > ', rq)
 
-    rq = cntr.trm_data.rd_term()
-    if rq[0] != 0:  print('Could not parse_data_in_file !')
-    else:           print('trm_data = > ', rq)
+        rq = cntr.dt_fut.read_tbl()
+        if rq[0] != 0:  print('Could not data_fut read !')
+        else:           print('data_fut = > ', rq)
 
-    rq = cntr.data_fut.read_tbl()
-    if rq[0] != 0:  print('Could not data_fut read !')
-    else:           print('data_fut = > ', rq)
+        #print('TEST 000 --------------------------------------')
 
-    #print('TEST 000 --------------------------------------')
-
-    # init MENU
-    menu_def = [
-        ['Mode',    ['auto', 'manual', ],],
-        ['Service',
-            [
-                ['Tests', ['term TERM', 'cfg_PACK', 'cfg_SOFT', 'data_FUT', 'hist_FUT', 'hist_FUT_TODAY', 'reserv'],
-                 'Hist FUT today',['Convert tbl TODAY', 'VACUUM tbl TODAY'],],
+        # init MENU
+        menu_def = [
+            ['Mode',    ['auto', 'manual', ],],
+            ['Service',
+                [
+                    ['Tests', ['term TERM', 'cfg_PACK', 'cfg_SOFT', 'data_FUT', 'hist_FUT_TODAY', 'hist_FUT_arch', 'reserv'],
+                     'Hist FUT today',['Convert tbl TODAY', 'VACUUM tbl TODAY'],],
+                ],
             ],
-        ],
-        ['Help', 'About...'],
-        ['Exit', 'Exit']
-        ]
+            ['Help', 'About...'],
+            ['Exit', 'Exit']
+            ]
 
-    #tab_BALANCE =  [
-                    #[sg.T('{: ^12}'.format(str(cntr.data_fut.account.acc_profit)), font='Helvetica 48', key='txt_bal')],
-                   #]
+        def_txt = []
+        frm = '{: <15}  => {: ^15}\n'
+        def_txt.append(frm.format('TODAY' , '\\DB\\term_fut_pack.sqlite'))
+        def_txt.append(frm.format('ARCHV' , '\\DB\\term_fut_archiv.sqlite'))
 
-    def_txt, frm = [], '{: <15}  => {: ^15}\n'
-    #def_txt.append(frm.format('path_db_FUT'   , path_TERM_FUT_PACK))
-
-    #tab_DATA    =  [
-                    #[sg.Multiline( default_text=''.join(def_txt),
-                        #size=(50, 5), key='txt_data', autoscroll=False, focus=False),],
-                   #]
-
-    # Display data
-    sg.SetOptions(element_padding=(0,0))
-
-    layout = [
-                [sg.Menu(menu_def, tearoff=False, key='menu_def')],
-                #[sg.TabGroup([[sg.Tab('DATA', tab_DATA), sg.Tab('BALANCE', tab_BALANCE)]], key='tab_group')],
-                [sg.Multiline( default_text=''.join(def_txt),
-                    size=(50, 5), key='txt_data', autoscroll=False, focus=False),],
-                [sg.T('',size=(60,2), font='Helvetica 8', key='txt_status'), sg.Quit(auto_size_button=True)],
-             ]
-
-    window = sg.Window(cntr.cfg_soft.titul, grab_anywhere=True).Layout(layout).Finalize()
+        # Display data
+        layout = [
+                    [sg.Menu(menu_def, tearoff=False, key='menu_def')],
+                    [sg.Multiline( default_text=''.join(def_txt),
+                        size=(50, 5), key='txt_data', autoscroll=False, focus=False),],
+                    [sg.T('',size=(60,2), font='Helvetica 8', key='txt_status'), sg.Quit(auto_size_button=True)],
+                 ]
+        sg.SetOptions(element_padding=(0,0))
+        window = sg.Window(cntr.cfg_soft.titul, grab_anywhere=True).Layout(layout).Finalize()
+        break
 
     mode = 'manual'
-    frm_str = '{: <15}{: ^15}'
     # main cycle   -----------------------------------------------------
     while True:
         stroki = []
@@ -689,9 +770,13 @@ def main():
         #---------------------------------------------------------------
         if event == 'term TERM' : service_term_TERM(cntr)
         #---------------------------------------------------------------
-        if event == 'cfg_PACK'  : get_cfg_PACK_obj(cntr)
+        if event == 'cfg_PACK'  : service_cfg_PACK(cntr)
         #---------------------------------------------------------------
-        if event == 'cfg_SOFT'  : get_cfg_SOFT_obj(cntr)
+        if event == 'cfg_SOFT'  : service_cfg_SOFT(cntr)
+        #---------------------------------------------------------------
+        if event == 'data_FUT'  : service_data_FUT(cntr)
+        #---------------------------------------------------------------
+        if event == 'hist_FUT_TODAY': service_hist_fut_today(cntr)
         #---------------------------------------------------------------
         if event == 'reserv' :
             #rq = cntr.hist_fut_today.rewrite_tbl([])                           # Empty table
@@ -700,20 +785,6 @@ def main():
             rq = cntr.hist_fut_today.read_tbl()                                # Read table
             print('hist_fut_today.read_tbl => ', rq)
 
-        #---------------------------------------------------------------
-        if event == 'data_FUT'      :
-            rq = service_data_FUT(cntr)
-            if rq[0] == 0:
-                stroki.append('data_FUT - it is OK')
-            else:
-                stroki.append('ERORR => ' + rq[1])
-        #---------------------------------------------------------------
-        if event == 'hist_FUT_TODAY':
-            rq = service_hist_FUT_TODAY(cntr)
-            if rq[0] == 0:
-                stroki.append('hist_FUT_TODAY  = ' + str(rq[1]) + ' strings' )
-            else:
-                stroki.append('ERORR => ' + rq[1])
         #---------------------------------------------------------------
         if event == 'hist_FUT':
             rq = service_hist_FUT(cntr)
