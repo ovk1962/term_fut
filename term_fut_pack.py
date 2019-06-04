@@ -596,6 +596,21 @@ class Class_CONTROLER():
         self.h_fut_today  = Class_TABLE_hist_fut_today(path_TERM_FUT_PACK)
         self.h_pack_today = Class_TABLE_hist_pack_today(path_TERM_FUT_PACK)
 #=======================================================================
+def read_term(cntr):
+    rq = cntr.trm_data.rd_term()
+    if rq[0] != 0 :
+        err_msg = 'rd_term => ' + '  '.join(str(e) for e in rq)
+        #cntr.log.wr_log_error(err_msg)
+        return [1, err_msg]
+
+    rq = cntr.trm_hist.rd_hist()
+    if rq[0] != 0:
+        err_msg = 'rd_hist => ' + '  '.join(str(e) for e in rq)
+        #cntr.log.wr_log_error(err_msg)
+        return [1, err_msg]
+
+    return [0, 'ok']
+#=======================================================================
 def service_term_TERM(cntr): # 'Service\Tests\term TERM'
     print('term TERM')
     cntr.trm_data.dt_file = 0
@@ -693,7 +708,7 @@ def service_data_FUT(cntr): # 'Service\Tests\data_FUT'
     s_term.append(' ')
     sg.Popup( 'data_FUT', '\n'.join(s_term))
 #=======================================================================
-def service_hist_fut_today(cntr): # 'Service\Tests\hist_fut_today'
+def service_hist_FUT_TODAY(cntr): # 'Service\Tests\hist_fut_today'
     print('hist_fut_today')
     s_term = []
     s_term.append('___ read hist_fut_today ___')
@@ -731,6 +746,33 @@ def error_msg_popup(cntr, msg_log, msg_rq_1, PopUp = True):
     err_msg = msg_log + msg_rq_1
     cntr.log.wr_log_error(err_msg)
     if PopUp:  sg.PopupError('Error !', err_msg)
+#=======================================================================
+def event_menu(event, cntr):
+    #---------------------------------------------------------------
+    if event == 'term TERM' : service_term_TERM(cntr)
+    #---------------------------------------------------------------
+    if event == 'cfg_PACK'  : service_cfg_PACK(cntr)
+    #---------------------------------------------------------------
+    if event == 'cfg_SOFT'  : service_cfg_SOFT(cntr)
+    #---------------------------------------------------------------
+    if event == 'data_FUT'  : service_data_FUT(cntr)
+    #---------------------------------------------------------------
+    if event == 'hist_FUT_TODAY': service_hist_FUT_TODAY(cntr)
+    ##---------------------------------------------------------------
+    #if event == 'reserv' :
+        ##rq = cntr.hist_fut_today.rewrite_tbl([])                           # Empty table
+        #rq = cntr.hist_fut_today.rewrite_tbl(cntr.trm_hist.hist_in_file)   # Rewrite table
+        #print('hist_fut_today.rewrite_tbl => ', rq)
+        #rq = cntr.hist_fut_today.read_tbl()                                # Read table
+        #print('hist_fut_today.read_tbl => ', rq)
+
+    ##---------------------------------------------------------------
+    #if event == 'hist_FUT':
+        #rq = service_hist_FUT(cntr)
+        #if rq[0] == 0:
+            #stroki.append('hist_FUT  = ' + str(rq[1]) + ' strings' )
+        #else:
+            #stroki.append('ERORR => ' + rq[1])
 #=======================================================================
 def main():
     # init
@@ -775,54 +817,42 @@ def main():
         window = sg.Window(cntr.cfg_soft.titul, grab_anywhere=True).Layout(layout).Finalize()
         break
 
-    mode = 'manual'
+    mode = 'auto'
+    #error_trm = False
+    tm_out = 1500
     # main cycle   -----------------------------------------------------
+    # 1. read TERM files DATA & HIST today
+    # 2. if have not new data :  BREAK
+    # 3. else :
+    #       calc new price & indicators
+    #       write new data in DB file
+    #       check ALARMs
+    #       send in WWW/FTP/SMTP
+
     while True:
         stroki = []
-        if mode == 'auto':
-            event, values = window.Read(timeout=3500 )  # period 2,4 sec
-        else:
-            event, values = window.Read(timeout=240000) # period 4 min
-        #print('event = ', event, ' ..... values = ', values)
+        event, values = window.Read(timeout=tm_out )
         #---------------------------------------------------------------
-        if event is None        : break
-        if event == 'Quit'      : break
-        if event == 'Exit'      : break
-        if event == 'auto'      : mode = 'auto'
-        if event == 'manual'    : mode = 'manual'
+        if event == 'auto'   :
+            mode = 'auto'
         #---------------------------------------------------------------
-        if event == 'term TERM' : service_term_TERM(cntr)
+        if event == 'manual' :
+            tm_out = 240000
+            mode = 'manual'
         #---------------------------------------------------------------
-        if event == 'cfg_PACK'  : service_cfg_PACK(cntr)
+        event_menu(event, cntr)
         #---------------------------------------------------------------
-        if event == 'cfg_SOFT'  : service_cfg_SOFT(cntr)
-        #---------------------------------------------------------------
-        if event == 'data_FUT'  : service_data_FUT(cntr)
-        #---------------------------------------------------------------
-        if event == 'hist_FUT_TODAY': service_hist_fut_today(cntr)
-        #---------------------------------------------------------------
-        if event == 'reserv' :
-            #rq = cntr.hist_fut_today.rewrite_tbl([])                           # Empty table
-            rq = cntr.hist_fut_today.rewrite_tbl(cntr.trm_hist.hist_in_file)   # Rewrite table
-            print('hist_fut_today.rewrite_tbl => ', rq)
-            rq = cntr.hist_fut_today.read_tbl()                                # Read table
-            print('hist_fut_today.read_tbl => ', rq)
-
-        #---------------------------------------------------------------
-        if event == 'hist_FUT':
-            rq = service_hist_FUT(cntr)
-            if rq[0] == 0:
-                stroki.append('hist_FUT  = ' + str(rq[1]) + ' strings' )
-            else:
-                stroki.append('ERORR => ' + rq[1])
+        if event is None or event == 'Quit' or event == 'Exit': break
         #---------------------------------------------------------------
         if event == '__TIMEOUT__':
-            rq = read_data_hist_files(cntr)
+            rq = read_term(cntr)
             if rq[0] == 0:
-                stroki.append('Time DATA:  ' + cntr.term.data_in_file[0].split('|')[0])
-                stroki.append('Time HIST:  ' + cntr.term.hist_in_file[-1].split('|')[0])
+                tm_out = 6500
+                stroki.append('Time DATA:  ' + cntr.trm_data.data_in_file[0].split('|')[0])
+                stroki.append('Time HIST:  ' + cntr.trm_hist.hist_in_file[-1].split('|')[0])
                 stroki.append('Have got new data/hist')
             else:
+                tm_out = 1500
                 stroki.append(rq[1])
         #---------------------------------------------------------------
         window.FindElement('txt_data').Update('\n'.join(stroki))
