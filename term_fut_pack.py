@@ -57,7 +57,7 @@ class Class_FUT():
         self.sSell_qty = 0
         self.sFut_go = 0.0
         self.sOpen_pos = 0.0
-    def dbg_print(self):
+    def debug_print(self):
         print('\n.....Class_FUT.....')
         print('sP_code    => ', self.sP_code, self.sRest, self.sVar_margin)
 #=======================================================================
@@ -74,7 +74,7 @@ class Class_PACK():
         self.AMA = 0.0
         self.AMA_rnd = 0.0
         self.cnt_AMA_rnd = 0.0
-    def dbg_print(self):
+    def debug_print(self):
         print('\n.....Class_PACK.....')
         print('ind    => ', self.ind, self.dt, self.tm)
 #=======================================================================
@@ -349,16 +349,6 @@ class Class_TERM_hist():
         self.path_hist  = path_hist
         self.hist_in_file = []  # list of strings from path_hist
     #///////////////////////////////////////////////////////////////////
-    #def dbg_print(self):
-        #print('\n.....Class_TERM_hist.....')
-        #print('path_hist    => ', self.path_hist)
-        #print('len(hist_in_file) => ', len(self.hist_in_file))
-        #print('hist_in_file[0] => ', self.hist_in_file[0])
-        #print('hist_in_file[1] => ', self.hist_in_file[1].split('|')[0])
-        #print('hist_in_file[2] => ', self.hist_in_file[2].split('|')[0])
-        #print('. . . . .')
-        #print('hist_in_file[-1] => ', self.hist_in_file[-1].split('|')[0])
-    #///////////////////////////////////////////////////////////////////
     def rd_hist(self):
         #--- check file cntr.file_path_DATA ----------------------------
         if not os.path.isfile(self.path_hist):
@@ -453,8 +443,7 @@ class Class_TABLE_cfg_soft():
         frm = '%Y-%m-%d %H:%M:%S'
         self.dt_start_sec = \
             int(datetime.strptime(self.dt_start, frm).replace(tzinfo=timezone.utc).timestamp())
-        #print(self.dt_start, self.dt_start_sec)
-        #self.dbg_print()
+
         return [0, 'ok']
 #=======================================================================
 class Class_TABLE_data_fut():
@@ -464,18 +453,6 @@ class Class_TABLE_data_fut():
         self.path_term_fut_pack = path_term_fut_pack
         self.data_fut = []                  # list of Class_FUT()
         self.account  = Class_ACCOUNT()     # obj Class_ACCOUNT()
-    #///////////////////////////////////////////////////////////////////
-    #def dbg_print(self):
-        #print('\n.....Class_TABLE_data_fut.....')
-        #print('path_term_fut_pack => ', self.path_term_fut_pack)
-        #print('len(data_fut)   => ', len(self.data_fut))
-        #print('data_fut[0] => ', self.data_fut[0])
-        #print('data_fut[1] => ', self.data_fut[1])
-        #print('. . . . .')
-        #print('data_fut[-1] => ', self.data_fut[-1])
-        #if self.account != '':   self.account.dbg_print()
-        #else: print('account     => _')
-
     #///////////////////////////////////////////////////////////////////
     def rewrite_tbl(self, buf_tbl):
         # rewrite table DATA
@@ -504,16 +481,11 @@ class Class_TABLE_data_fut():
                 list_item = ''.join(item).replace(',','.').split('|')
                 if   i == 0:
                     self.account.acc_date  = list_item[0]
-                    #self.data_fut.append(self.account.acc_date)
                 elif i == 1:
                     self.account.acc_balance = float(list_item[0])
                     self.account.acc_profit  = float(list_item[1])
                     self.account.acc_go      = float(list_item[2])
                     self.account.acc_depo    = float(list_item[3])
-                    #self.data_fut.append([self.account.acc_balance,
-                    #                        self.account.acc_profit,
-                    #                        self.account.acc_go,
-                    #                        self.account.acc_depo ])
                 else:
                     b_fut = Class_FUT()
                     b_fut.sP_code      = list_item[0]
@@ -902,8 +874,6 @@ def dbg_prn(cntr, b_clear  = True,
     if b_fut_arc:
         print('.....Class_TABLE_hist_fut(archiv).....')
         print('path_term_fut_archiv    => ', cntr.h_fut_arc.path_term_fut_archiv)
-        #self.hist_fut_archiv = []  # list of [[ind_sec string] ... ]
-        #self.arr_fut_archiv  = []  # list period 1 minute
         hist = cntr.h_fut_arc
         print('len(hist_fut_archiv)   => ', len(hist.hist_fut_archiv))
         if len(hist.hist_fut_archiv) > 4:
@@ -948,13 +918,11 @@ def service_term_TERM(cntr): # 'Service\Tests\term TERM'
     if rq[0] != 0 :
         err_msg = 'rd_term => ' + '  '.join(str(e) for e in rq)
         cntr.log.wr_log_error(err_msg)
-    #cntr.trm_data.dbg_print()
     #
     rq = cntr.trm_hist.rd_hist()
     if rq[0] != 0:
         err_msg = 'rd_hist => ' + '  '.join(str(e) for e in rq)
         cntr.log.wr_log_error(err_msg)
-    #cntr.trm_hist.dbg_print()
 #=======================================================================
 def service_cfg_PACK(cntr): # 'Service\Tests\cfg_PACK'
     print('cfg_PACK')
@@ -962,7 +930,6 @@ def service_cfg_PACK(cntr): # 'Service\Tests\cfg_PACK'
     if rq[0] != 0 :
         err_msg = 'read cfg_PACK => ' + '  '.join(str(e) for e in rq)
         cntr.log.wr_log_error(err_msg)
-    #cntr.cfg_pack.dbg_print()
 #=======================================================================
 def service_cfg_SOFT(cntr): # 'Service\Tests\cfg_SOFT'
     rq = cntr.cfg_soft.read_tbl()
@@ -972,15 +939,12 @@ def service_cfg_SOFT(cntr): # 'Service\Tests\cfg_SOFT'
 #=======================================================================
 def service_data_FUT(cntr): # 'Service\Tests\data_FUT'
     rq = cntr.dt_fut.read_tbl()
-    #cntr.dt_fut.dbg_print()
     if rq[0] != 0 :
         err_msg = 'read dt_fut => ' + '  '.join(str(e) for e in rq)
         cntr.log.wr_log_error(err_msg)
-    #cntr.dt_fut.dbg_print()
 #=======================================================================
 def service_hist_FUT_TODAY(cntr): # 'Service\Tests\hist_fut_today'
     rq = cntr.h_fut_today.read_tbl()
-    #cntr.h_fut_today.dbg_print()
     if rq[0] != 0 :
         err_msg = 'read hist_fut_today => ' + '  '.join(str(e) for e in rq)
         cntr.log.wr_log_error(err_msg)
@@ -1005,7 +969,6 @@ def service_hist_FUT_arch(cntr): # 'Service\Tests\hist_fut_archiv'
             s_term.append(str(int(arr[-2][0])) + '   '+ arr[-2][1].split('|')[0])
             s_term.append(str(int(arr[-1][0])) + '   '+ arr[-1][1].split('|')[0])
             s_term.append('\n hist_fut_archiv => ' + str(len(arr)) + ' strings\n ')
-
         else:
             s_term.append('\n hist_fut_archiv is EMPTY')
 
@@ -1246,11 +1209,7 @@ def prepair_hist_PACK(cntr, b_today = False):
     else:
         arr_hist_pack = cntr.arr_pack
 
-    #print('len(arr_hist_pack) => ', len(arr_hist_pack))
     if len(arr_hist_pack) > 0:
-        #print('len(arr_hist_pack[0]) => ', len(arr_hist_pack[0]))
-        #print('arr_hist_pack[0][0] => ', arr_hist_pack[0][0].dt,  arr_hist_pack[0][0].tm)
-
         for i_hist, item_hist in enumerate(arr_hist_pack[0]):
             buf_dt = item_hist.dt + ' ' + item_hist.tm + ' '
             buf_s = ''
