@@ -1284,47 +1284,48 @@ def event_menu(event, cntr):
 #=======================================================================
 def TODAY_copy_ARCHIV(cntr):
     pass
-
+#=======================================================================
+def wr_file(path_file, hist_out, mes, cntr):
+    if os.path.exists(path_file):
+        os.remove(path_file)
+    f = open(path_file,'w')
+    for item in hist_out:
+        f.writelines(item + '\n')
+    f.close()
+    cntr.log.wr_log_info(mes + path_file)
+    print(mes + path_file)
 #=======================================================================
 def convert_tbl_TODAY(cntr):
     service_hist_FUT_TODAY(cntr)    #read & print
     #
     arr_hist = cntr.h_fut_today.hist_fut_today
-    last_day = arr_hist[-1][1].split(' ')[0]
+    #last_day = arr_hist[-1][1].split(' ')[0]
     term_dt = arr_hist[-1][1].split('|')[0]
     dtt = datetime.strptime(str(term_dt), "%d.%m.%Y %H:%M:%S")
     #
+    str_year  = str(dtt.year)
     str_month = str(dtt.month) if dtt.month > 9 else '0' + str(dtt.month)
     str_day   = str(dtt.day)   if dtt.day   > 9 else '0' + str(dtt.day)
-    #                               write in files
+    # write in file HISTORY  10 sec
     hist_out = []           # convert TUPLE in LIST & delete last '|'
     for item in arr_hist: hist_out.append(''.join(list(item[1])[0:-1]))
-    path_file = str(dtt.year) + '-' + str_month + '-' + str_day + '_hist_' + cntr.cfg_soft.titul + '.txt'
-    if os.path.exists(path_file):  os.remove(path_file)
-    f = open(path_file,'w')
-    for item in hist_out:          f.writelines(item + '\n')
-    f.close()
-    info_msg = 'Hist export for ' + path_file
-    print(info_msg)
-    cntr.log.wr_log_info(info_msg)
+    path_file = str_year + '-' + str_month + '-' + str_day + '_hist_' + cntr.cfg_soft.titul + '.txt'
+    #
+    wr_file(path_file, hist_out, 'Hist export for ', cntr)
     #
     arr_hist = cntr.h_fut_today.hist_1_fut_today
-    last_day = arr_hist[-1][1].split(' ')[0]
+    #last_day = arr_hist[-1][1].split(' ')[0]
     term_dt = arr_hist[-1][1].split('|')[0]
     dtt = datetime.strptime(str(term_dt), "%d.%m.%Y %H:%M:%S")
+    # write in file HISTORY  60 sec
     hist_out = []           # convert TUPLE in LIST & delete last '|'
     for item in arr_hist:
         dt_buf = datetime.strptime(str(item[1].split('|')[0]), "%d.%m.%Y %H:%M:%S")
         if dt_buf.hour < 19:
             hist_out.append(str(int(item[0])) + ';' + ''.join(list(item[1])[0:-1]))
-    path_file = cntr.cfg_soft.titul + '_' + str(dtt.year) + '-' + str_month + '-' + str_day + '_hist_FUT' + '.csv'
-    if os.path.exists(path_file):  os.remove(path_file)
-    f = open(path_file,'w')
-    for item in hist_out:          f.writelines(item + '\n')
-    f.close()
-    info_msg = 'Archiv for ' + path_file
-    print(info_msg)
-    cntr.log.wr_log_info(info_msg)
+    path_file = cntr.cfg_soft.titul + '_' + str_year + '-' + str_month + '-' + str_day + '_hist_FUT' + '.csv'
+    #
+    wr_file(path_file, hist_out, 'Archiv for ', cntr)
     #
 #=======================================================================
 def prepair_hist_PACK(cntr, b_today = False):
