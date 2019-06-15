@@ -847,15 +847,16 @@ def dbg_prn(cntr, b_clear  = True,
         print('.....Class_TERM_hist.....')
         print('path_hist    => ', cntr.trm_hist.path_hist)
         print('len(hist_in_file) => ', len(hist_in_file))
-        #for i, item in enumerate(hist_in_file):
-            #if i == 0 or i == 1        :  print('[',i,'] => ', item)
-            #if i == len(hist_in_file)-2:  print('. . . . .')
-            #if i == len(hist_in_file)-1:  print('[',i,'] => ', item)
-        print('trm_hist.hist_in_file[0] => ',  hist_in_file[0])
-        print('trm_hist.hist_in_file[1] => ',  hist_in_file[1].split('|')[0])
-        print('trm_hist.hist_in_file[2] => ',  hist_in_file[2].split('|')[0])
-        print('. . . . .')
-        print('trm_hist.hist_in_file[-1] => ', hist_in_file[-1].split('|')[0])
+        if len(hist_in_file) > 0:
+            #for i, item in enumerate(hist_in_file):
+                #if i == 0 or i == 1        :  print('[',i,'] => ', item)
+                #if i == len(hist_in_file)-2:  print('. . . . .')
+                #if i == len(hist_in_file)-1:  print('[',i,'] => ', item)
+            print('trm_hist.hist_in_file[0] => ',  hist_in_file[0])
+            print('trm_hist.hist_in_file[1] => ',  hist_in_file[1].split('|')[0])
+            print('trm_hist.hist_in_file[2] => ',  hist_in_file[2].split('|')[0])
+            print('. . . . .')
+            print('trm_hist.hist_in_file[-1] => ', hist_in_file[-1].split('|')[0])
 
     if b_cfg_soft:
         #hist_in_file = cntr.trm_hist.hist_in_file
@@ -888,23 +889,24 @@ def dbg_prn(cntr, b_clear  = True,
         print('. . . . .')
         dt_fut = cntr.dt_fut.data_fut
         print('len(data_fut)     => ', len(dt_fut))
-        for i, item in enumerate(dt_fut):
-            print('[',i,'] => ', item)
-        print('. . . . .')
-        print('dt_fut[-1] =>')
-        print('     sP_code     ', dt_fut[-1].sP_code)
-        print('     sRest       ', dt_fut[-1].sRest)
-        print('     sVar_margin ', dt_fut[-1].sVar_margin)
-        print('     sOpen_price ', dt_fut[-1].sOpen_price)
-        print('     sLast_price ', dt_fut[-1].sLast_price)
-        print('     sAsk        ', dt_fut[-1].sAsk)
-        print('     sBuy_qty    ', dt_fut[-1].sBuy_qty)
-        print('     sBid        ', dt_fut[-1].sBid)
-        print('     sSell_qty   ', dt_fut[-1].sSell_qty)
-        print('     sFut_go     ', dt_fut[-1].sFut_go)
-        print('     sOpen_pos   ', dt_fut[-1].sOpen_pos)
-        #print('. . . . .')
-        #print('cntr.trm_data.data_in_file[-1]  =>  \n', cntr.trm_data.data_in_file[-1])
+        if len(dt_fut) > 0:
+            for i, item in enumerate(dt_fut):
+                print('[',i,'] => ', item)
+            print('. . . . .')
+            print('dt_fut[-1] =>')
+            print('     sP_code     ', dt_fut[-1].sP_code)
+            print('     sRest       ', dt_fut[-1].sRest)
+            print('     sVar_margin ', dt_fut[-1].sVar_margin)
+            print('     sOpen_price ', dt_fut[-1].sOpen_price)
+            print('     sLast_price ', dt_fut[-1].sLast_price)
+            print('     sAsk        ', dt_fut[-1].sAsk)
+            print('     sBuy_qty    ', dt_fut[-1].sBuy_qty)
+            print('     sBid        ', dt_fut[-1].sBid)
+            print('     sSell_qty   ', dt_fut[-1].sSell_qty)
+            print('     sFut_go     ', dt_fut[-1].sFut_go)
+            print('     sOpen_pos   ', dt_fut[-1].sOpen_pos)
+            #print('. . . . .')
+            #print('cntr.trm_data.data_in_file[-1]  =>  \n', cntr.trm_data.data_in_file[-1])
 
     if b_fut_today:
         print('.....Class_TABLE_data_fut.....')
@@ -948,11 +950,11 @@ def dbg_prn(cntr, b_clear  = True,
             print('___________________________')
         print('len(arr_fut_archiv)  => ', len(hist.arr_fut_archiv))
         if len(hist.arr_fut_archiv) > 4:
-            print('arr_1_fut_today[0] => ',  hist.arr_fut_archiv[0])
-            print('arr_1_fut_today[1] => ',  hist.arr_fut_archiv[1][1].split('|')[0])
-            print('arr_1_fut_today[2] => ',  hist.arr_fut_archiv[2][1].split('|')[0])
+            print('arr_fut_today[0] => ',  hist.arr_fut_archiv[0])
+            print('arr_fut_today[1] => ',  hist.arr_fut_archiv[1][1].split('|')[0])
+            print('arr_fut_today[2] => ',  hist.arr_fut_archiv[2][1].split('|')[0])
             print('. . . . .')
-            print('arr_1_fut_today[-1] => ', hist.arr_fut_archiv[-1][1].split('|')[0])
+            print('arr_fut_today[-1] => ', hist.arr_fut_archiv[-1][1].split('|')[0])
 
         print('')
 
@@ -1283,50 +1285,90 @@ def event_menu(event, cntr):
     #---------------------------------------------------------------
 #=======================================================================
 def TODAY_copy_ARCHIV(cntr):
-    pass
+    os.system('cls')  # on windows
+    print('Copy fut TODAY in ARCHIV .  .  .  .  .')
+    hist = cntr.h_fut_today
+    print('len(hist_1_fut_today) => ', len(hist.hist_1_fut_today))
+    if len(hist.hist_1_fut_today) > 4:
+        print('hist_1_fut_today[0] => ',  hist.hist_1_fut_today[0])
+        print('hist_1_fut_today[1] => ',  hist.hist_1_fut_today[1][1].split('|')[0])
+        print('hist_1_fut_today[2] => ',  hist.hist_1_fut_today[2][1].split('|')[0])
+        print('. . . . .')
+        print('hist_1_fut_today[-2] => ', hist.hist_1_fut_today[-2][1].split('|')[0])
+        print('hist_1_fut_today[-1] => ', hist.hist_1_fut_today[-1][1].split('|')[0])
+    print('. . . . .')
+    print('Status BEFORE')
+    hist = cntr.h_fut_arc
+    print('len(hist_fut_archiv)   => ', len(hist.hist_fut_archiv))
+    if len(hist.hist_fut_archiv) > 4:
+        print('hist_fut_archiv[0] => ',  hist.hist_fut_archiv[0])
+        print('hist_fut_archiv[1] => ',  hist.hist_fut_archiv[1][1].split('|')[0])
+        print('hist_fut_archiv[2] => ',  hist.hist_fut_archiv[2][1].split('|')[0])
+        print('. . . . .')
+        print('hist_fut_archiv[-2] => ', hist.hist_fut_archiv[-2][1].split('|')[0])
+        print('hist_fut_archiv[-1] => ', hist.hist_fut_archiv[-1][1].split('|')[0])
+    print('. . . . .')
+    buf_list = []
+    if len(cntr.h_fut_today.hist_1_fut_today) < 520:
+        rq = cntr.h_fut_arc.obj_table.write_table_db('hist_FUT', cntr.h_fut_today.hist_1_fut_today)
+    else:
+        rq = cntr.h_fut_arc.obj_table.write_table_db('hist_FUT', cntr.h_fut_today.hist_1_fut_today[:520])
+    print('. . . . .')
+    print('Press Test & Print for STATUS')
 #=======================================================================
-def wr_file(path_file, hist_out, mes, cntr):
-    if os.path.exists(path_file):
-        os.remove(path_file)
-    f = open(path_file,'w')
-    for item in hist_out:
-        f.writelines(item + '\n')
-    f.close()
-    cntr.log.wr_log_info(mes + path_file)
-    print(mes + path_file)
+#def wr_file(path_file, hist_out, mes, cntr):
+    #if os.path.exists(path_file):
+        #os.remove(path_file)
+    #f = open(path_file,'w')
+    #for item in hist_out:
+        #f.writelines(item + '\n')
+    #f.close()
+    #cntr.log.wr_log_info(mes + path_file)
+    #print(mes + path_file)
 #=======================================================================
 def convert_tbl_TODAY(cntr):
+    def wr_file(path_file, hist_out, mes, cntr):
+        if os.path.exists(path_file):
+            os.remove(path_file)
+        f = open(path_file,'w')
+        for item in hist_out:
+            f.writelines(item + '\n')
+        f.close()
+        cntr.log.wr_log_info(mes + path_file)
+        print(mes + path_file)
+
     service_hist_FUT_TODAY(cntr)    #read & print
     #
     arr_hist = cntr.h_fut_today.hist_fut_today
-    #last_day = arr_hist[-1][1].split(' ')[0]
     term_dt = arr_hist[-1][1].split('|')[0]
     dtt = datetime.strptime(str(term_dt), "%d.%m.%Y %H:%M:%S")
     #
-    str_year  = str(dtt.year)
     str_month = str(dtt.month) if dtt.month > 9 else '0' + str(dtt.month)
     str_day   = str(dtt.day)   if dtt.day   > 9 else '0' + str(dtt.day)
-    # write in file HISTORY  10 sec
+    str_dt    = str(dtt.year) + '-' + str_month + '-' + str_day
+    # write in file HISTORY  10 sec ------------------------------------
     hist_out = []           # convert TUPLE in LIST & delete last '|'
     for item in arr_hist: hist_out.append(''.join(list(item[1])[0:-1]))
-    path_file = str_year + '-' + str_month + '-' + str_day + '_hist_' + cntr.cfg_soft.titul + '.txt'
-    #
+    path_file = str_dt + '_hist_' + cntr.cfg_soft.titul + '.txt'
     wr_file(path_file, hist_out, 'Hist export for ', cntr)
     #
     arr_hist = cntr.h_fut_today.hist_1_fut_today
-    #last_day = arr_hist[-1][1].split(' ')[0]
     term_dt = arr_hist[-1][1].split('|')[0]
     dtt = datetime.strptime(str(term_dt), "%d.%m.%Y %H:%M:%S")
-    # write in file HISTORY  60 sec
+    # write in file HISTORY  60 sec ------------------------------------
     hist_out = []           # convert TUPLE in LIST & delete last '|'
     for item in arr_hist:
         dt_buf = datetime.strptime(str(item[1].split('|')[0]), "%d.%m.%Y %H:%M:%S")
         if dt_buf.hour < 19:
             hist_out.append(str(int(item[0])) + ';' + ''.join(list(item[1])[0:-1]))
-    path_file = cntr.cfg_soft.titul + '_' + str_year + '-' + str_month + '-' + str_day + '_hist_FUT' + '.csv'
-    #
+    path_file = cntr.cfg_soft.titul + '_' + str_dt + '_hist_FUT' + '.csv'
     wr_file(path_file, hist_out, 'Archiv for ', cntr)
     #
+    print('.  .  .  .  .')
+    print('start  => ', hist_out[0].split(';')[1].split('|')[0])
+    print('finish => ', hist_out[-1].split(';')[1].split('|')[0])
+    print('lench  => ', len(hist_out))
+    print('.  .  .  .  .')
 #=======================================================================
 def prepair_hist_PACK(cntr, b_today = False):
     name_list =[]
@@ -1432,20 +1474,24 @@ def main():
         print('writing hist_PACK . . . . . .')
         wr_hist_PACK(cntr)
         #---------------------------------------------------------------
-
         #print('TEST 000 --------------------------------------')
-
         # init MENU
         menu_def = [
-            ['Mode',    ['auto', 'manual', ],],
-            ['Service',
-                [
-                    ['Tests', ['term TERM', 'cfg_PACK', 'cfg_SOFT', 'data_FUT', 'hist_FUT_TODAY', 'hist_FUT_arch'],
-                     'Print', ['prn TERM data_in_file', 'prn TERM data_fut', 'prn TERM account', 'prn TERM hist_in_file', 'prn FUT cfg_SOFT', 'prn FUT cfg_PACK', 'prn FUT data_FUT', 'prn FUT hist_FUT_today', 'prn FUT hist_FUT_arch'],
-                     'Debug', ['calc PACK today', 'calc PACK arc'],
-                     'Hist FUT today',['TODAY to ARCHIV', 'Convert tbl TODAY', 'VACUUM tbl TODAY'],],
+            ['Mode',
+                ['auto', 'manual', ],
                 ],
-            ],
+            ['Tests',
+                ['term TERM', 'cfg_PACK', 'cfg_SOFT', 'data_FUT', 'hist_FUT_TODAY', 'hist_FUT_arch'],
+                ],
+            ['Print',
+                ['prn TERM data_in_file', 'prn TERM data_fut', 'prn TERM account', 'prn TERM hist_in_file', 'prn FUT cfg_SOFT', 'prn FUT cfg_PACK', 'prn FUT data_FUT', 'prn FUT hist_FUT_today', 'prn FUT hist_FUT_arch'],
+                ],
+            ['Debug',
+                ['calc PACK today', 'calc PACK arc'],
+                ],
+            ['Hist FUT',
+                ['Convert tbl TODAY', 'TODAY to ARCHIV', 'VACUUM tbl TODAY'],
+                ],
             ['Help', 'About...'],
             ['Exit', 'Exit']
             ]
@@ -1469,6 +1515,11 @@ def main():
     mode = 'manual'
     #error_trm = False
     tm_out = 360000
+    txt_frmt = '%Y.%m.%d  %H:%M:%S'
+    stts  = time.strftime(txt_frmt, time.localtime()) + '\n'
+    stts += 'event = manual'
+    window.FindElement('txt_status').Update(stts)
+
     # main cycle   -----------------------------------------------------
     # 1. read TERM files DATA & HIST today
     # 2. if have not new data :  BREAK
@@ -1537,7 +1588,7 @@ def main():
                 stroki.append(rq[1])
         #---------------------------------------------------------------
         window.FindElement('txt_data').Update('\n'.join(stroki))
-        txt_frmt = '%Y.%m.%d  %H:%M:%S'
+        #txt_frmt = '%Y.%m.%d  %H:%M:%S'
         stts  = time.strftime(txt_frmt, time.localtime()) + '\n'
         stts += 'event = ' + event
         window.FindElement('txt_status').Update(stts)
