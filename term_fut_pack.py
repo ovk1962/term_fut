@@ -71,9 +71,6 @@ class Class_PACK():
         self.EMAf = 0.0
         self.EMAf_rnd = 0.0
         self.cnt_EMAf_rnd = 0.0
-        #self.AMA = 0.0
-        #self.AMA_rnd = 0.0
-        #self.cnt_AMA_rnd = 0.0
 #=======================================================================
 class Class_ALARM():
     def __init__(self):
@@ -445,9 +442,9 @@ class Class_TABLE_cfg_alarm():
         self.nm, self.ena_cnt_ema  = [], []
         rq  = self.obj_table.get_table_db_with('cfg_ALARM')
         if rq[0] != 0:
-            err_msg = 'Can not read TBL cfg_ALARM !'
+            err_msg = 'Can not read TBL cfg_ALARM !' + '  '.join(str(e) for e in rq)
             print(err_msg)
-            sg.PopupError(err_msg)
+            #sg.PopupError(err_msg)
             return [1, rq[1]]
 
         for item in rq[1]:
@@ -455,6 +452,19 @@ class Class_TABLE_cfg_alarm():
             self.nm.append(item[0])             # just ex ['pckt0']
             self.ena_cnt_ema.append(item[1])    # just ex [True]
 
+        return [0, 'ok']
+    #///////////////////////////////////////////////////////////////////
+    def rewrite_tbl(self):
+        # rewrite table cfg_ALARM
+        duf_list = []
+        for j, jtem in enumerate(self.nm):
+            buf = (self.nm[j], self.ena_cnt_ema[j])
+            #print(buf)
+            duf_list.append(buf)
+        rq = self.obj_table.rewrite_table('cfg_ALARM', duf_list, val = '(?,?)')
+        if rq[0] != 0:
+            err_msg = 'rewrite_tbl cfg_ALARM ' + '  '.join(str(e) for e in rq)
+            return [1, err_msg]
         return [0, 'ok']
 #=======================================================================
 class Class_TABLE_cfg_pack():
@@ -467,24 +477,11 @@ class Class_TABLE_cfg_pack():
         self.nul  = []  # list NUL  of packets
         self.ema  = []  # list EMA  of packets
     #///////////////////////////////////////////////////////////////////
-    def rewrite_tbl(self):
-        # rewrite table cfg_PACK
-        duf_list = []
-        for j, jtem in enumerate(self.nm):
-            buf = (self.nm[j], ','.join(self.koef[j]), self.nul[j], ':'.join(self.ema[j]))
-            #print(buf)
-            duf_list.append(buf)
-        rq = self.obj_table.rewrite_table('cfg_PACK', duf_list, val = '(?,?,?,?)')
-        if rq[0] != 0:
-            err_msg = 'rewrite_tbl cfg_PACK ' + rq[1]
-            return [1, err_msg]
-        return [0, 'ok']
-    #///////////////////////////////////////////////////////////////////
     def read_tbl(self):
         self.nm, self.koef, self.nul, self.ema = [], [], [], []
         rq  = self.obj_table.get_table_db_with('cfg_PACK')
         if rq[0] != 0:
-            err_msg = 'Can not read TBL cfg_PACK !'
+            err_msg = 'Can not read TBL cfg_PACK !' + '  '.join(str(e) for e in rq)
             print(err_msg)
             sg.PopupError(err_msg)
             return [1, rq[1]]
@@ -496,6 +493,19 @@ class Class_TABLE_cfg_pack():
             self.nul.append(item[2])            # just ex [0]
             self.ema.append(item[3].split(':')) # just ex ['1111:15']
 
+        return [0, 'ok']
+    #///////////////////////////////////////////////////////////////////
+    def rewrite_tbl(self):
+        # rewrite table cfg_PACK
+        duf_list = []
+        for j, jtem in enumerate(self.nm):
+            buf = (self.nm[j], ','.join(self.koef[j]), self.nul[j], ':'.join(self.ema[j]))
+            #print(buf)
+            duf_list.append(buf)
+        rq = self.obj_table.rewrite_table('cfg_PACK', duf_list, val = '(?,?,?,?)')
+        if rq[0] != 0:
+            err_msg = 'rewrite_tbl cfg_PACK ' + '  '.join(str(e) for e in rq)
+            return [1, err_msg]
         return [0, 'ok']
 #=======================================================================
 class Class_TABLE_cfg_soft():
@@ -510,7 +520,7 @@ class Class_TABLE_cfg_soft():
     def read_tbl(self):
         rq  = self.obj_table.get_table_db_with('cfg_SOFT')
         if rq[0] != 0:
-            err_msg = 'Can not read TBL cfg_SOFT !'
+            err_msg = 'Can not read TBL cfg_SOFT !' + '  '.join(str(e) for e in rq)
             print(err_msg)
             sg.PopupError(err_msg)
             return [1, rq[1]]
@@ -543,14 +553,14 @@ class Class_TABLE_data_fut():
             duf_list.append(buf)
         rq = self.obj_table.rewrite_table('data_FUT', duf_list, val = '(?)')
         if rq[0] != 0:
-            err_msg = 'rewrite_tbl data_FUT ' + rq[1]
+            err_msg = 'rewrite_tbl data_FUT ' + '  '.join(str(e) for e in rq)
             return [1, err_msg]
         return [0, 'ok']
     #///////////////////////////////////////////////////////////////////
     def read_tbl(self):
         rq  = self.obj_table.get_table_db_with('data_FUT')
         if rq[0] != 0:
-            err_msg = 'Can not read TBL data_FUT ! ' + rq[1]
+            err_msg = 'Can not read TBL data_FUT ! ' + '  '.join(str(e) for e in rq)
             print(err_msg)
             #sg.PopupError(err_msg)
             return [1, err_msg]
@@ -606,7 +616,7 @@ class Class_TABLE_hist_fut_today():
     def read_tbl(self):
         rq  = self.obj_table.get_table_db_with('hist_FUT_today')
         if rq[0] != 0:
-            err_msg = 'Can not read TBL hist_FUT_today ! ' + rq[1]
+            err_msg = 'Can not read TBL hist_FUT_today ! ' + '  '.join(str(e) for e in rq)
             print(err_msg)
             return [1, err_msg]
 
@@ -690,7 +700,7 @@ class Class_TABLE_hist_fut_today():
 
         rq = self.obj_table.rewrite_table('hist_FUT_today', self.hist_fut_today, val = '(?,?)')
         if rq[0] != 0:
-            err_msg = 'rewrite_table(hist_FUT_today) ' + rq[1]
+            err_msg = 'rewrite_table(hist_FUT_today) ' + '  '.join(str(e) for e in rq)
             return [1, err_msg]
 
         return [0, 'ok']
@@ -702,16 +712,11 @@ class Class_TABLE_hist_pack_today():
         self.obj_table = Class_SQLite(path_term_fut_pack)
         self.hist_pack_today = []  # list of [[ind_sec string] ... ]
     #///////////////////////////////////////////////////////////////////
-    def dbg_print(self):
-        print('\n.....Class_TABLE_hist_pack_today.....')
-        print('path_term_fut_pack => ', self.path_term_fut_pack)
-        print('len(hist_pack_today) => ', len(self.hist_pack_today))
-    #///////////////////////////////////////////////////////////////////
     def rewrite_tbl(self, hist_arc):
         self.hist_pack_today = []
         rq = self.obj_table.rewrite_table('hist_PACK_today', hist_arc, val = '(?,?)')
         if rq[0] != 0:
-            err_msg = 'rewrite_table hist_PACK_today ' + rq[1]
+            err_msg = 'rewrite_table hist_PACK_today ' + '  '.join(str(e) for e in rq)
             #cntr.log.wr_log_error(err_msg)
             #sg.Popup('Error !', err_msg)
             return [1, err_msg]
@@ -728,7 +733,7 @@ class Class_TABLE_hist_fut():
     def read_tbl(self):
         rq  = self.obj_table.get_table_db_with('hist_FUT')
         if rq[0] != 0:
-            err_msg = 'Can not read TBL hist_FUT ! ' + rq[1]
+            err_msg = 'Can not read TBL hist_FUT ! ' + '  '.join(str(e) for e in rq)
             print(err_msg)
             return [1, err_msg]
 
@@ -761,7 +766,7 @@ class Class_TABLE_hist_pack():
         self.hist_pack_archiv = []
         rq = self.obj_table.rewrite_table('hist_PACK', hist_arc, val = '(?,?)')
         if rq[0] != 0:
-            err_msg = 'rewrite_table hist_PACK ' + rq[1]
+            err_msg = 'rewrite_table hist_PACK ' + '  '.join(str(e) for e in rq)
             #cntr.log.wr_log_error(err_msg)
             #sg.Popup('Error !', err_msg)
             return [1, err_msg]
@@ -779,7 +784,7 @@ class Class_CONTROLER():
         self.cfg_soft = Class_TABLE_cfg_soft(path_TERM_FUT_PACK)
         rq = self.cfg_soft.read_tbl()
         if rq[0] != 0:
-            err_msg = 'Can not init TBL cfg_SOFT !' + rq[1]
+            err_msg = 'Can not init TBL cfg_SOFT !' + '  '.join(str(e) for e in rq)
             sg.PopupError('Error !', err_msg)
             print(err_msg)
             return [1, err_msg]
@@ -803,11 +808,33 @@ class Class_CONTROLER():
 
         self.tm_wrt_new_data = 0    # minute's counter
 #=======================================================================
+def read_term(cntr):
+    rq = cntr.trm_data.rd_term()
+    if rq[0] != 0 :
+        err_msg = 'rd_term => ' + '  '.join(str(e) for e in rq)
+        if 'FILE is not modificated' in err_msg:
+            pass
+        else:
+            if 'not MARKET time' in err_msg:
+                pass
+            else:
+                cntr.log.wr_log_error(err_msg)
+        return [1, err_msg]
+
+    rq = cntr.trm_hist.rd_hist()
+    if rq[0] != 0:
+        _err_(cntr, 'rd_hist => ', rq, PopUp = False )
+        return [1, 'rd_hist => _err_']
+
+    return [0, 'ok']
+
+#=======================================================================
 def dbg_prn(cntr, b_clear  = True,
         b_trm_data_in_file = False,
         b_trm_hist_in_file = False,
         b_trm_data_fut = False,
         b_trm_account  = False,
+        b_cfg_alarm = False,
         b_cfg_soft  = False,
         b_cfg_pack  = False,
         b_dt_fut    = False,
@@ -885,12 +912,22 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_cfg_soft:
         #hist_in_file = cntr.trm_hist.hist_in_file
+        s = cntr.cfg_soft
         print('.....Class_TABLE_cfg_soft.....')
-        print('path_term_fut_pack    => ', cntr.cfg_soft.path_term_fut_pack)
-        print('titul           => ', cntr.cfg_soft.titul)
-        print('path_file_DATA  => ', cntr.cfg_soft.path_file_DATA)
-        print('path_file_HIST  => ', cntr.cfg_soft.path_file_HIST)
-        print('dt_start        => ', cntr.cfg_soft.dt_start)
+        print('path_term_fut_pack => ', s.path_term_fut_pack)
+        print('titul              => ', s.titul)
+        print('path_file_DATA     => ', s.path_file_DATA)
+        print('path_file_HIST     => ', s.path_file_HIST)
+        print('dt_start           => ', s.dt_start)
+
+    if b_cfg_alarm:
+        a = cntr.cfg_alarm
+        print('.....Class_TABLE_cfg_alarm.....')
+        print('path_term_fut_pack    => ', a.path_term_fut_pack)
+        print('len(nm) => ', len(a.nm))
+        if len(a.nm) > 0:
+            for i, item in enumerate(a.nm):
+                print(item, a.ena_cnt_ema[i])
 
     if b_cfg_pack:
         cfg_pack = cntr.cfg_pack
@@ -983,93 +1020,61 @@ def dbg_prn(cntr, b_clear  = True,
 
         print('')
 #=======================================================================
-def read_term(cntr):
-    rq = cntr.trm_data.rd_term()
-    if rq[0] != 0 :
-        err_msg = 'rd_term => ' + '  '.join(str(e) for e in rq)
-        if 'FILE is not modificated' in err_msg:
-            pass
-        else:
-            if 'not MARKET time' in err_msg:
-                pass
-            else:
-                cntr.log.wr_log_error(err_msg)
-        return [1, err_msg]
+def dbg_srv(cntr,
+        b_trm_data   = False,
+        b_trm_hist   = False,
+        b_cfg_alarm  = False,
+        b_cfg_pack   = False,
+        b_cfg_soft   = False,
+        b_data_fut   = False,
+        b_hist_fut_t = False,
+        b_hist_fut_a = False
+        ):
+    if b_trm_data:
+        c = cntr.trm_data
+        c.dt_file, c.dt_data, c.data_in_file = 0, 0, []
+        rq = c.rd_term_service()
+        if rq[0] != 0 : _err_(cntr, 'trm_data.rd_term_service ', rq)
+        else:           dbg_prn(cntr,  b_trm_data_in_file = True)
 
-    rq = cntr.trm_hist.rd_hist()
-    if rq[0] != 0:
-        err_msg = 'rd_hist => ' + '  '.join(str(e) for e in rq)
-        cntr.log.wr_log_error(err_msg)
-        return [1, err_msg]
+    elif b_trm_hist:
+        rq = cntr.trm_hist.rd_hist()
+        if rq[0] != 0:  _err_(cntr, 'trm_hist.rd_term_service ', rq)
+        else:           dbg_prn(cntr, b_clear  = False, b_trm_hist_in_file = True)
 
-    return [0, 'ok']
-#=======================================================================
-def service_term_TERM(cntr): # 'Service\Tests\term TERM'
-    cntr.trm_data.dt_file = 0
-    cntr.trm_data.dt_data = 0
-    cntr.trm_data.data_in_file = []
-    #
-    rq = cntr.trm_data.rd_term_service()
-    if rq[0] != 0 :
-        err_msg = 'rd_term => ' + '  '.join(str(e) for e in rq)
-        cntr.log.wr_log_error(err_msg)
-        error_msg_popup(cntr, 'service_term_TERM - trm_data.rd_term()', err_msg)
+    elif b_cfg_alarm:
+        rq = cntr.cfg_alarm.read_tbl()
+        if rq[0] != 0 : _err_(cntr, 'cfg_alarm ', rq)
+        else:           dbg_prn(cntr,  b_cfg_alarm = True)
+
+    elif b_cfg_pack:
+        rq = cntr.cfg_pack.read_tbl()
+        if rq[0] != 0 : _err_(cntr, 'cfg_pack ', rq)
+        else:           dbg_prn(cntr,  b_cfg_pack = True)
+
+    elif b_cfg_soft:
+        rq = cntr.cfg_soft.read_tbl()
+        if rq[0] != 0 : _err_(cntr, 'cfg_soft ', rq)
+        else:           dbg_prn(cntr,  b_cfg_soft = True)
+
+    elif b_data_fut:
+        rq = cntr.dt_fut.read_tbl()
+        if rq[0] != 0 : _err_(cntr, 'dt_fut ', rq)
+        else:           dbg_prn(cntr,  b_dt_fut = True)
+
+    elif b_hist_fut_t:
+        rq = cntr.h_fut_today.read_tbl()
+        if rq[0] != 0 : _err_(cntr, 'h_fut_today ', rq)
+        else:           dbg_prn(cntr,  b_fut_today = True)
+
+    elif b_hist_fut_a:
+        rq = cntr.h_fut_arc.read_tbl()
+        if rq[0] != 0 : _err_(cntr, 'h_fut_arc ', rq)
+        else:           dbg_prn(cntr,  b_fut_arc = True)
+
     else:
-        dbg_prn(cntr,  b_trm_data_in_file = True)
-    #
-    rq = cntr.trm_hist.rd_hist()
-    if rq[0] != 0:
-        err_msg = 'rd_hist => ' + '  '.join(str(e) for e in rq)
-        cntr.log.wr_log_error(err_msg)
-        error_msg_popup(cntr, 'service_term_TERM - trm_hist.rd_term()', err_msg)
-    else:
-        dbg_prn(cntr, b_clear  = False, b_trm_hist_in_file = True)
-#=======================================================================
-def service_cfg_PACK(cntr): # 'Service\Tests\cfg_PACK'
-    print('cfg_PACK')
-    rq = cntr.cfg_pack.read_tbl()
-    if rq[0] != 0 :
-        err_msg = 'read cfg_PACK => ' + '  '.join(str(e) for e in rq)
-        cntr.log.wr_log_error(err_msg)
-        error_msg_popup(cntr, 'service_cfg_PACK - cfg_pack.read_tbl()', err_msg)
-    else:
-        dbg_prn(cntr,  b_cfg_pack = True)
-#=======================================================================
-def service_cfg_SOFT(cntr): # 'Service\Tests\cfg_SOFT'
-    rq = cntr.cfg_soft.read_tbl()
-    if rq[0] != 0 :
-        err_msg = 'read cfg_SOFT => ' + '  '.join(str(e) for e in rq)
-        cntr.log.wr_log_error(err_msg)
-        error_msg_popup(cntr, 'service_cfg_SOFT - cfg_soft.read_tbl()', err_msg)
-    else:
-        dbg_prn(cntr,  b_cfg_soft = True)
-#=======================================================================
-def service_data_FUT(cntr): # 'Service\Tests\data_FUT'
-    rq = cntr.dt_fut.read_tbl()
-    if rq[0] != 0 :
-        err_msg = 'read dt_fut => ' + '  '.join(str(e) for e in rq)
-        cntr.log.wr_log_error(err_msg)
-        error_msg_popup(cntr, 'service_data_FUT - dt_fut.read_tbl()', err_msg)
-    else:
-        dbg_prn(cntr,  b_dt_fut = True)
-#=======================================================================
-def service_hist_FUT_TODAY(cntr): # 'Service\Tests\hist_fut_today'
-    rq = cntr.h_fut_today.read_tbl()
-    if rq[0] != 0 :
-        err_msg = 'read hist_fut_today => ' + '  '.join(str(e) for e in rq)
-        cntr.log.wr_log_error(err_msg)
-        error_msg_popup(cntr, 'service_hist_FUT_TODAY - h_fut_today.read_tbl()', err_msg)
-    else:
-        dbg_prn(cntr,  b_fut_today = True)
-#=======================================================================
-def service_hist_FUT_arch(cntr): # 'Service\Tests\hist_fut_archiv'
-    rq = cntr.h_fut_arc.read_tbl()
-    if rq[0] != 0 :
-        err_msg = 'read hist_fut_archiv => ' + '  '.join(str(e) for e in rq)
-        cntr.log.wr_log_error(err_msg)
-        error_msg_popup(cntr, 'service_hist_FUT_arch - h_fut_arc.read_tbl()', err_msg)
-    else:
-        dbg_prn(cntr,  b_fut_arc = True)
+        print('TEST NOTHING')
+
 #=======================================================================
 def calc_hist_PACK(cntr, i_pack):
     cntr.arr_pack[i_pack] = []
@@ -1216,16 +1221,15 @@ def calc_hist_PACK_today(cntr, i_pack):
 
         cntr.arr_pack_today[i_pack].append(buf_c_pack)
 #=======================================================================
-def debug_calc_PACK_arc(cntr): # 'Service\Debug\calc PACK arc'
+def debug_calc_PACK_arc(cntr):   # 'Service\Debug\calc PACK arc'
     print('calc PACK arc')
     s_term = []
     s_term.append('___ calc PACK arc ___')
 
     rq = cntr.h_fut_arc.read_tbl()
     if rq[0] != 0 :
-        err_msg = 'read hist_fut_archiv => ' + '  '.join(str(e) for e in rq)
-        cntr.log.wr_log_error(err_msg)
-        s_term.append(err_msg)
+        _err_(cntr, 'debug_calc_PACK_arc ', rq)
+        s_term.append('debug_calc_PACK_arc ')
     else:
         arr   = cntr.h_fut_arc.hist_fut_archiv
 
@@ -1249,20 +1253,22 @@ def debug_calc_PACK_today(cntr): # 'Service\Debug\calc PACK today'
 
     rq = cntr.h_fut_today.read_tbl()
     if rq[0] != 0 :
-        err_msg = 'read hist_fut_today => ' + '  '.join(str(e) for e in rq)
-        cntr.log.wr_log_error(err_msg)
-        s_term.append(err_msg)
+        _err_(cntr, 'debug_calc_PACK_today ', rq)
+        s_term.append('debug_calc_PACK_today ')
     else:
         arr   = cntr.h_fut_today.hist_fut_today
         arr1   = cntr.h_fut_today.hist_1_fut_today
         s_term.append('\n hist_fut_today   => ' + str(len(arr))  + ' strings\n ')
         s_term.append('\n hist_1_fut_today => ' + str(len(arr1)) + ' strings\n ')
 
-    for i_pack, item in enumerate(cntr.cfg_pack.nm):
-        calc_hist_PACK_today(cntr, i_pack)
-        print(i_pack, cntr.arr_pack_today[i_pack][-1])
-
-    wr_hist_PACK_today(cntr)
+    if len(arr) > 0:
+        ind_pack = 'debug_calc_PACK_today => '
+        for i_pack, item in enumerate(cntr.cfg_pack.nm):
+            calc_hist_PACK_today(cntr, i_pack)
+            #print(i_pack, cntr.arr_pack_today[i_pack][-1])
+            ind_pack += str(i_pack) + ' '
+            print(ind_pack, end='\r')
+        wr_hist_PACK_today(cntr)
 
     s_term.append(' ')
     sg.Popup( 'hist_fut_today', '\n'.join(s_term))
@@ -1294,8 +1300,10 @@ def TODAY_copy_ARCHIV(cntr):
     buf_list = []
     if len(cntr.h_fut_today.hist_1_fut_today) < 520:
         rq = cntr.h_fut_arc.obj_table.write_table_db('hist_FUT', cntr.h_fut_today.hist_1_fut_today)
+        if rq[0] != 0: _err_(cntr, 'TODAY_copy_ARCHIV ', rq)
     else:
         rq = cntr.h_fut_arc.obj_table.write_table_db('hist_FUT', cntr.h_fut_today.hist_1_fut_today[:520])
+        if rq[0] != 0: _err_(cntr, 'TODAY_copy_ARCHIV ', rq)
     print('. . . . .')
     print('Press Test & Print for STATUS')
 #=======================================================================
@@ -1368,52 +1376,48 @@ def wr_hist_PACK(cntr):
     name_list = prepair_hist_PACK(cntr)
     rq = cntr.h_pack_arc.rewrite_tbl(name_list)
     if rq[0] != 0:
-        err_msg = 'rewrite_table hist_PACK ' + rq[1]
-        cntr.log.wr_log_error(err_msg)
-        #sg.Popup('Error !', err_msg)
-        return [1, err_msg]
-    else:
-        cntr.log.wr_log_info('rewrite_table hist_PACK  - OK')
-        #sg.Popup('OK !', 'ok rewrite_table hist_PACK  ' + str(len(name_list)))
-        return [0, 'OK']
+        _err_(cntr, 'hist_PACK ', rq, PopUp = False)
+        return [1, 'wr_hist_PACK']
+
+    return [0, 'OK']
 #=======================================================================
 def wr_hist_PACK_today(cntr):
     name_list = []
     name_list = prepair_hist_PACK(cntr, b_today = True)
     rq = cntr.h_pack_today.rewrite_tbl(name_list)
     if rq[0] != 0:
-        err_msg = 'rewrite_table hist_PACK_today ' + rq[1]
-        cntr.log.wr_log_error(err_msg)
-        #sg.Popup('Error !', err_msg)
-        return [1, err_msg]
-    #else:
-        #cntr.log.wr_log_info('rewrite_table hist_PACK_today  - OK')
-        #sg.Popup('OK !', 'ok rewrite_table hist_PACK_today  ' + str(len(name_list)))
+        _err_(cntr, 'hist_PACK_today ', rq, PopUp = False)
+        return [1, 'wr_hist_PACK_today']
+
     return [0, 'OK']
 #=======================================================================
-def error_msg_popup(cntr, msg_log, msg_rq_1, PopUp = True):
-    err_msg = msg_log + msg_rq_1
-    cntr.log.wr_log_error(err_msg)
+def _err_(cntr, msg, rq, Log = True, Prn = True, PopUp = True):
+    err_msg  = msg
+    err_msg += '  '.join(str(e) for e in rq)
+    if Log  :  cntr.log.wr_log_error(err_msg)
     if PopUp:  sg.PopupError('Error !', err_msg)
+    if Prn  :
+        os.system('cls')  # on windows
+        print(err_msg)
 #=======================================================================
 def event_menu(event, cntr):
-    #---------------------------------------------------------------
-    if event == 'term TERM' : service_term_TERM(cntr)
-    #---------------------------------------------------------------
-    if event == 'cfg_PACK'  : service_cfg_PACK(cntr)
-    #---------------------------------------------------------------
-    if event == 'cfg_SOFT'  : service_cfg_SOFT(cntr)
-    #---------------------------------------------------------------
-    if event == 'data_FUT'  : service_data_FUT(cntr)
-    #---------------------------------------------------------------
-    if event == 'hist_FUT_TODAY': service_hist_FUT_TODAY(cntr)
-    #---------------------------------------------------------------
-    if event == 'hist_FUT_arch' : service_hist_FUT_arch(cntr)
-    #---------------------------------------------------------------
-    if event == 'calc PACK arc'   : debug_calc_PACK_arc(cntr)
-    #---------------------------------------------------------------
-    if event == 'calc PACK today' : debug_calc_PACK_today(cntr)
-    #---------------------------------------------------------------
+    #-------------------------------------------------------------------
+    if event == 'srv data TERM'      : dbg_srv(cntr, b_trm_data   = True)
+    #-------------------------------------------------------------------
+    if event == 'srv hist TERM'      : dbg_srv(cntr, b_trm_hist   = True)
+    #-------------------------------------------------------------------
+    if event == 'srv config ALARM'   : dbg_srv(cntr, b_cfg_alarm  = True)
+    #-------------------------------------------------------------------
+    if event == 'srv config PACK'    : dbg_srv(cntr, b_cfg_pack   = True)
+    #-------------------------------------------------------------------
+    if event == 'srv config SOFT'    : dbg_srv(cntr, b_cfg_soft   = True)
+    #-------------------------------------------------------------------
+    if event == 'srv data FUT'       : dbg_srv(cntr, b_data_fut   = True)
+    #-------------------------------------------------------------------
+    if event == 'srv hist FUT today' : dbg_srv(cntr, b_hist_fut_t = True)
+    #-------------------------------------------------------------------
+    if event == 'srv hist FUT arch'  : dbg_srv(cntr, b_hist_fut_a = True)
+    #-------------------------------------------------------------------
     if event == 'prn TERM data_in_file'  : dbg_prn(cntr, b_trm_data_in_file = True)
     #---------------------------------------------------------------
     if event == 'prn TERM data_fut'      : dbg_prn(cntr, b_trm_data_fut     = True)
@@ -1421,6 +1425,8 @@ def event_menu(event, cntr):
     if event == 'prn TERM account'       : dbg_prn(cntr, b_trm_account      = True)
     #---------------------------------------------------------------
     if event == 'prn TERM hist_in_file'  : dbg_prn(cntr, b_trm_hist_in_file = True)
+    #---------------------------------------------------------------
+    if event == 'prn FUT cfg_ALARM'      : dbg_prn(cntr, b_cfg_alarm        = True)
     #---------------------------------------------------------------
     if event == 'prn FUT cfg_SOFT'       : dbg_prn(cntr, b_cfg_soft         = True)
     #---------------------------------------------------------------
@@ -1432,6 +1438,10 @@ def event_menu(event, cntr):
     #---------------------------------------------------------------
     if event == 'prn FUT hist_FUT_arch'  : dbg_prn(cntr, b_fut_arc          = True)
     #---------------------------------------------------------------
+    if event == 'calc PACK arc'   : debug_calc_PACK_arc(cntr)
+    #---------------------------------------------------------------
+    if event == 'calc PACK today' : debug_calc_PACK_today(cntr)
+    #---------------------------------------------------------------
     if event == 'Convert tbl TODAY' : convert_tbl_TODAY(cntr)
     #---------------------------------------------------------------
     if event == 'TODAY to ARCHIV'   : TODAY_copy_ARCHIV(cntr)
@@ -1442,48 +1452,37 @@ def main():
     while True:
         #---------------------------------------------------------------
         rq = cntr.trm_data.rd_term()
-        if rq[0] != 0:  print('Could not read data_in_file !')
+        if rq[0] != 0:  _err_(cntr, 'INIT data_in_file ', rq)
         else:           print('trm_data = > ', rq)
         #---------------------------------------------------------------
         rq = cntr.trm_hist.rd_hist()
-        if rq[0] != 0:  print('Could read hist_in_file !')
+        if rq[0] != 0:  _err_(cntr, 'INIT hist_in_file ', rq)
         else:           print('trm_hist = > ', rq)
         #---------------------------------------------------------------
         rq = cntr.dt_fut.read_tbl()
-        if rq[0] != 0:  print('Could not read or parse data_FUT !')
+        if rq[0] != 0:  _err_(cntr, 'INIT data_FUT ', rq)
         else:           print('data_fut = > ', rq)
         #---------------------------------------------------------------
         rq = cntr.cfg_alarm.read_tbl()
-        if rq[0] != 0 :
-            err_msg = 'read cfg_ALARM => ' + '  '.join(str(e) for e in rq)
-            cntr.log.wr_log_error(err_msg)
-            print(err_msg)
-        else:
-            print('cfg_alarm = > ', rq)
+        if rq[0] != 0 : _err_(cntr, 'INIT cfg_ALARM ', rq)
+        else:           print('cfg_alarm = > ', rq)
         #---------------------------------------------------------------
         rq = cntr.cfg_pack.read_tbl()
-        if rq[0] != 0 :
-            err_msg = 'read cfg_PACK => ' + '  '.join(str(e) for e in rq)
-            cntr.log.wr_log_error(err_msg)
-            print(err_msg)
+        if rq[0] != 0 : _err_(cntr, 'INIT cfg_PACK ', rq)
         else:
             print('cfg_pack = > ', rq)
             if len(cntr.cfg_pack.nm) == 0:
-                error_msg_popup(cntr,'cfg_pack.nm = 0','It can not be EMPTY !')
+                _err_(cntr, 'cfg_pack.nm = 0  ', [' ', 'It can not be EMPTY !'] )
                 break
             for item in cntr.cfg_pack.nm:
                 cntr.arr_pack.append([])
                 cntr.arr_pack_today.append([])
-        #cntr.cfg_pack.dbg_print()
         #---------------------------------------------------------------
         rq = cntr.h_fut_arc.read_tbl()
-        if rq[0] != 0 :
-            err_msg = 'read hist_fut_archiv => ' + '  '.join(str(e) for e in rq)
-            cntr.log.wr_log_error(err_msg)
-            print(err_msg)
+        if rq[0] != 0 : _err_(cntr, 'INIT hist_fut_archiv ', rq)
         else:
             print('hist_FUT archiv = > ', rq)
-
+        #---------------------------------------------------------------
         print('calculating hist_PACK . . . .')
         for i_pack, item in enumerate(cntr.cfg_pack.nm):
             calc_hist_PACK(cntr, i_pack)
@@ -1495,17 +1494,21 @@ def main():
         print('writing hist_PACK . . . . . .')
         wr_hist_PACK(cntr)
         #---------------------------------------------------------------
-        #print('TEST 000 --------------------------------------')
         # init MENU
         menu_def = [
             ['Mode',
                 ['auto', 'manual', ],
                 ],
-            ['Tests',
-                ['term TERM', 'cfg_PACK', 'cfg_SOFT', 'data_FUT', 'hist_FUT_TODAY', 'hist_FUT_arch'],
+            ['Service',
+                ['srv data TERM',    'srv hist TERM',
+                 'srv config ALARM', 'srv config PACK',    'srv config SOFT',
+                 'srv data FUT',     'srv hist FUT today', 'srv hist FUT arch' ],
                 ],
             ['Print',
-                ['prn TERM data_in_file', 'prn TERM data_fut', 'prn TERM account', 'prn TERM hist_in_file', 'prn FUT cfg_SOFT', 'prn FUT cfg_PACK', 'prn FUT data_FUT', 'prn FUT hist_FUT_today', 'prn FUT hist_FUT_arch'],
+                ['prn TERM data_in_file', 'prn TERM hist_in_file',
+                 'prn TERM data_fut',     'prn TERM account',
+                 'prn FUT cfg_ALARM',     'prn FUT cfg_SOFT',       'prn FUT cfg_PACK',
+                 'prn FUT data_FUT',      'prn FUT hist_FUT_today', 'prn FUT hist_FUT_arch'],
                 ],
             ['Debug',
                 ['calc PACK today', 'calc PACK arc'],
@@ -1534,11 +1537,9 @@ def main():
         break
 
     mode = 'manual'
-    #error_trm = False
     tm_out = 360000
     txt_frmt = '%Y.%m.%d  %H:%M:%S'
-    stts  = time.strftime(txt_frmt, time.localtime()) + '\n'
-    stts += 'event = manual'
+    stts  = time.strftime(txt_frmt, time.localtime()) + '\n' + 'event = manual'
     window.FindElement('txt_status').Update(stts)
 
     # main cycle   -----------------------------------------------------
@@ -1581,10 +1582,7 @@ def main():
                     cntr.tm_wrt_new_data = dtt.minute
                     #copy hist_in_file in table hist_FUT_today
                     req = cntr.h_fut_today.rewrite_tbl(cntr.trm_hist.hist_in_file)
-                    if req[0] != 0:
-                        err_msg = 'rewrite h_fut_today => ' + '  '.join(str(e) for e in req)
-                        cntr.log.wr_log_error(err_msg)
-                        print(err_msg)
+                    if req[0] != 0: _err_(cntr, 'h_fut_today.rewrite_tbl => ', req, PopUp = False)
                     else:
                         ind_pack = 'calc_hist_PACK_today => '
                         for i_pack, item in enumerate(cntr.cfg_pack.nm):
@@ -1595,22 +1593,17 @@ def main():
                         wr_hist_PACK_today(cntr)
                 else:
                     req = cntr.dt_fut.rewrite_tbl(cntr.trm_data.data_in_file)
-                    if req[0] != 0:
-                        err_msg = 'rewrite dt_fut => ' + '  '.join(str(e) for e in req)
-                        cntr.log.wr_log_error(err_msg)
-                        print(err_msg)
-                    rq = cntr.dt_fut.read_tbl()
-                    if rq[0] != 0 :
-                        err_msg = 'read dt_fut => ' + '  '.join(str(e) for e in rq)
-                        cntr.log.wr_log_error(err_msg)
-                    print('rewrite & read dt_fut => ', cntr.tm_wrt_new_data)
+                    if req[0] != 0: _err_(cntr, 'dt_fut.rewrite_tbl => ', req, PopUp = False)
+                    else:
+                        rq = cntr.dt_fut.read_tbl()
+                        if rq[0] != 0 : _err_(cntr, 'dt_fut.read_tbl => ', rq, PopUp = False)
+                        else:           print('rewrite & read dt_fut => ', cntr.tm_wrt_new_data)
             else:
                 tm_out = 1550
                 #stroki.append('Time acc_date:  ' + cntr.trm_data.account.acc_date)
                 stroki.append(rq[1])
         #---------------------------------------------------------------
         window.FindElement('txt_data').Update('\n'.join(stroki))
-        #txt_frmt = '%Y.%m.%d  %H:%M:%S'
         stts  = time.strftime(txt_frmt, time.localtime()) + '\n'
         stts += 'event = ' + event
         window.FindElement('txt_status').Update(stts)
