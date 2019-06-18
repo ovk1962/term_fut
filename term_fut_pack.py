@@ -57,9 +57,6 @@ class Class_FUT():
         self.sSell_qty = 0
         self.sFut_go = 0.0
         self.sOpen_pos = 0.0
-    def debug_print(self):
-        print('\n.....Class_FUT.....')
-        print('sP_code    => ', self.sP_code, self.sRest, self.sVar_margin)
 #=======================================================================
 class Class_PACK():
     def __init__(self):
@@ -75,6 +72,34 @@ class Class_PACK():
 class Class_ALARM():
     def __init__(self):
         self.ena_EMA_cnt= 0
+#=======================================================================
+class Class_GMAIL():
+    def __init__(self, user, pwd, recipient ):
+        self.user      = user
+        self.pwd       = pwd
+        self.recipient = recipient
+    #-------------------------------------------------------------------
+    def send_email(self, subject, body):
+        gmail_user = self.user
+        gmail_pwd  = self.pwd
+        FROM       = self.user
+        TO = self.recipient if type(self.recipient) is list else [self.recipient]
+        SUBJECT = subject
+        TEXT    = body
+        # Prepare actual message
+        message = """From: %s\nTo: %s\nSubject: %s\n\n%s
+        """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
+        try:
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.ehlo()
+            server.starttls()
+            server.login(gmail_user, gmail_pwd)
+            server.sendmail(FROM, TO, message)
+            server.close()
+        except Exception as ex:
+            return [1, str(ex)]
+
+        return [0, 'OK']
 #=======================================================================
 class Class_SQLite():
     def __init__(self, path_db):
@@ -355,6 +380,7 @@ class Class_TERM_data():
                                             self.account.acc_go,
                                             self.account.acc_depo ])
                 else:
+                    #print(item)
                     b_fut = Class_FUT()
                     b_fut.sP_code      = list_item[0]
                     b_fut.sRest        = int  (list_item[1])
@@ -596,6 +622,38 @@ class Class_TABLE_data_fut():
             return [1, err_msg]
 
         return [0, 'ok']
+    #///////////////////////////////////////////////////////////////////
+    def read_data_in_file(self, arr_strings):
+        try:
+            self.data_fut = []
+            for i, item in enumerate(arr_strings):
+                list_item = ''.join(item).replace(',','.').split('|')
+                if   i == 0:
+                    self.account.acc_date  = list_item[0]
+                elif i == 1:
+                    self.account.acc_balance = float(list_item[0])
+                    self.account.acc_profit  = float(list_item[1])
+                    self.account.acc_go      = float(list_item[2])
+                    self.account.acc_depo    = float(list_item[3])
+                else:
+                    b_fut = Class_FUT()
+                    b_fut.sP_code      = list_item[0]
+                    b_fut.sRest        = int  (list_item[1])
+                    b_fut.sVar_margin  = float(list_item[2])
+                    b_fut.sOpen_price  = float(list_item[3])
+                    b_fut.sLast_price  = float(list_item[4])
+                    b_fut.sAsk         = float(list_item[5])
+                    b_fut.sBuy_qty     = int  (list_item[6])
+                    b_fut.sBid         = float(list_item[7])
+                    b_fut.sSell_qty    = int  (list_item[8])
+                    b_fut.sFut_go      = float(list_item[9])
+                    b_fut.sOpen_pos    = float(list_item[10])
+                    self.data_fut.append(b_fut)
+        except Exception as ex:
+            err_msg = 'read_data_in_file / ' + str(ex)
+            return [1, err_msg]
+
+        return [0, 'ok']
 #=======================================================================
 class Class_TABLE_hist_fut_today():
     #///////////////////////////////////////////////////////////////////
@@ -798,8 +856,9 @@ class Class_CONTROLER():
         self.dt_fut   = Class_TABLE_data_fut(path_TERM_FUT_PACK)
         self.h_fut_today  = Class_TABLE_hist_fut_today(path_TERM_FUT_PACK)
         self.h_pack_today = Class_TABLE_hist_pack_today(path_TERM_FUT_PACK)
-        self.h_fut_arc  = Class_TABLE_hist_fut(path_TERM_FUT_ARCHIV)
-        self.h_pack_arc = Class_TABLE_hist_pack(path_TERM_FUT_ARCHIV)
+        self.h_fut_arc    = Class_TABLE_hist_fut(path_TERM_FUT_ARCHIV)
+        self.h_pack_arc   = Class_TABLE_hist_pack(path_TERM_FUT_ARCHIV)
+        self.e_mail   = Class_GMAIL('mobile.ovk', '20066002', 'mobile.ovk@gmail.com')
 
         self.arr_fut        = []    # массив котировок фьючей  60 s
         self.arr_fut_today  = []    # массив котировок фьючей  60 s
@@ -1018,6 +1077,7 @@ def dbg_prn(cntr, b_clear  = True,
             print('. . . . .')
             print('arr_fut_today[-1] => ', hist.arr_fut_archiv[-1][1].split('|')[0])
 
+
         print('')
 #=======================================================================
 def dbg_srv(cntr,
@@ -1028,7 +1088,8 @@ def dbg_srv(cntr,
         b_cfg_soft   = False,
         b_data_fut   = False,
         b_hist_fut_t = False,
-        b_hist_fut_a = False
+        b_hist_fut_a = False,
+        b_send_mail  = False
         ):
     if b_trm_data:
         c = cntr.trm_data
@@ -1071,6 +1132,15 @@ def dbg_srv(cntr,
         rq = cntr.h_fut_arc.read_tbl()
         if rq[0] != 0 : _err_(cntr, 'h_fut_arc ', rq)
         else:           dbg_prn(cntr,  b_fut_arc = True)
+
+    elif b_send_mail:
+        print( 'Start TEST e-mail (it is about 20 s) => ' + datetime.today().strftime('%H:%M:%S') )
+        rq = cntr.e_mail.send_email('test  subj','test  body')
+        if rq[0] != 0 :
+            _err_(cntr, 'send_email ', rq)
+        else:
+            print('TEST sent e-mail OK . . . . .')
+        print( 'Finish TEST e-mail => ' +  datetime.today().strftime('%H:%M:%S') )
 
     else:
         print('TEST NOTHING')
@@ -1318,7 +1388,8 @@ def convert_tbl_TODAY(cntr):
         cntr.log.wr_log_info(mes + path_file)
         print(mes + path_file)
     #
-    service_hist_FUT_TODAY(cntr)    #read & print
+    #service_hist_FUT_TODAY(cntr)    #read & print
+    dbg_srv(cntr,  b_hist_fut_t = False)
     #
     arr_hist = cntr.h_fut_today.hist_fut_today
     term_dt = arr_hist[-1][1].split('|')[0]
@@ -1418,6 +1489,8 @@ def event_menu(event, cntr):
     #-------------------------------------------------------------------
     if event == 'srv hist FUT arch'  : dbg_srv(cntr, b_hist_fut_a = True)
     #-------------------------------------------------------------------
+    if event == 'srv send E-MAIL'    : dbg_srv(cntr, b_send_mail  = True)
+    #-------------------------------------------------------------------
     if event == 'prn TERM data_in_file'  : dbg_prn(cntr, b_trm_data_in_file = True)
     #---------------------------------------------------------------
     if event == 'prn TERM data_fut'      : dbg_prn(cntr, b_trm_data_fut     = True)
@@ -1500,7 +1573,8 @@ def main():
                 ['auto', 'manual', ],
                 ],
             ['Service',
-                ['srv data TERM',    'srv hist TERM',
+                ['srv send E-MAIL',
+                 'srv data TERM',    'srv hist TERM',
                  'srv config ALARM', 'srv config PACK',    'srv config SOFT',
                  'srv data FUT',     'srv hist FUT today', 'srv hist FUT arch' ],
                 ],
@@ -1538,8 +1612,8 @@ def main():
 
     mode = 'manual'
     tm_out = 360000
-    txt_frmt = '%Y.%m.%d  %H:%M:%S'
-    stts  = time.strftime(txt_frmt, time.localtime()) + '\n' + 'event = manual'
+    frm = '%d.%m.%Y %H:%M:%S'
+    stts  = time.strftime(frm, time.localtime()) + '\n' + 'event = manual'
     window.FindElement('txt_status').Update(stts)
 
     # main cycle   -----------------------------------------------------
@@ -1569,18 +1643,24 @@ def main():
         #---------------------------------------------------------------
         if event == '__TIMEOUT__':
             rq = read_term(cntr)
-            if rq[0] == 0:
+            if rq[0] != 0:
+                tm_out = 1550
+                stroki.append(rq[1])
+            else:
                 tm_out = 7550
-                #stroki.append('Time acc_date:  ' + cntr.trm_data.account.acc_date)
                 stroki.append('Time DATA:  ' + cntr.trm_data.data_in_file[0].split('|')[0])
-                stroki.append('Time HIST:  ' + cntr.trm_hist.hist_in_file[-1].split('|')[0])
                 stroki.append('Have got new data/hist')
-                frm = '%d.%m.%Y %H:%M:%S'
                 tmr = cntr.trm_data.account.acc_date
-                dtt = datetime.strptime(str(tmr.split('|')[0]), frm)
-                if cntr.tm_wrt_new_data != dtt.minute:
-                    cntr.tm_wrt_new_data = dtt.minute
-                    #copy hist_in_file in table hist_FUT_today
+                dt_minute = datetime.strptime(str(tmr.split('|')[0]), frm).minute
+                if cntr.tm_wrt_new_data == dt_minute:
+                    req = cntr.dt_fut.rewrite_tbl(cntr.trm_data.data_in_file)
+                    if req[0] != 0: _err_(cntr, 'dt_fut.rewrite_tbl => ', req, PopUp = False)
+                    else:
+                        rq = cntr.dt_fut.read_data_in_file( cntr.trm_data.data_in_file )
+                        if rq[0] != 0 : _err_(cntr, 'dt_fut.read_data_in_file => ', rq, PopUp = False)
+                        else:           print(60*' ', end='\r')
+                else:
+                    cntr.tm_wrt_new_data = dt_minute
                     req = cntr.h_fut_today.rewrite_tbl(cntr.trm_hist.hist_in_file)
                     if req[0] != 0: _err_(cntr, 'h_fut_today.rewrite_tbl => ', req, PopUp = False)
                     else:
@@ -1589,22 +1669,10 @@ def main():
                             calc_hist_PACK_today(cntr, i_pack)
                             ind_pack += str(i_pack) + ' '
                             print(ind_pack, end='\r')
-                        # rewrite table 'hist_PACK_today'
                         wr_hist_PACK_today(cntr)
-                else:
-                    req = cntr.dt_fut.rewrite_tbl(cntr.trm_data.data_in_file)
-                    if req[0] != 0: _err_(cntr, 'dt_fut.rewrite_tbl => ', req, PopUp = False)
-                    else:
-                        rq = cntr.dt_fut.read_tbl()
-                        if rq[0] != 0 : _err_(cntr, 'dt_fut.read_tbl => ', rq, PopUp = False)
-                        else:           print('rewrite & read dt_fut => ', cntr.tm_wrt_new_data)
-            else:
-                tm_out = 1550
-                #stroki.append('Time acc_date:  ' + cntr.trm_data.account.acc_date)
-                stroki.append(rq[1])
         #---------------------------------------------------------------
         window.FindElement('txt_data').Update('\n'.join(stroki))
-        stts  = time.strftime(txt_frmt, time.localtime()) + '\n'
+        stts  = time.strftime(frm, time.localtime()) + '\n'
         stts += 'event = ' + event
         window.FindElement('txt_status').Update(stts)
 
