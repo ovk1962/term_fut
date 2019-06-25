@@ -1346,35 +1346,43 @@ def debug_calc_PACK_today(cntr): # 'Service\Debug\calc PACK today'
 def TODAY_copy_ARCHIV(cntr):
     os.system('cls')  # on windows
     print('Copy fut TODAY in ARCHIV .  .  .  .  .')
-    hist = cntr.h_fut_today
-    print('len(hist_1_fut_today) => ', len(hist.hist_1_fut_today))
-    if len(hist.hist_1_fut_today) > 4:
-        print('hist_1_fut_today[0] => ',  hist.hist_1_fut_today[0])
-        print('hist_1_fut_today[1] => ',  hist.hist_1_fut_today[1][1].split('|')[0])
-        print('hist_1_fut_today[2] => ',  hist.hist_1_fut_today[2][1].split('|')[0])
+    hist = cntr.h_fut_today.hist_1_fut_today
+    print('len(hist_1_fut_today) => ', len(hist))
+    if len(hist) > 4:
+        print('hist_1_fut_today[0] => ',  hist[0])
+        print('hist_1_fut_today[1] => ',  hist[1][1].split('|')[0])
+        print('hist_1_fut_today[2] => ',  hist[2][1].split('|')[0])
         print('. . . . .')
-        print('hist_1_fut_today[-2] => ', hist.hist_1_fut_today[-2][1].split('|')[0])
-        print('hist_1_fut_today[-1] => ', hist.hist_1_fut_today[-1][1].split('|')[0])
+        print('hist_1_fut_today[-2] => ', hist[-2][1].split('|')[0])
+        print('hist_1_fut_today[-1] => ', hist[-1][1].split('|')[0])
     print('. . . . .')
+    last_1_fut_today = hist[-1][1].split('|')[0].split(' ')[0]
+    print('last_1_fut_today => ', last_1_fut_today)
+
     print('Status BEFORE')
-    hist = cntr.h_fut_arc
-    print('len(hist_fut_archiv)   => ', len(hist.hist_fut_archiv))
-    if len(hist.hist_fut_archiv) > 4:
-        print('hist_fut_archiv[0] => ',  hist.hist_fut_archiv[0])
-        print('hist_fut_archiv[1] => ',  hist.hist_fut_archiv[1][1].split('|')[0])
-        print('hist_fut_archiv[2] => ',  hist.hist_fut_archiv[2][1].split('|')[0])
+    hist = cntr.h_fut_arc.hist_fut_archiv
+    print('len(hist_fut_archiv)   => ', len(hist))
+    if len(hist) > 4:
+        print('hist_fut_archiv[0] => ',  hist[0])
+        print('hist_fut_archiv[1] => ',  hist[1][1].split('|')[0])
+        print('hist_fut_archiv[2] => ',  hist[2][1].split('|')[0])
         print('. . . . .')
-        print('hist_fut_archiv[-2] => ', hist.hist_fut_archiv[-2][1].split('|')[0])
-        print('hist_fut_archiv[-1] => ', hist.hist_fut_archiv[-1][1].split('|')[0])
+        print('hist_fut_archiv[-2] => ', hist[-2][1].split('|')[0])
+        print('hist_fut_archiv[-1] => ', hist[-1][1].split('|')[0])
     print('. . . . .')
-    buf_list = []
-    if len(cntr.h_fut_today.hist_1_fut_today) < 520:
-        rq = cntr.h_fut_arc.obj_table.write_table_db('hist_FUT', cntr.h_fut_today.hist_1_fut_today)
-        if rq[0] != 0: _err_(cntr, 'TODAY_copy_ARCHIV ', rq)
+    last_fut_archiv = hist[-1][1].split('|')[0].split(' ')[0]
+    print('last_fut_archiv => ', last_fut_archiv)
+    if last_1_fut_today != last_fut_archiv:
+        buf_list = []
+        if len(cntr.h_fut_today.hist_1_fut_today) < 520:
+            rq = cntr.h_fut_arc.obj_table.write_table_db('hist_FUT', cntr.h_fut_today.hist_1_fut_today)
+            if rq[0] != 0: _err_(cntr, 'TODAY_copy_ARCHIV ', rq)
+        else:
+            rq = cntr.h_fut_arc.obj_table.write_table_db('hist_FUT', cntr.h_fut_today.hist_1_fut_today[:520])
+            if rq[0] != 0: _err_(cntr, 'TODAY_copy_ARCHIV ', rq)
+        print('. . . . .')
     else:
-        rq = cntr.h_fut_arc.obj_table.write_table_db('hist_FUT', cntr.h_fut_today.hist_1_fut_today[:520])
-        if rq[0] != 0: _err_(cntr, 'TODAY_copy_ARCHIV ', rq)
-    print('. . . . .')
+        print('\n' + str (last_1_fut_today) + ' have copy already. Check it \n')
     print('Press Test & Print for STATUS')
 #=======================================================================
 def convert_tbl_TODAY(cntr):
@@ -1526,15 +1534,11 @@ def main():
         #---------------------------------------------------------------
         rq = cntr.trm_data.rd_term()
         if rq[0] != 0:  _err_(cntr, 'INIT data_in_file ', rq)
-        else:           print('trm_data = > ', rq)
+        else:           print('trm_data  = > ', rq)
         #---------------------------------------------------------------
         rq = cntr.trm_hist.rd_hist()
         if rq[0] != 0:  _err_(cntr, 'INIT hist_in_file ', rq)
-        else:           print('trm_hist = > ', rq)
-        #---------------------------------------------------------------
-        rq = cntr.dt_fut.read_tbl()
-        if rq[0] != 0:  _err_(cntr, 'INIT data_FUT ', rq)
-        else:           print('data_fut = > ', rq)
+        else:           print('trm_hist  = > ', rq)
         #---------------------------------------------------------------
         rq = cntr.cfg_alarm.read_tbl()
         if rq[0] != 0 : _err_(cntr, 'INIT cfg_ALARM ', rq)
@@ -1543,7 +1547,7 @@ def main():
         rq = cntr.cfg_pack.read_tbl()
         if rq[0] != 0 : _err_(cntr, 'INIT cfg_PACK ', rq)
         else:
-            print('cfg_pack = > ', rq)
+            print('cfg_pack  = > ', rq)
             if len(cntr.cfg_pack.nm) == 0:
                 _err_(cntr, 'cfg_pack.nm = 0  ', [' ', 'It can not be EMPTY !'] )
                 break
@@ -1551,10 +1555,17 @@ def main():
                 cntr.arr_pack.append([])
                 cntr.arr_pack_today.append([])
         #---------------------------------------------------------------
+        rq = cntr.dt_fut.read_tbl()
+        if rq[0] != 0:  _err_(cntr, 'INIT data_FUT ', rq)
+        else:           print('data_fut        = > ', rq)
+        #---------------------------------------------------------------
+        rq = cntr.h_fut_today.read_tbl()
+        if rq[0] != 0 : _err_(cntr, 'INIT h_fut_today ', rq)
+        else:           print('hist_FUT today  = > ', rq)
+        #---------------------------------------------------------------
         rq = cntr.h_fut_arc.read_tbl()
         if rq[0] != 0 : _err_(cntr, 'INIT hist_fut_archiv ', rq)
-        else:
-            print('hist_FUT archiv = > ', rq)
+        else:           print('hist_FUT archiv = > ', rq)
         #---------------------------------------------------------------
         print('calculating hist_PACK . . . .')
         for i_pack, item in enumerate(cntr.cfg_pack.nm):
@@ -1644,10 +1655,12 @@ def main():
         if event == '__TIMEOUT__':
             rq = read_term(cntr)
             if rq[0] != 0:
+                dbg_prn(cntr)
                 tm_out = 1550
                 stroki.append(rq[1])
             else:
                 tm_out = 7550
+                print('Time new DATA:  ' + cntr.trm_data.data_in_file[0].split('|')[0])
                 stroki.append('Time DATA:  ' + cntr.trm_data.data_in_file[0].split('|')[0])
                 stroki.append('Have got new data/hist')
                 tmr = cntr.trm_data.account.acc_date
