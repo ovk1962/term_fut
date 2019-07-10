@@ -456,380 +456,669 @@ class Class_TERM_hist():
         #
         return [0, 'ok']
 #=======================================================================
-class Class_TABLE_cfg_alarm():
-    #///////////////////////////////////////////////////////////////////
-    def __init__(self, path_term_fut_pack):
-        self.obj_table = Class_SQLite(path_term_fut_pack)
-        self.path_term_fut_pack = path_term_fut_pack
-        self.nm            = []  # list NM             of packets
-        self.ena_cnt_ema   = []  # list cnt_EMAf_rnd   of packets
-    #///////////////////////////////////////////////////////////////////
-    def read_tbl(self):
-        self.nm, self.ena_cnt_ema  = [], []
-        rq  = self.obj_table.get_table_db_with('cfg_ALARM')
-        if rq[0] != 0:
-            err_msg = 'Can not read TBL cfg_ALARM !' + '  '.join(str(e) for e in rq)
-            print(err_msg)
-            #sg.PopupError(err_msg)
-            return [1, rq[1]]
+#class Class_TABLE_cfg_alarm():
+    ##///////////////////////////////////////////////////////////////////
+    #def __init__(self, path_term_fut_pack):
+        #self.obj_table = Class_SQLite(path_term_fut_pack)
+        #self.path_term_fut_pack = path_term_fut_pack
+        #self.nm            = []  # list NM             of packets
+        #self.ena_cnt_ema   = []  # list cnt_EMAf_rnd   of packets
+    ##///////////////////////////////////////////////////////////////////
+    #def read_tbl(self):
+        #self.nm, self.ena_cnt_ema  = [], []
+        #rq  = self.obj_table.get_table_db_with('cfg_ALARM')
+        #if rq[0] != 0:
+            #err_msg = 'Can not read TBL cfg_ALARM !' + '  '.join(str(e) for e in rq)
+            #print(err_msg)
+            ##sg.PopupError(err_msg)
+            #return [1, rq[1]]
 
-        for item in rq[1]:
-            #print(item)
-            self.nm.append(item[0])             # just ex ['pckt0']
-            self.ena_cnt_ema.append(item[1])    # just ex [True]
+        #for item in rq[1]:
+            ##print(item)
+            #self.nm.append(item[0])             # just ex ['pckt0']
+            #self.ena_cnt_ema.append(item[1])    # just ex [True]
 
-        return [0, 'ok']
-    #///////////////////////////////////////////////////////////////////
-    def rewrite_tbl(self):
-        # rewrite table cfg_ALARM
-        duf_list = []
-        for j, jtem in enumerate(self.nm):
-            buf = (self.nm[j], self.ena_cnt_ema[j])
-            #print(buf)
-            duf_list.append(buf)
-        rq = self.obj_table.rewrite_table('cfg_ALARM', duf_list, val = '(?,?)')
-        if rq[0] != 0:
-            err_msg = 'rewrite_tbl cfg_ALARM ' + '  '.join(str(e) for e in rq)
-            return [1, err_msg]
-        return [0, 'ok']
+        #return [0, 'ok']
+    ##///////////////////////////////////////////////////////////////////
+    #def rewrite_tbl(self):
+        ## rewrite table cfg_ALARM
+        #duf_list = []
+        #for j, jtem in enumerate(self.nm):
+            #buf = (self.nm[j], self.ena_cnt_ema[j])
+            ##print(buf)
+            #duf_list.append(buf)
+        #rq = self.obj_table.rewrite_table('cfg_ALARM', duf_list, val = '(?,?)')
+        #if rq[0] != 0:
+            #err_msg = 'rewrite_tbl cfg_ALARM ' + '  '.join(str(e) for e in rq)
+            #return [1, err_msg]
+        #return [0, 'ok']
 #=======================================================================
-class Class_TABLE_cfg_pack():
+#class Class_TABLE_cfg_pack():
+    ##///////////////////////////////////////////////////////////////////
+    #def __init__(self, path_term_fut_pack):
+        #self.obj_table = Class_SQLite(path_term_fut_pack)
+        #self.path_term_fut_pack = path_term_fut_pack
+        #self.nm   = []  # list NM   of packets
+        #self.koef = []  # list KOEF of packets
+        #self.nul  = []  # list NUL  of packets
+        #self.ema  = []  # list EMA  of packets
+    ##///////////////////////////////////////////////////////////////////
+    #def read_tbl(self):
+        #self.nm, self.koef, self.nul, self.ema = [], [], [], []
+        #rq  = self.obj_table.get_table_db_with('cfg_PACK')
+        #if rq[0] != 0:
+            #err_msg = 'Can not read TBL cfg_PACK !' + '  '.join(str(e) for e in rq)
+            #print(err_msg)
+            #sg.PopupError(err_msg)
+            #return [1, rq[1]]
+
+        #for item in rq[1]:
+            ##print(item)
+            #self.nm.append(item[0])             # just ex ['pckt0']
+            #self.koef.append(item[1].split(','))# just ex ['0:3:SR','9:-20:MX
+            #self.nul.append(item[2])            # just ex [0]
+            #self.ema.append(item[3].split(':')) # just ex ['1111:15']
+
+        #return [0, 'ok']
+    ##///////////////////////////////////////////////////////////////////
+    #def rewrite_tbl(self):
+        ## rewrite table cfg_PACK
+        #duf_list = []
+        #for j, jtem in enumerate(self.nm):
+            #buf = (self.nm[j], ','.join(self.koef[j]), self.nul[j], ':'.join(self.ema[j]))
+            ##print(buf)
+            #duf_list.append(buf)
+        #rq = self.obj_table.rewrite_table('cfg_PACK', duf_list, val = '(?,?,?,?)')
+        #if rq[0] != 0:
+            #err_msg = 'rewrite_tbl cfg_PACK ' + '  '.join(str(e) for e in rq)
+            #return [1, err_msg]
+        #return [0, 'ok']
+#=======================================================================
+#class Class_TABLE_cfg_soft():
+    ##///////////////////////////////////////////////////////////////////
+    #def __init__(self, path_term_fut_pack):
+        #self.obj_table = Class_SQLite(path_term_fut_pack)
+        #self.path_term_fut_pack  = path_term_fut_pack
+        #self.titul = self.dt_start = ''
+        #self.dt_start_sec = 0
+        #self.path_file_DATA = self.path_file_HIST = ''
+    ##///////////////////////////////////////////////////////////////////
+    #def read_tbl(self):
+        #rq  = self.obj_table.get_table_db_with('cfg_SOFT')
+        #if rq[0] != 0:
+            #err_msg = 'Can not read TBL cfg_SOFT !' + '  '.join(str(e) for e in rq)
+            #print(err_msg)
+            #sg.PopupError(err_msg)
+            #return [1, rq[1]]
+
+        #for item in rq[1]:
+            #if item[0] == 'titul'         : self.titul           = item[1]
+            #if item[0] == 'path_file_DATA': self.path_file_DATA  = item[1]
+            #if item[0] == 'path_file_HIST': self.path_file_HIST  = item[1]
+            #if item[0] == 'dt_start'      : self.dt_start        = item[1]
+
+        #frm = '%Y-%m-%d %H:%M:%S'
+        #self.dt_start_sec = \
+            #int(datetime.strptime(self.dt_start, frm).replace(tzinfo=timezone.utc).timestamp())
+
+        #return [0, 'ok']
+#=======================================================================
+#class Class_TABLE_data_fut():
+    ##///////////////////////////////////////////////////////////////////
+    #def __init__(self, path_term_fut_pack):
+        #self.obj_table = Class_SQLite(path_term_fut_pack)
+        #self.path_term_fut_pack = path_term_fut_pack
+        #self.data_fut = []                  # list of Class_FUT()
+        #self.account  = Class_ACCOUNT()     # obj Class_ACCOUNT()
     #///////////////////////////////////////////////////////////////////
+    #def rewrite_tbl(self, buf_tbl):
+        ## rewrite table DATA
+        #duf_list = []
+        #for j, jtem in enumerate(buf_tbl):
+            #buf = (jtem,)
+            #duf_list.append(buf)
+        #rq = self.obj_table.rewrite_table('data_FUT', duf_list, val = '(?)')
+        #if rq[0] != 0:
+            #err_msg = 'rewrite_tbl data_FUT ' + '  '.join(str(e) for e in rq)
+            #return [1, err_msg]
+        #return [0, 'ok']
+    #///////////////////////////////////////////////////////////////////
+    #def read_tbl(self):
+        #rq  = self.obj_table.get_table_db_with('data_FUT')
+        #if rq[0] != 0:
+            #err_msg = 'Can not read TBL data_FUT ! ' + '  '.join(str(e) for e in rq)
+            #print(err_msg)
+            ##sg.PopupError(err_msg)
+            #return [1, err_msg]
+
+        #try:
+            #self.data_fut = []
+
+            #for i, item in enumerate(list(rq[1])):
+                #list_item = ''.join(item).replace(',','.').split('|')
+                #if   i == 0:
+                    #self.account.acc_date  = list_item[0]
+                #elif i == 1:
+                    #self.account.acc_balance = float(list_item[0])
+                    #self.account.acc_profit  = float(list_item[1])
+                    #self.account.acc_go      = float(list_item[2])
+                    #self.account.acc_depo    = float(list_item[3])
+                #else:
+                    #b_fut = Class_FUT()
+                    #b_fut.sP_code      = list_item[0]
+                    #b_fut.sRest        = int  (list_item[1])
+                    #b_fut.sVar_margin  = float(list_item[2])
+                    #b_fut.sOpen_price  = float(list_item[3])
+                    #b_fut.sLast_price  = float(list_item[4])
+                    #b_fut.sAsk         = float(list_item[5])
+                    #b_fut.sBuy_qty     = int  (list_item[6])
+                    #b_fut.sBid         = float(list_item[7])
+                    #b_fut.sSell_qty    = int  (list_item[8])
+                    #b_fut.sFut_go      = float(list_item[9])
+                    #b_fut.sOpen_pos    = float(list_item[10])
+                    #self.data_fut.append(b_fut)
+        #except Exception as ex:
+            #err_msg = 'parse_data_in_file / ' + str(ex)
+            #return [1, err_msg]
+
+        #return [0, 'ok']
+    #///////////////////////////////////////////////////////////////////
+    #def read_data_in_file(self, arr_strings):
+        #try:
+            #self.data_fut = []
+            #for i, item in enumerate(arr_strings):
+                #list_item = ''.join(item).replace(',','.').split('|')
+                #if   i == 0:
+                    #self.account.acc_date  = list_item[0]
+                #elif i == 1:
+                    #self.account.acc_balance = float(list_item[0])
+                    #self.account.acc_profit  = float(list_item[1])
+                    #self.account.acc_go      = float(list_item[2])
+                    #self.account.acc_depo    = float(list_item[3])
+                #else:
+                    #b_fut = Class_FUT()
+                    #b_fut.sP_code      = list_item[0]
+                    #b_fut.sRest        = int  (list_item[1])
+                    #b_fut.sVar_margin  = float(list_item[2])
+                    #b_fut.sOpen_price  = float(list_item[3])
+                    #b_fut.sLast_price  = float(list_item[4])
+                    #b_fut.sAsk         = float(list_item[5])
+                    #b_fut.sBuy_qty     = int  (list_item[6])
+                    #b_fut.sBid         = float(list_item[7])
+                    #b_fut.sSell_qty    = int  (list_item[8])
+                    #b_fut.sFut_go      = float(list_item[9])
+                    #b_fut.sOpen_pos    = float(list_item[10])
+                    #self.data_fut.append(b_fut)
+        #except Exception as ex:
+            #err_msg = 'read_data_in_file / ' + str(ex)
+            #return [1, err_msg]
+
+        #return [0, 'ok']
+#=======================================================================
+#class Class_TABLE_hist_fut_today():
+    ##///////////////////////////////////////////////////////////////////
+    #def __init__(self, path_term_fut_pack):
+        #self.obj_table = Class_SQLite(path_term_fut_pack)
+        #self.path_term_fut_pack = path_term_fut_pack
+        #self.hist_fut_today   = []  # list of [[ind_sec string] ... ]
+        #self.hist_1_fut_today = []  # list period 1 minute
+        #self.arr_1_fut_today  = []  # list period 1 minute
+
+        #self.sec_10_00 = 36000      # seconds from 00:00 to 10:00
+        #self.sec_14_00 = 50400      # seconds from 00:00 to 14:00
+        #self.sec_14_05 = 50700      # seconds from 00:00 to 14:05
+        #self.sec_18_45 = 67500      # seconds from 00:00 to 18:45
+        #self.sec_19_05 = 68700      # seconds from 00:00 to 19:05
+        #self.sec_23_45 = 85500      # seconds from 00:00 to 23:45
+    #///////////////////////////////////////////////////////////////////
+    #def read_tbl(self):
+        #rq  = self.obj_table.get_table_db_with('hist_FUT_today')
+        #if rq[0] != 0:
+            #err_msg = 'Can not read TBL hist_FUT_today ! ' + '  '.join(str(e) for e in rq)
+            #print(err_msg)
+            #return [1, err_msg]
+
+        #self.hist_fut_today = []
+        #self.hist_fut_today = rq[1][:]
+        ##print('read hist_fut_today => ', len(self.hist_fut_today), ' strings')
+
+        #self.hist_1_fut_today = []
+        #if len(self.hist_fut_today) != 0:
+            #self.hist_1_fut_today.append(self.hist_fut_today[0])
+            #frm = '%d.%m.%Y %H:%M:%S'
+            #dtt = datetime.strptime(str(self.hist_fut_today[0][1].split('|')[0]), frm)
+            #buf_60_sec = dtt.minute
+            #for item in self.hist_fut_today:
+                #dtt = datetime.strptime(str(item[1].split('|')[0]), frm)
+                #if dtt.minute != buf_60_sec:
+                    #self.hist_1_fut_today.append(item)
+                    #buf_60_sec = dtt.minute
+        ##print('parse hist_1_fut_today => ', len(self.hist_1_fut_today), ' strings')
+
+        #self.arr_1_fut_today = []
+        #for item in self.hist_1_fut_today:
+            #arr_item = (item[1].replace(',', '.')).split('|')
+            #arr_jtem = []
+            #arr_jtem.append(item[0])
+            #arr_jtem.append(arr_item[0])
+            #for jtem in arr_item[1:-1]:
+                #arr_jtem.append(float(jtem))
+            #self.arr_1_fut_today.append(arr_jtem)
+
+        ##print(self.arr_1_fut_today[-1])
+        ##print('arr_1_fut_today[-1] => ', self.arr_1_fut_today[-1])
+
+        #return [0, 'ok']
+    #///////////////////////////////////////////////////////////////////
+    #def rewrite_tbl(self, term_hist):
+        ##print('term_hist[-1] => ', term_hist[-1])
+        #self.hist_fut_today = []
+        #self.hist_1_fut_today = []
+
+        #buf_60_sec = 666
+        #frm = '%d.%m.%Y %H:%M:%S'
+        #try:
+            #if term_hist != '':
+                #for i, item in enumerate(term_hist):
+                    #list_item = item.split('|')
+                    #dtt = datetime.strptime(list_item[0], frm)
+                    #ind_sec  = int(dtt.replace(tzinfo=timezone.utc).timestamp())
+                    #cur_time = dtt.second + 60 * dtt.minute + 60 * 60 * dtt.hour
+                    #if (
+                        #(cur_time > self.sec_10_00  and # from 10:00 to 14:00
+                        #cur_time < self.sec_14_00) or
+                        #(cur_time > self.sec_14_05  and # from 14:05 to 18:45
+                        #cur_time < self.sec_18_45) or
+                        #(cur_time > self.sec_19_05  and # from 19:05 to 23:45
+                        #cur_time < self.sec_23_45)):
+                            #self.hist_fut_today.append([ind_sec, item])
+                            #if buf_60_sec != dtt.minute :
+                                #buf_60_sec = dtt.minute
+                                #self.hist_1_fut_today.append([ind_sec, item])
+
+            #else:
+                #return [1, 'hist_in_file is empty! ']
+        #except Exception as ex:
+            #err_msg = 'rewrite_tbl => ' + str(ex)
+            #return [1, err_msg]
+
+        ##print('self.hist_1_fut_today[-1] => ', self.hist_1_fut_today[-1])
+
+        #self.arr_1_fut_today = []
+        #for item in self.hist_1_fut_today:
+            #arr_item = (item[1].replace(',', '.')).split('|')
+            #arr_jtem = []
+            #arr_jtem.append(item[0])
+            #arr_jtem.append(arr_item[0])
+            #for jtem in arr_item[1:-1]:
+                #arr_jtem.append(float(jtem))
+            #self.arr_1_fut_today.append(arr_jtem)
+
+        ##print('self.hist_fut_today[-1] => ', self.hist_fut_today[-1])
+
+        #rq = self.obj_table.rewrite_table('hist_FUT_today', self.hist_fut_today, val = '(?,?)')
+        #if rq[0] != 0:
+            #err_msg = 'rewrite_table(hist_FUT_today) ' + '  '.join(str(e) for e in rq)
+            #return [1, err_msg]
+
+        #return [0, 'ok']
+#=======================================================================
+#class Class_TABLE_hist_pack_today():
+    ##///////////////////////////////////////////////////////////////////
+    #def __init__(self, path_term_fut_pack):
+        #self.path_term_fut_pack  = path_term_fut_pack
+        #self.obj_table = Class_SQLite(path_term_fut_pack)
+        #self.hist_pack_today = []  # list of [[ind_sec string] ... ]
+    ##///////////////////////////////////////////////////////////////////
+    #def rewrite_tbl(self, hist_arc):
+        #self.hist_pack_today = []
+        #rq = self.obj_table.rewrite_table('hist_PACK_today', hist_arc, val = '(?,?)')
+        #if rq[0] != 0:
+            #err_msg = 'rewrite_table hist_PACK_today ' + '  '.join(str(e) for e in rq)
+            ##cntr.log.wr_log_error(err_msg)
+            ##sg.Popup('Error !', err_msg)
+            #return [1, err_msg]
+
+        #return [0, 'OK']
+#=======================================================================
+class Class_term_fut_archiv():
+    def __init__(self, path_term_fut_archiv):
+        self.path_db = path_term_fut_archiv
+        self.table_db = []
+        self.conn = ''
+        self.cur  = ''
+        self.hist_fut_archiv  = []  # list of [[ind_sec string] ... ]
+        self.arr_fut_archiv   = []  # list period 1 minute
+        self.hist_pack_archiv = []  # list of [[ind_sec string] ... ]
+
+    def op_archiv(self,
+            rd_hist_FUT = False,
+            wr_hist_FUT = False,
+            rd_hist_PACK = False,
+            wr_hist_PACK = False
+            ):
+        r_op_archiv = []
+        self.conn = sqlite3.connect(self.path_db)
+        try:
+            with self.conn:
+                self.cur = self.conn.cursor()
+                if rd_hist_FUT:
+                    self.cur.execute('SELECT * from ' + 'hist_FUT')
+                    self.hist_fut_archiv = []
+                    self.arr_fut_archiv  = []
+                    self.hist_fut_archiv = self.cur.fetchall()    # read table name_tbl
+                    #
+                    for item in self.hist_fut_archiv:
+                        arr_item = (item[1].replace(',', '.')).split('|')
+                        arr_jtem = []
+                        arr_jtem.append(item[0])
+                        arr_jtem.append(arr_item[0])
+                        for jtem in arr_item[1:-1]:
+                            arr_jtem.append(float(jtem))
+                        self.arr_fut_archiv.append(arr_jtem)
+                    #
+                    r_op_archiv = [0, 'ok']
+                elif wr_hist_FUT:
+                    pass
+                elif rd_hist_PACK:
+                    self.cur.execute('SELECT * from ' + 'hist_PACK')
+                    self.hist_pack_archiv = []
+                    self.hist_pack_archiv = self.cur.fetchall()    # read table name_tbl
+                    r_op_archiv = [0, 'ok']
+                elif wr_hist_PACK:
+                    ''' rewrite data from table ARCHIV_PACK & PACK_TODAY & DATA ----'''
+                    self.cur.execute('DELETE FROM ' + 'hist_PACK')
+                    self.cur.executemany('INSERT INTO ' + 'hist_PACK' + ' VALUES' + '(?,?)', self.hist_pack_archiv)
+                    self.conn.commit()
+
+                    r_op_archiv = [0, 'ok']
+
+                else:
+                    pass
+        except Exception as ex:
+            r_op_archiv = [1, 'op_archiv / ' + str(ex)]
+
+        return r_op_archiv
+#=======================================================================
+class Class_term_fut_today():
     def __init__(self, path_term_fut_pack):
-        self.obj_table = Class_SQLite(path_term_fut_pack)
-        self.path_term_fut_pack = path_term_fut_pack
+        self.path_db = path_term_fut_pack
+        self.table_db = []
+        self.conn = ''
+        self.cur  = ''
+        #
+        #self.nm            = []  # list NM             of packets
+        self.ena_cnt_ema   = []  # list cnt_EMAf_rnd   of packets
+        # cfg_soft
         self.nm   = []  # list NM   of packets
         self.koef = []  # list KOEF of packets
         self.nul  = []  # list NUL  of packets
         self.ema  = []  # list EMA  of packets
-    #///////////////////////////////////////////////////////////////////
-    def read_tbl(self):
-        self.nm, self.koef, self.nul, self.ema = [], [], [], []
-        rq  = self.obj_table.get_table_db_with('cfg_PACK')
-        if rq[0] != 0:
-            err_msg = 'Can not read TBL cfg_PACK !' + '  '.join(str(e) for e in rq)
-            print(err_msg)
-            sg.PopupError(err_msg)
-            return [1, rq[1]]
-
-        for item in rq[1]:
-            #print(item)
-            self.nm.append(item[0])             # just ex ['pckt0']
-            self.koef.append(item[1].split(','))# just ex ['0:3:SR','9:-20:MX
-            self.nul.append(item[2])            # just ex [0]
-            self.ema.append(item[3].split(':')) # just ex ['1111:15']
-
-        return [0, 'ok']
-    #///////////////////////////////////////////////////////////////////
-    def rewrite_tbl(self):
-        # rewrite table cfg_PACK
-        duf_list = []
-        for j, jtem in enumerate(self.nm):
-            buf = (self.nm[j], ','.join(self.koef[j]), self.nul[j], ':'.join(self.ema[j]))
-            #print(buf)
-            duf_list.append(buf)
-        rq = self.obj_table.rewrite_table('cfg_PACK', duf_list, val = '(?,?,?,?)')
-        if rq[0] != 0:
-            err_msg = 'rewrite_tbl cfg_PACK ' + '  '.join(str(e) for e in rq)
-            return [1, err_msg]
-        return [0, 'ok']
-#=======================================================================
-class Class_TABLE_cfg_soft():
-    #///////////////////////////////////////////////////////////////////
-    def __init__(self, path_term_fut_pack):
-        self.obj_table = Class_SQLite(path_term_fut_pack)
-        self.path_term_fut_pack  = path_term_fut_pack
+        #
         self.titul = self.dt_start = ''
         self.dt_start_sec = 0
         self.path_file_DATA = self.path_file_HIST = ''
-    #///////////////////////////////////////////////////////////////////
-    def read_tbl(self):
-        rq  = self.obj_table.get_table_db_with('cfg_SOFT')
-        if rq[0] != 0:
-            err_msg = 'Can not read TBL cfg_SOFT !' + '  '.join(str(e) for e in rq)
-            print(err_msg)
-            sg.PopupError(err_msg)
-            return [1, rq[1]]
-
-        for item in rq[1]:
-            if item[0] == 'titul'         : self.titul           = item[1]
-            if item[0] == 'path_file_DATA': self.path_file_DATA  = item[1]
-            if item[0] == 'path_file_HIST': self.path_file_HIST  = item[1]
-            if item[0] == 'dt_start'      : self.dt_start        = item[1]
-
-        frm = '%Y-%m-%d %H:%M:%S'
-        self.dt_start_sec = \
-            int(datetime.strptime(self.dt_start, frm).replace(tzinfo=timezone.utc).timestamp())
-
-        return [0, 'ok']
-#=======================================================================
-class Class_TABLE_data_fut():
-    #///////////////////////////////////////////////////////////////////
-    def __init__(self, path_term_fut_pack):
-        self.obj_table = Class_SQLite(path_term_fut_pack)
-        self.path_term_fut_pack = path_term_fut_pack
+        #
+        self.buf_data_in_file = []
         self.data_fut = []                  # list of Class_FUT()
         self.account  = Class_ACCOUNT()     # obj Class_ACCOUNT()
-    #///////////////////////////////////////////////////////////////////
-    def rewrite_tbl(self, buf_tbl):
-        # rewrite table DATA
-        duf_list = []
-        for j, jtem in enumerate(buf_tbl):
-            buf = (jtem,)
-            duf_list.append(buf)
-        rq = self.obj_table.rewrite_table('data_FUT', duf_list, val = '(?)')
-        if rq[0] != 0:
-            err_msg = 'rewrite_tbl data_FUT ' + '  '.join(str(e) for e in rq)
-            return [1, err_msg]
-        return [0, 'ok']
-    #///////////////////////////////////////////////////////////////////
-    def read_tbl(self):
-        rq  = self.obj_table.get_table_db_with('data_FUT')
-        if rq[0] != 0:
-            err_msg = 'Can not read TBL data_FUT ! ' + '  '.join(str(e) for e in rq)
-            print(err_msg)
-            #sg.PopupError(err_msg)
-            return [1, err_msg]
-
-        try:
-            self.data_fut = []
-
-            for i, item in enumerate(list(rq[1])):
-                list_item = ''.join(item).replace(',','.').split('|')
-                if   i == 0:
-                    self.account.acc_date  = list_item[0]
-                elif i == 1:
-                    self.account.acc_balance = float(list_item[0])
-                    self.account.acc_profit  = float(list_item[1])
-                    self.account.acc_go      = float(list_item[2])
-                    self.account.acc_depo    = float(list_item[3])
-                else:
-                    b_fut = Class_FUT()
-                    b_fut.sP_code      = list_item[0]
-                    b_fut.sRest        = int  (list_item[1])
-                    b_fut.sVar_margin  = float(list_item[2])
-                    b_fut.sOpen_price  = float(list_item[3])
-                    b_fut.sLast_price  = float(list_item[4])
-                    b_fut.sAsk         = float(list_item[5])
-                    b_fut.sBuy_qty     = int  (list_item[6])
-                    b_fut.sBid         = float(list_item[7])
-                    b_fut.sSell_qty    = int  (list_item[8])
-                    b_fut.sFut_go      = float(list_item[9])
-                    b_fut.sOpen_pos    = float(list_item[10])
-                    self.data_fut.append(b_fut)
-        except Exception as ex:
-            err_msg = 'parse_data_in_file / ' + str(ex)
-            return [1, err_msg]
-
-        return [0, 'ok']
-    #///////////////////////////////////////////////////////////////////
-    def read_data_in_file(self, arr_strings):
-        try:
-            self.data_fut = []
-            for i, item in enumerate(arr_strings):
-                list_item = ''.join(item).replace(',','.').split('|')
-                if   i == 0:
-                    self.account.acc_date  = list_item[0]
-                elif i == 1:
-                    self.account.acc_balance = float(list_item[0])
-                    self.account.acc_profit  = float(list_item[1])
-                    self.account.acc_go      = float(list_item[2])
-                    self.account.acc_depo    = float(list_item[3])
-                else:
-                    b_fut = Class_FUT()
-                    b_fut.sP_code      = list_item[0]
-                    b_fut.sRest        = int  (list_item[1])
-                    b_fut.sVar_margin  = float(list_item[2])
-                    b_fut.sOpen_price  = float(list_item[3])
-                    b_fut.sLast_price  = float(list_item[4])
-                    b_fut.sAsk         = float(list_item[5])
-                    b_fut.sBuy_qty     = int  (list_item[6])
-                    b_fut.sBid         = float(list_item[7])
-                    b_fut.sSell_qty    = int  (list_item[8])
-                    b_fut.sFut_go      = float(list_item[9])
-                    b_fut.sOpen_pos    = float(list_item[10])
-                    self.data_fut.append(b_fut)
-        except Exception as ex:
-            err_msg = 'read_data_in_file / ' + str(ex)
-            return [1, err_msg]
-
-        return [0, 'ok']
-#=======================================================================
-class Class_TABLE_hist_fut_today():
-    #///////////////////////////////////////////////////////////////////
-    def __init__(self, path_term_fut_pack):
-        self.obj_table = Class_SQLite(path_term_fut_pack)
-        self.path_term_fut_pack = path_term_fut_pack
+        #
+        self.buf_hist_in_file = []
         self.hist_fut_today   = []  # list of [[ind_sec string] ... ]
         self.hist_1_fut_today = []  # list period 1 minute
         self.arr_1_fut_today  = []  # list period 1 minute
-
         self.sec_10_00 = 36000      # seconds from 00:00 to 10:00
         self.sec_14_00 = 50400      # seconds from 00:00 to 14:00
         self.sec_14_05 = 50700      # seconds from 00:00 to 14:05
         self.sec_18_45 = 67500      # seconds from 00:00 to 18:45
         self.sec_19_05 = 68700      # seconds from 00:00 to 19:05
         self.sec_23_45 = 85500      # seconds from 00:00 to 23:45
-    #///////////////////////////////////////////////////////////////////
-    def read_tbl(self):
-        rq  = self.obj_table.get_table_db_with('hist_FUT_today')
-        if rq[0] != 0:
-            err_msg = 'Can not read TBL hist_FUT_today ! ' + '  '.join(str(e) for e in rq)
-            print(err_msg)
-            return [1, err_msg]
+        #
+        self.hist_pack_today  = []  # list of [[ind_sec string] ... ]
 
-        self.hist_fut_today = []
-        self.hist_fut_today = rq[1][:]
-        #print('read hist_fut_today => ', len(self.hist_fut_today), ' strings')
-
-        self.hist_1_fut_today = []
-        if len(self.hist_fut_today) != 0:
-            self.hist_1_fut_today.append(self.hist_fut_today[0])
-            frm = '%d.%m.%Y %H:%M:%S'
-            dtt = datetime.strptime(str(self.hist_fut_today[0][1].split('|')[0]), frm)
-            buf_60_sec = dtt.minute
-            for item in self.hist_fut_today:
-                dtt = datetime.strptime(str(item[1].split('|')[0]), frm)
-                if dtt.minute != buf_60_sec:
-                    self.hist_1_fut_today.append(item)
-                    buf_60_sec = dtt.minute
-        #print('parse hist_1_fut_today => ', len(self.hist_1_fut_today), ' strings')
-
-        self.arr_1_fut_today = []
-        for item in self.hist_1_fut_today:
-            arr_item = (item[1].replace(',', '.')).split('|')
-            arr_jtem = []
-            arr_jtem.append(item[0])
-            arr_jtem.append(arr_item[0])
-            for jtem in arr_item[1:-1]:
-                arr_jtem.append(float(jtem))
-            self.arr_1_fut_today.append(arr_jtem)
-
-        #print(self.arr_1_fut_today[-1])
-        #print('arr_1_fut_today[-1] => ', self.arr_1_fut_today[-1])
-
-        return [0, 'ok']
-    #///////////////////////////////////////////////////////////////////
-    def rewrite_tbl(self, term_hist):
-        #print('term_hist[-1] => ', term_hist[-1])
-        self.hist_fut_today = []
-        self.hist_1_fut_today = []
-
-        buf_60_sec = 666
-        frm = '%d.%m.%Y %H:%M:%S'
+    def op_today(self,
+            rd_cfg_SOFT  = False,
+            rd_cfg_ALARM = False,
+            rd_cfg_PACK  = False,
+            wr_cfg_PACK  = False,
+            rd_data_FUT  = False,
+            wr_data_FUT  = False,
+            rd_data_FUT_in_file = False,
+            rd_hist_FUT_today   = False,
+            wr_hist_FUT_today   = False,
+            rd_hist_PACK_today  = False,
+            wr_hist_PACK_today  = False,
+            ):
+        r_op_today = []
+        self.conn = sqlite3.connect(self.path_db)
         try:
-            if term_hist != '':
-                for i, item in enumerate(term_hist):
-                    list_item = item.split('|')
-                    dtt = datetime.strptime(list_item[0], frm)
-                    ind_sec  = int(dtt.replace(tzinfo=timezone.utc).timestamp())
-                    cur_time = dtt.second + 60 * dtt.minute + 60 * 60 * dtt.hour
-                    if (
-                        (cur_time > self.sec_10_00  and # from 10:00 to 14:00
-                        cur_time < self.sec_14_00) or
-                        (cur_time > self.sec_14_05  and # from 14:05 to 18:45
-                        cur_time < self.sec_18_45) or
-                        (cur_time > self.sec_19_05  and # from 19:05 to 23:45
-                        cur_time < self.sec_23_45)):
-                            self.hist_fut_today.append([ind_sec, item])
-                            if buf_60_sec != dtt.minute :
+            with self.conn:
+                self.cur = self.conn.cursor()
+                if rd_cfg_SOFT:
+                    cfg = []
+                    self.cur.execute('SELECT * from ' + 'cfg_SOFT')
+                    cfg = self.cur.fetchall()    # read table name_tbl
+                    #
+                    for item in cfg:
+                        if item[0] == 'titul'         : self.titul           = item[1]
+                        if item[0] == 'path_file_DATA': self.path_file_DATA  = item[1]
+                        if item[0] == 'path_file_HIST': self.path_file_HIST  = item[1]
+                        if item[0] == 'dt_start'      : self.dt_start        = item[1]
+                    frm = '%Y-%m-%d %H:%M:%S'
+                    self.dt_start_sec = \
+                        int(datetime.strptime(self.dt_start, frm).replace(tzinfo=timezone.utc).timestamp())
+                    r_op_today = [0, 'ok']
+
+                elif rd_cfg_ALARM:
+                    self.nm, self.ena_cnt_ema  = [], []
+                    cfg = []
+                    self.cur.execute('SELECT * from ' + 'cfg_ALARM')
+                    cfg = self.cur.fetchall()    # read table name_tbl
+                    #
+                    for item in cfg:
+                        #print(item)
+                        self.nm.append(item[0])             # just ex ['pckt0']
+                        self.ena_cnt_ema.append(item[1])    # just ex [True]
+
+                    r_op_today = [0, 'ok']
+
+                elif rd_cfg_PACK:
+                    self.nm, self.koef, self.nul, self.ema = [], [], [], []
+                    cfg = []
+                    self.cur.execute('SELECT * from ' + 'cfg_PACK')
+                    cfg = self.cur.fetchall()    # read table name_tbl
+                    #
+                    for item in cfg:
+                        #print(item)
+                        self.nm.append(item[0])             # just ex ['pckt0']
+                        self.koef.append(item[1].split(','))# just ex ['0:3:SR','9:-20:MX
+                        self.nul.append(item[2])            # just ex [0]
+                        self.ema.append(item[3].split(':')) # just ex ['1111:15']
+
+                    r_op_today = [0, 'ok']
+
+                elif wr_cfg_PACK:
+                    duf_list = []
+                    for j, jtem in enumerate(self.nm):
+                        buf = (self.nm[j], ','.join(self.koef[j]), self.nul[j], ':'.join(self.ema[j]))
+                        #print(buf)
+                        duf_list.append(buf)
+
+                    #rq = self.obj_table.rewrite_table('cfg_PACK', duf_list, val = '(?,?,?,?)')
+                    self.cur.execute('DELETE FROM ' + 'cfg_PACK')
+                    self.cur.executemany('INSERT INTO ' + 'cfg_PACK' + ' VALUES' + '(?,?,?,?)', duf_list)
+                    self.conn.commit()
+
+                    r_op_today = [0, 'ok']
+
+                elif wr_data_FUT:
+                    duf_list = []
+                    for j, jtem in enumerate(self.buf_data_in_file):
+                        buf = (jtem,)
+                        duf_list.append(buf)
+                    #rq = self.obj_table.rewrite_table('data_FUT', duf_list, val = '(?)')
+                    self.cur.execute('DELETE FROM ' + 'data_FUT')
+                    self.cur.executemany('INSERT INTO ' + 'data_FUT' + ' VALUES' + '(?)', duf_list)
+                    self.conn.commit()
+
+                    r_op_today = [0, 'ok']
+
+                elif rd_data_FUT:
+                    data = []
+                    self.cur.execute('SELECT * from ' + 'data_FUT')
+                    data = self.cur.fetchall()    # read table name_tbl
+                    #
+                    self.data_fut = []
+
+                    for i, item in enumerate(list(data)):
+                        list_item = ''.join(item).replace(',','.').split('|')
+                        if   i == 0:
+                            self.account.acc_date  = list_item[0]
+                        elif i == 1:
+                            self.account.acc_balance = float(list_item[0])
+                            self.account.acc_profit  = float(list_item[1])
+                            self.account.acc_go      = float(list_item[2])
+                            self.account.acc_depo    = float(list_item[3])
+                        else:
+                            b_fut = Class_FUT()
+                            b_fut.sP_code      = list_item[0]
+                            b_fut.sRest        = int  (list_item[1])
+                            b_fut.sVar_margin  = float(list_item[2])
+                            b_fut.sOpen_price  = float(list_item[3])
+                            b_fut.sLast_price  = float(list_item[4])
+                            b_fut.sAsk         = float(list_item[5])
+                            b_fut.sBuy_qty     = int  (list_item[6])
+                            b_fut.sBid         = float(list_item[7])
+                            b_fut.sSell_qty    = int  (list_item[8])
+                            b_fut.sFut_go      = float(list_item[9])
+                            b_fut.sOpen_pos    = float(list_item[10])
+                            self.data_fut.append(b_fut)
+
+                    r_op_today = [0, 'ok']
+
+                elif rd_data_FUT_in_file:
+                    self.data_fut = []
+                    for i, item in enumerate(self.buf_data_in_file):
+                        list_item = ''.join(item).replace(',','.').split('|')
+                        if   i == 0:
+                            self.account.acc_date  = list_item[0]
+                        elif i == 1:
+                            self.account.acc_balance = float(list_item[0])
+                            self.account.acc_profit  = float(list_item[1])
+                            self.account.acc_go      = float(list_item[2])
+                            self.account.acc_depo    = float(list_item[3])
+                        else:
+                            b_fut = Class_FUT()
+                            b_fut.sP_code      = list_item[0]
+                            b_fut.sRest        = int  (list_item[1])
+                            b_fut.sVar_margin  = float(list_item[2])
+                            b_fut.sOpen_price  = float(list_item[3])
+                            b_fut.sLast_price  = float(list_item[4])
+                            b_fut.sAsk         = float(list_item[5])
+                            b_fut.sBuy_qty     = int  (list_item[6])
+                            b_fut.sBid         = float(list_item[7])
+                            b_fut.sSell_qty    = int  (list_item[8])
+                            b_fut.sFut_go      = float(list_item[9])
+                            b_fut.sOpen_pos    = float(list_item[10])
+                            self.data_fut.append(b_fut)
+                    r_op_today = [0, 'ok']
+
+                elif rd_hist_FUT_today:
+                    #rq  = self.obj_table.get_table_db_with('hist_FUT_today')
+                    self.hist_fut_today = []
+                    self.cur.execute('SELECT * from ' + 'hist_FUT_today')
+                    self.hist_fut_today = self.cur.fetchall()    # read table name_tbl
+
+                    print('read hist_fut_today => ', len(self.hist_fut_today), ' strings')
+
+                    self.hist_1_fut_today = []
+                    if len(self.hist_fut_today) != 0:
+                        self.hist_1_fut_today.append(self.hist_fut_today[0])
+                        frm = '%d.%m.%Y %H:%M:%S'
+                        dtt = datetime.strptime(str(self.hist_fut_today[0][1].split('|')[0]), frm)
+                        buf_60_sec = dtt.minute
+                        for item in self.hist_fut_today:
+                            dtt = datetime.strptime(str(item[1].split('|')[0]), frm)
+                            if dtt.minute != buf_60_sec:
+                                self.hist_1_fut_today.append(item)
                                 buf_60_sec = dtt.minute
-                                self.hist_1_fut_today.append([ind_sec, item])
+                    #print('parse hist_1_fut_today => ', len(self.hist_1_fut_today), ' strings')
 
-            else:
-                return [1, 'hist_in_file is empty! ']
+                    self.arr_1_fut_today = []
+                    for item in self.hist_1_fut_today:
+                        arr_item = (item[1].replace(',', '.')).split('|')
+                        arr_jtem = []
+                        arr_jtem.append(item[0])
+                        arr_jtem.append(arr_item[0])
+                        for jtem in arr_item[1:-1]:
+                            arr_jtem.append(float(jtem))
+                        self.arr_1_fut_today.append(arr_jtem)
+
+                    r_op_today = [0, 'ok']
+
+                elif wr_hist_FUT_today:
+                    self.hist_fut_today = []
+                    self.hist_1_fut_today = []
+
+                    buf_60_sec = 666
+                    frm = '%d.%m.%Y %H:%M:%S'
+
+                    if self.buf_hist_in_file != '':
+                        for i, item in enumerate(self.buf_hist_in_file):
+                            list_item = item.split('|')
+                            dtt = datetime.strptime(list_item[0], frm)
+                            ind_sec  = int(dtt.replace(tzinfo=timezone.utc).timestamp())
+                            cur_time = dtt.second + 60 * dtt.minute + 60 * 60 * dtt.hour
+                            if (
+                                (cur_time > self.sec_10_00  and # from 10:00 to 14:00
+                                cur_time < self.sec_14_00) or
+                                (cur_time > self.sec_14_05  and # from 14:05 to 18:45
+                                cur_time < self.sec_18_45) or
+                                (cur_time > self.sec_19_05  and # from 19:05 to 23:45
+                                cur_time < self.sec_23_45)):
+                                    self.hist_fut_today.append([ind_sec, item])
+                                    if buf_60_sec != dtt.minute :
+                                        buf_60_sec = dtt.minute
+                                        self.hist_1_fut_today.append([ind_sec, item])
+
+                        self.arr_1_fut_today = []
+                        for item in self.hist_1_fut_today:
+                            arr_item = (item[1].replace(',', '.')).split('|')
+                            arr_jtem = []
+                            arr_jtem.append(item[0])
+                            arr_jtem.append(arr_item[0])
+                            for jtem in arr_item[1:-1]:
+                                arr_jtem.append(float(jtem))
+                            self.arr_1_fut_today.append(arr_jtem)
+
+                        #print('self.hist_fut_today[-1] => ', self.hist_fut_today[-1])
+
+                        #rq = self.obj_table.rewrite_table('hist_FUT_today', self.hist_fut_today, val = '(?,?)')
+                        self.cur.execute('DELETE FROM ' + 'hist_FUT_today')
+                        self.cur.executemany('INSERT INTO ' + 'hist_FUT_today' + ' VALUES' + '(?,?)', self.hist_fut_today)
+                        self.conn.commit()
+
+                    r_op_today = [0, 'ok']
+
+                elif rd_hist_PACK_today:
+                    self.hist_pack_today = []
+                    self.cur.execute('SELECT * from ' + 'hist_PACK_today')
+                    self.hist_pack_today = self.cur.fetchall()    # read table name_tbl
+                    r_op_today = [0, 'ok']
+
+                elif wr_hist_PACK_today:
+                    #rq = self.obj_table.rewrite_table('hist_PACK_today', hist_arc, val = '(?,?)')
+                    self.cur.execute('DELETE FROM ' + 'hist_PACK_today')
+                    self.cur.executemany('INSERT INTO ' + 'hist_PACK_today' + ' VALUES' + '(?,?)', self.hist_pack_today)
+                    self.conn.commit()
+                    r_op_today = [0, 'ok']
+
+                else:
+                    pass
         except Exception as ex:
-            err_msg = 'rewrite_tbl => ' + str(ex)
-            return [1, err_msg]
+            r_op_today = [1, 'op_today / ' + str(ex)]
 
-        #print('self.hist_1_fut_today[-1] => ', self.hist_1_fut_today[-1])
-
-        self.arr_1_fut_today = []
-        for item in self.hist_1_fut_today:
-            arr_item = (item[1].replace(',', '.')).split('|')
-            arr_jtem = []
-            arr_jtem.append(item[0])
-            arr_jtem.append(arr_item[0])
-            for jtem in arr_item[1:-1]:
-                arr_jtem.append(float(jtem))
-            self.arr_1_fut_today.append(arr_jtem)
-
-        #print('self.hist_fut_today[-1] => ', self.hist_fut_today[-1])
-
-        rq = self.obj_table.rewrite_table('hist_FUT_today', self.hist_fut_today, val = '(?,?)')
-        if rq[0] != 0:
-            err_msg = 'rewrite_table(hist_FUT_today) ' + '  '.join(str(e) for e in rq)
-            return [1, err_msg]
-
-        return [0, 'ok']
-#=======================================================================
-class Class_TABLE_hist_pack_today():
-    #///////////////////////////////////////////////////////////////////
-    def __init__(self, path_term_fut_pack):
-        self.path_term_fut_pack  = path_term_fut_pack
-        self.obj_table = Class_SQLite(path_term_fut_pack)
-        self.hist_pack_today = []  # list of [[ind_sec string] ... ]
-    #///////////////////////////////////////////////////////////////////
-    def rewrite_tbl(self, hist_arc):
-        self.hist_pack_today = []
-        rq = self.obj_table.rewrite_table('hist_PACK_today', hist_arc, val = '(?,?)')
-        if rq[0] != 0:
-            err_msg = 'rewrite_table hist_PACK_today ' + '  '.join(str(e) for e in rq)
-            #cntr.log.wr_log_error(err_msg)
-            #sg.Popup('Error !', err_msg)
-            return [1, err_msg]
-
-        return [0, 'OK']
-#=======================================================================
-class Class_TABLE_hist_fut():
-    def __init__(self, path_term_fut_archiv):
-        self.path_term_fut_archiv  = path_term_fut_archiv
-        self.obj_table = Class_SQLite(path_term_fut_archiv)
-        self.hist_fut_archiv = []  # list of [[ind_sec string] ... ]
-        self.arr_fut_archiv  = []  # list period 1 minute
-    #///////////////////////////////////////////////////////////////////
-    def read_tbl(self):
-        rq  = self.obj_table.get_table_db_with('hist_FUT')
-        if rq[0] != 0:
-            err_msg = 'Can not read TBL hist_FUT ! ' + '  '.join(str(e) for e in rq)
-            print(err_msg)
-            return [1, err_msg]
-
-        self.hist_fut_archiv = []
-        self.hist_fut_archiv = rq[1][:]
-        #print('read hist_FUT => ', len(self.hist_fut_archiv), ' strings')
-
-        self.arr_fut_archiv = []
-        for item in self.hist_fut_archiv:
-            arr_item = (item[1].replace(',', '.')).split('|')
-            arr_jtem = []
-            arr_jtem.append(item[0])
-            arr_jtem.append(arr_item[0])
-            for jtem in arr_item[1:-1]:
-                arr_jtem.append(float(jtem))
-            self.arr_fut_archiv.append(arr_jtem)
-
-        #print('arr_fut_archiv[-1] => ', self.arr_fut_archiv[-1])
-
-        return [0, 'ok']
-#=======================================================================
-class Class_TABLE_hist_pack():
-    #///////////////////////////////////////////////////////////////////
-    def __init__(self, path_term_fut_archiv):
-        self.path_term_fut_archiv  = path_term_fut_archiv
-        self.obj_table = Class_SQLite(path_term_fut_archiv)
-        self.hist_pack_archiv = []  # list of [[ind_sec string] ... ]
-    #///////////////////////////////////////////////////////////////////
-    def rewrite_tbl(self, hist_arc):
-        self.hist_pack_archiv = []
-        rq = self.obj_table.rewrite_table('hist_PACK', hist_arc, val = '(?,?)')
-        if rq[0] != 0:
-            err_msg = 'rewrite_table hist_PACK ' + '  '.join(str(e) for e in rq)
-            #cntr.log.wr_log_error(err_msg)
-            #sg.Popup('Error !', err_msg)
-            return [1, err_msg]
-
-        return [0, 'OK']
+        return r_op_today
 #=======================================================================
 class Class_CONTROLER():
     #///////////////////////////////////////////////////////////////////
@@ -839,8 +1128,11 @@ class Class_CONTROLER():
         path_TERM_FUT_PACK    = c_dir + '\\DB\\term_fut_pack.sqlite'
         path_TERM_FUT_ARCHIV  = c_dir + '\\DB\\term_fut_archiv.sqlite'
 
-        self.cfg_soft = Class_TABLE_cfg_soft(path_TERM_FUT_PACK)
-        rq = self.cfg_soft.read_tbl()
+        self.db_fut_today = Class_term_fut_today(path_TERM_FUT_PACK)
+        self.db_fut_arc   = Class_term_fut_archiv(path_TERM_FUT_ARCHIV)
+        rq = self.db_fut_today.op_today(rd_cfg_SOFT = True)
+        #self.cfg_soft = Class_TABLE_cfg_soft(path_TERM_FUT_PACK)
+        #rq = self.cfg_soft.read_tbl()
         if rq[0] != 0:
             err_msg = 'Can not init TBL cfg_SOFT !' + '  '.join(str(e) for e in rq)
             sg.PopupError('Error !', err_msg)
@@ -849,16 +1141,19 @@ class Class_CONTROLER():
         else:
             print('cfg_SOFT = > ', rq)
 
-        self.trm_data = Class_TERM_data(self.cfg_soft.path_file_DATA)
-        self.trm_hist = Class_TERM_hist(self.cfg_soft.path_file_HIST)
-        self.cfg_pack = Class_TABLE_cfg_pack(path_TERM_FUT_PACK)
-        self.cfg_alarm = Class_TABLE_cfg_alarm(path_TERM_FUT_PACK)
-        self.dt_fut   = Class_TABLE_data_fut(path_TERM_FUT_PACK)
-        self.h_fut_today  = Class_TABLE_hist_fut_today(path_TERM_FUT_PACK)
-        self.h_pack_today = Class_TABLE_hist_pack_today(path_TERM_FUT_PACK)
-        self.h_fut_arc    = Class_TABLE_hist_fut(path_TERM_FUT_ARCHIV)
-        self.h_pack_arc   = Class_TABLE_hist_pack(path_TERM_FUT_ARCHIV)
-        self.e_mail   = Class_GMAIL('mobile.ovk', '20066002', 'mobile.ovk@gmail.com')
+        #self.trm_data = Class_TERM_data(self.cfg_soft.path_file_DATA)
+        #self.trm_hist = Class_TERM_hist(self.cfg_soft.path_file_HIST)
+        self.trm_data = Class_TERM_data(self.db_fut_today.path_file_DATA)
+        self.trm_hist = Class_TERM_hist(self.db_fut_today.path_file_HIST)
+
+        #self.cfg_alarm = Class_TABLE_cfg_alarm(path_TERM_FUT_PACK)
+        #self.cfg_pack = Class_TABLE_cfg_pack(path_TERM_FUT_PACK)
+
+        #self.dt_fut   = Class_TABLE_data_fut(path_TERM_FUT_PACK)
+        #self.h_fut_today  = Class_TABLE_hist_fut_today(path_TERM_FUT_PACK)
+        #self.h_pack_today = Class_TABLE_hist_pack_today(path_TERM_FUT_PACK)
+
+        self.e_mail     = Class_GMAIL('mobile.ovk', '20066002', 'mobile.ovk@gmail.com')
 
         self.arr_fut        = []    # массив котировок фьючей  60 s
         self.arr_fut_today  = []    # массив котировок фьючей  60 s
@@ -898,7 +1193,8 @@ def dbg_prn(cntr, b_clear  = True,
         b_cfg_pack  = False,
         b_dt_fut    = False,
         b_fut_today = False,
-        b_fut_arc   = False
+        b_fut_arc   = False,
+        b_pack_arc  = False
         ):
     if b_clear:
         os.system('cls')  # on windows
@@ -971,27 +1267,29 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_cfg_soft:
         #hist_in_file = cntr.trm_hist.hist_in_file
-        s = cntr.cfg_soft
+        #s = cntr.cfg_soft
+        s = cntr.db_fut_today
         print('.....Class_TABLE_cfg_soft.....')
-        print('path_term_fut_pack => ', s.path_term_fut_pack)
+        print('path_term_fut_pack => ', s.path_db)
         print('titul              => ', s.titul)
         print('path_file_DATA     => ', s.path_file_DATA)
         print('path_file_HIST     => ', s.path_file_HIST)
         print('dt_start           => ', s.dt_start)
 
     if b_cfg_alarm:
-        a = cntr.cfg_alarm
+        #a = cntr.cfg_alarm
+        a = cntr.db_fut_today
         print('.....Class_TABLE_cfg_alarm.....')
-        print('path_term_fut_pack    => ', a.path_term_fut_pack)
+        print('path_term_fut_pack    => ', a.path_db)
         print('len(nm) => ', len(a.nm))
         if len(a.nm) > 0:
             for i, item in enumerate(a.nm):
                 print(item, a.ena_cnt_ema[i])
 
     if b_cfg_pack:
-        cfg_pack = cntr.cfg_pack
+        cfg_pack = cntr.db_fut_today
         print('.....Class_TABLE_cfg_pack.....')
-        print('path_term_fut_pack    => ', cfg_pack.path_term_fut_pack)
+        print('path_term_fut_pack    => ', cfg_pack.path_db)
         print('len(nm) => ', len(cfg_pack.nm))
         if len(cfg_pack.nm) > 0:
             for i, item in enumerate(cfg_pack.nm):
@@ -999,8 +1297,8 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_dt_fut:
         print('.....Class_TABLE_data_fut.....')
-        print('path_term_fut_pack    => ', cntr.dt_fut.path_term_fut_pack)
-        dt_acc = cntr.dt_fut.account
+        print('path_term_fut_pack    => ', cntr.db_fut_today.path_db)
+        dt_acc = cntr.db_fut_today.account
         print('.....Class_ACCOUNT.....')
         print('acc_date    => ', dt_acc.acc_date)
         print('acc_balance => ', dt_acc.acc_balance)
@@ -1008,7 +1306,7 @@ def dbg_prn(cntr, b_clear  = True,
         print('acc_go      => ', dt_acc.acc_go)
         print('acc_depo    => ', dt_acc.acc_depo)
         print('. . . . .')
-        dt_fut = cntr.dt_fut.data_fut
+        dt_fut = cntr.db_fut_today.data_fut
         print('len(data_fut)     => ', len(dt_fut))
         if len(dt_fut) > 0:
             for i, item in enumerate(dt_fut):
@@ -1031,8 +1329,8 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_fut_today:
         print('.....Class_TABLE_data_fut.....')
-        print('path_term_fut_pack    => ', cntr.h_fut_today.path_term_fut_pack)
-        hist = cntr.h_fut_today
+        print('path_term_fut_pack    => ', cntr.db_fut_today.path_db)
+        hist = cntr.db_fut_today
         print('len(hist_fut_today)   => ', len(hist.hist_fut_today))
         if len(hist.hist_fut_today) > 4:
             print('hist_fut_today[0] => ',  hist.hist_fut_today[0])
@@ -1059,8 +1357,8 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_fut_arc:
         print('.....Class_TABLE_hist_fut(archiv).....')
-        print('path_term_fut_archiv    => ', cntr.h_fut_arc.path_term_fut_archiv)
-        hist = cntr.h_fut_arc
+        print('path_term_fut_archiv    => ', cntr.db_fut_arc.path_db)
+        hist = cntr.db_fut_arc
         print('len(hist_fut_archiv)   => ', len(hist.hist_fut_archiv))
         if len(hist.hist_fut_archiv) > 4:
             print('hist_fut_archiv[0] => ',  hist.hist_fut_archiv[0])
@@ -1077,6 +1375,18 @@ def dbg_prn(cntr, b_clear  = True,
             print('. . . . .')
             print('arr_fut_today[-1] => ', hist.arr_fut_archiv[-1][1].split('|')[0])
 
+    if b_pack_arc:
+        print('.....Class_TABLE_hist_fut(archiv).....')
+        print('path_term_fut_archiv    => ', cntr.db_fut_arc.path_db)
+        hist = cntr.db_fut_arc
+        print('len(hist_pack_archiv)   => ', len(hist.hist_pack_archiv))
+        if len(hist.hist_pack_archiv) > 4:
+            print('hist_pack_archiv[0] => ',  hist.hist_pack_archiv[0])
+            print('hist_pack_archiv[1] => ',  hist.hist_pack_archiv[1][1].split('|')[0])
+            print('hist_pack_archiv[2] => ',  hist.hist_pack_archiv[2][1].split('|')[0])
+            print('. . . . .')
+            print('hist_pack_archiv[-1] => ', hist.hist_pack_archiv[-1][1].split('|')[0])
+            print('___________________________')
 
         print('')
 #=======================================================================
@@ -1088,7 +1398,9 @@ def dbg_srv(cntr,
         b_cfg_soft   = False,
         b_data_fut   = False,
         b_hist_fut_t = False,
-        b_hist_fut_a = False,
+        #b_hist_fut_a = False,
+        t_hist_fut_a  = False,
+        t_hist_pack_a = False,
         b_send_mail  = False
         ):
     if b_trm_data:
@@ -1104,34 +1416,45 @@ def dbg_srv(cntr,
         else:           dbg_prn(cntr, b_clear  = False, b_trm_hist_in_file = True)
 
     elif b_cfg_alarm:
-        rq = cntr.cfg_alarm.read_tbl()
+        rq = cntr.db_fut_today.op_today(rd_cfg_ALARM = True)
+        #rq = cntr.cfg_alarm.read_tbl()
         if rq[0] != 0 : _err_(cntr, 'cfg_alarm ', rq)
         else:           dbg_prn(cntr,  b_cfg_alarm = True)
 
     elif b_cfg_pack:
-        rq = cntr.cfg_pack.read_tbl()
+        #rq = cntr.cfg_pack.read_tbl()
+        rq = cntr.db_fut_today.op_today(rd_cfg_PACK = True)
         if rq[0] != 0 : _err_(cntr, 'cfg_pack ', rq)
         else:           dbg_prn(cntr,  b_cfg_pack = True)
 
     elif b_cfg_soft:
-        rq = cntr.cfg_soft.read_tbl()
+        #rq = cntr.cfg_soft.read_tbl()
+        rq = cntr.db_fut_today.op_today(rd_cfg_SOFT = True)
         if rq[0] != 0 : _err_(cntr, 'cfg_soft ', rq)
         else:           dbg_prn(cntr,  b_cfg_soft = True)
 
     elif b_data_fut:
-        rq = cntr.dt_fut.read_tbl()
+        #rq = cntr.dt_fut.read_tbl()
+        rq = cntr.db_fut_today.op_today(rd_data_FUT = True)
         if rq[0] != 0 : _err_(cntr, 'dt_fut ', rq)
         else:           dbg_prn(cntr,  b_dt_fut = True)
 
     elif b_hist_fut_t:
-        rq = cntr.h_fut_today.read_tbl()
+        #rq = cntr.h_fut_today.read_tbl()
+        rq = cntr.db_fut_today.op_today(rd_hist_FUT_today = True)
         if rq[0] != 0 : _err_(cntr, 'h_fut_today ', rq)
         else:           dbg_prn(cntr,  b_fut_today = True)
 
-    elif b_hist_fut_a:
-        rq = cntr.h_fut_arc.read_tbl()
-        if rq[0] != 0 : _err_(cntr, 'h_fut_arc ', rq)
+    elif t_hist_fut_a:
+        rq = cntr.db_fut_arc.op_archiv(rd_hist_FUT = True)
+        if rq[0] != 0 : _err_(cntr, 'rd_hist_FUT ', rq)
         else:           dbg_prn(cntr,  b_fut_arc = True)
+
+    elif t_hist_pack_a:
+        rq = cntr.db_fut_arc.op_archiv(rd_hist_PACK = True)
+        if rq[0] != 0 : _err_(cntr, 'rd_hist_PACK ', rq)
+        else:           dbg_prn(cntr,  b_pack_arc = True)
+
 
     elif b_send_mail:
         print( 'Start TEST e-mail (it is about 20 s) => ' + datetime.today().strftime('%H:%M:%S') )
@@ -1148,16 +1471,17 @@ def dbg_srv(cntr,
 #=======================================================================
 def calc_hist_PACK(cntr, i_pack):
     cntr.arr_pack[i_pack] = []
-    arr_HIST = cntr.h_fut_arc.arr_fut_archiv    # archiv of FUT 60 sec
+    arr_HIST = cntr.db_fut_arc.arr_fut_archiv   # archiv of FUT 60 sec
+
     #const_UP, const_DW = +50, -50
     #print('ema =  ', cntr.cfg_pack.ema[i_pack])
-    k_EMA     = int(cntr.cfg_pack.ema[i_pack][0])
-    k_EMA_rnd = int(cntr.cfg_pack.ema[i_pack][1])
+    k_EMA     = int(cntr.db_fut_today.ema[i_pack][0])
+    k_EMA_rnd = int(cntr.db_fut_today.ema[i_pack][1])
     koef_EMA = round(2/(1+k_EMA),5)
     ind = []
     kf  = []
     #print('koef =  ', cntr.cfg_pack.koef[i_pack])
-    for elem in cntr.cfg_pack.koef[i_pack]:
+    for elem in cntr.db_fut_today.koef[i_pack]:
         ind.append(int(elem.split(':')[0]))
         kf.append(int(elem.split(':')[1]))
     #koef_AMA = cntr.koef_pack[i_pack][3]
@@ -1187,7 +1511,7 @@ def calc_hist_PACK(cntr, i_pack):
         ask_bid_AVR = 0
         if idx == 0:
             null_prc = int((ask_p + bid_p)/2)
-            cntr.cfg_pack.nul[i_pack] = null_prc
+            cntr.db_fut_today.nul[i_pack] = null_prc
             buf_c_pack.pAsk, buf_c_pack.pBid = 0, 0
             buf_c_pack.EMAf, buf_c_pack.EMAf_rnd = 0, 0
             buf_c_pack.cnt_EMAf_rnd = 0
@@ -1215,17 +1539,20 @@ def calc_hist_PACK(cntr, i_pack):
                 buf_c_pack.cnt_EMAf_rnd = i_cnt
 
         cntr.arr_pack[i_pack].append(buf_c_pack)
+
+    #rq = cntr.db_fut_today.op_today(wr_cfg_PACK = True)
 #=======================================================================
 def calc_hist_PACK_today(cntr, i_pack):
     cntr.arr_pack_today[i_pack] = []
-    arr_HIST = cntr.h_fut_today.arr_1_fut_today    # today of FUT 60 sec
-    k_EMA     = int(cntr.cfg_pack.ema[i_pack][0])
-    k_EMA_rnd = int(cntr.cfg_pack.ema[i_pack][1])
+    #arr_HIST = cntr.h_fut_today.arr_1_fut_today    # today of FUT 60 sec
+    arr_HIST = cntr.db_fut_today.arr_1_fut_today
+    k_EMA     = int(cntr.db_fut_today.ema[i_pack][0])
+    k_EMA_rnd = int(cntr.db_fut_today.ema[i_pack][1])
     koef_EMA = round(2/(1+k_EMA),5)
     ind = []
     kf  = []
     #print('koef =  ', cntr.cfg_pack.koef[i_pack])
-    for elem in cntr.cfg_pack.koef[i_pack]:
+    for elem in cntr.db_fut_today.koef[i_pack]:
         ind.append(int(elem.split(':')[0]))
         kf.append(int(elem.split(':')[1]))
 
@@ -1249,7 +1576,7 @@ def calc_hist_PACK_today(cntr, i_pack):
 
         ask_bid_AVR = 0
         if idx == 0:
-            null_prc = cntr.cfg_pack.nul[i_pack]
+            null_prc = cntr.db_fut_today.nul[i_pack]
             ask_p = int(ask_p - null_prc)
             bid_p = int(bid_p - null_prc)
             buf_c_pack.pAsk = ask_p
@@ -1289,6 +1616,7 @@ def calc_hist_PACK_today(cntr, i_pack):
             else:
                 buf_c_pack.cnt_EMAf_rnd = i_cnt
 
+        #rq = cntr.db_fut_today.op_today(wr_cfg_PACK = True)
         cntr.arr_pack_today[i_pack].append(buf_c_pack)
 #=======================================================================
 def debug_calc_PACK_arc(cntr):   # 'Service\Debug\calc PACK arc'
@@ -1296,22 +1624,24 @@ def debug_calc_PACK_arc(cntr):   # 'Service\Debug\calc PACK arc'
     s_term = []
     s_term.append('___ calc PACK arc ___')
 
-    rq = cntr.h_fut_arc.read_tbl()
+    rq = cntr.db_fut_arc.op_archiv(rd_hist_FUT = True)
+
     if rq[0] != 0 :
         _err_(cntr, 'debug_calc_PACK_arc ', rq)
         s_term.append('debug_calc_PACK_arc ')
     else:
-        arr   = cntr.h_fut_arc.hist_fut_archiv
+        arr   = cntr.db_fut_arc.hist_fut_archiv
 
-    for i_pack, item in enumerate(cntr.cfg_pack.nm):
+    for i_pack, item in enumerate(cntr.db_fut_today.nm):
         calc_hist_PACK(cntr, i_pack)
         sg.OneLineProgressMeter('calc_hist_PACK',
                                 i_pack+1,
-                                len(cntr.cfg_pack.nm),
+                                len(cntr.db_fut_today.nm),
                                 'key', orientation='h')
 
     print('NOTE - must update null_price every time after calc_hist_PACK !!!')
-    cntr.cfg_pack.rewrite_tbl()
+    #cntr.cfg_pack.rewrite_tbl()
+    rq = cntr.db_fut_today.op_today(wr_cfg_PACK = True)
     print('writing hist_PACK . . . . . .')
     wr_hist_PACK(cntr)
     print('ok. . . . . . . . . . . . . .')
@@ -1321,19 +1651,20 @@ def debug_calc_PACK_today(cntr): # 'Service\Debug\calc PACK today'
     s_term = []
     s_term.append('___ calc PACK today ___')
 
-    rq = cntr.h_fut_today.read_tbl()
+    #rq = cntr.h_fut_today.read_tbl()
+    rq = cntr.db_fut_today.op_today(rd_hist_FUT_today = True)
     if rq[0] != 0 :
         _err_(cntr, 'debug_calc_PACK_today ', rq)
         s_term.append('debug_calc_PACK_today ')
     else:
-        arr   = cntr.h_fut_today.hist_fut_today
-        arr1   = cntr.h_fut_today.hist_1_fut_today
+        arr   = cntr.db_fut_today.hist_fut_today
+        arr1   = cntr.db_fut_today.hist_1_fut_today
         s_term.append('\n hist_fut_today   => ' + str(len(arr))  + ' strings\n ')
         s_term.append('\n hist_1_fut_today => ' + str(len(arr1)) + ' strings\n ')
 
     if len(arr) > 0:
         ind_pack = 'debug_calc_PACK_today => '
-        for i_pack, item in enumerate(cntr.cfg_pack.nm):
+        for i_pack, item in enumerate(cntr.db_fut_today.nm):
             calc_hist_PACK_today(cntr, i_pack)
             #print(i_pack, cntr.arr_pack_today[i_pack][-1])
             ind_pack += str(i_pack) + ' '
@@ -1360,7 +1691,7 @@ def TODAY_copy_ARCHIV(cntr):
     print('last_1_fut_today => ', last_1_fut_today)
 
     print('Status BEFORE')
-    hist = cntr.h_fut_arc.hist_fut_archiv
+    hist = cntr.db_fut_arc.hist_fut_archiv
     print('len(hist_fut_archiv)   => ', len(hist))
     if len(hist) > 4:
         print('hist_fut_archiv[0] => ',  hist[0])
@@ -1399,7 +1730,8 @@ def convert_tbl_TODAY(cntr):
     #service_hist_FUT_TODAY(cntr)    #read & print
     dbg_srv(cntr,  b_hist_fut_t = False)
     #
-    arr_hist = cntr.h_fut_today.hist_fut_today
+    #arr_hist = cntr.h_fut_today.hist_fut_today
+    arr_hist = cntr.db_fut_today.hist_fut_today
     term_dt = arr_hist[-1][1].split('|')[0]
     dtt = datetime.strptime(str(term_dt), "%d.%m.%Y %H:%M:%S")
     #
@@ -1409,10 +1741,11 @@ def convert_tbl_TODAY(cntr):
     # write in file HISTORY  10 sec ------------------------------------
     hist_out = []           # convert TUPLE in LIST & delete last '|'
     for item in arr_hist: hist_out.append(''.join(list(item[1])[0:-1]))
-    path_file = str_dt + '_hist_' + cntr.cfg_soft.titul + '.txt'
+    path_file = str_dt + '_hist_' + cntr.db_fut_today.titul + '.txt'
     wr_file(path_file, hist_out, 'Hist export for ', cntr)
     #
-    arr_hist = cntr.h_fut_today.hist_1_fut_today
+    #arr_hist = cntr.h_fut_today.hist_1_fut_today
+    arr_hist = cntr.db_fut_today.hist_1_fut_today
     term_dt = arr_hist[-1][1].split('|')[0]
     dtt = datetime.strptime(str(term_dt), "%d.%m.%Y %H:%M:%S")
     # write in file HISTORY  60 sec ------------------------------------
@@ -1421,7 +1754,7 @@ def convert_tbl_TODAY(cntr):
         dt_buf = datetime.strptime(str(item[1].split('|')[0]), "%d.%m.%Y %H:%M:%S")
         if dt_buf.hour < 19:
             hist_out.append(str(int(item[0])) + ';' + ''.join(list(item[1])[0:-1]))
-    path_file = cntr.cfg_soft.titul + '_' + str_dt + '_hist_FUT' + '.csv'
+    path_file = cntr.db_fut_today.titul + '_' + str_dt + '_hist_FUT' + '.csv'
     wr_file(path_file, hist_out, 'Archiv for ', cntr)
     #
     print('.  .  .  .  .')
@@ -1451,9 +1784,14 @@ def prepair_hist_PACK(cntr, b_today = False):
     return name_list
 #=======================================================================
 def wr_hist_PACK(cntr):
-    name_list = []
-    name_list = prepair_hist_PACK(cntr)
-    rq = cntr.h_pack_arc.rewrite_tbl(name_list)
+    #name_list = []
+    #name_list = prepair_hist_PACK(cntr)
+    #rq = cntr.h_pack_arc.rewrite_tbl(name_list)
+
+    cntr.db_fut_arc.hist_pack_archiv = []
+    cntr.db_fut_arc.hist_pack_archiv = prepair_hist_PACK(cntr)
+    rq = cntr.db_fut_arc.op_archiv(wr_hist_PACK = True)
+
     if rq[0] != 0:
         _err_(cntr, 'hist_PACK ', rq, PopUp = False)
         return [1, 'wr_hist_PACK']
@@ -1463,9 +1801,12 @@ def wr_hist_PACK(cntr):
 def wr_hist_PACK_today(cntr):
     name_list = []
     name_list = prepair_hist_PACK(cntr, b_today = True)
-    rq = cntr.h_pack_today.rewrite_tbl(name_list)
+    #rq = cntr.h_pack_today.rewrite_tbl(name_list)
+    cntr.db_fut_today.hist_pack_today = []
+    cntr.db_fut_today.hist_pack_today = name_list[:]
+    rq = cntr.db_fut_today.op_today(wr_hist_PACK_today = True)
     if rq[0] != 0:
-        _err_(cntr, 'hist_PACK_today ', rq, PopUp = False)
+        _err_(cntr, 'hist_PACK_today ', rq, PopUp = True)
         return [1, 'wr_hist_PACK_today']
 
     return [0, 'OK']
@@ -1495,7 +1836,11 @@ def event_menu(event, cntr):
     #-------------------------------------------------------------------
     if event == 'srv hist FUT today' : dbg_srv(cntr, b_hist_fut_t = True)
     #-------------------------------------------------------------------
-    if event == 'srv hist FUT arch'  : dbg_srv(cntr, b_hist_fut_a = True)
+    #if event == 'srv hist FUT arch'  : dbg_srv(cntr, b_hist_fut_a = True)
+    #-------------------------------------------------------------------
+    if event == 'test hist FUT arch'   : dbg_srv(cntr, t_hist_fut_a  = True)
+    #-------------------------------------------------------------------
+    if event == 'test hist PACK arch'  : dbg_srv(cntr, t_hist_pack_a = True)
     #-------------------------------------------------------------------
     if event == 'srv send E-MAIL'    : dbg_srv(cntr, b_send_mail  = True)
     #-------------------------------------------------------------------
@@ -1526,6 +1871,9 @@ def event_menu(event, cntr):
     if event == 'Convert tbl TODAY' : convert_tbl_TODAY(cntr)
     #---------------------------------------------------------------
     if event == 'TODAY to ARCHIV'   : TODAY_copy_ARCHIV(cntr)
+    #---------------------------------------------------------------
+    if event == 'VACUUM tbl TODAY'  : TODAY_clear_VACUUM(cntr)
+
 #=======================================================================
 def main():
     # init
@@ -1540,43 +1888,49 @@ def main():
         if rq[0] != 0:  _err_(cntr, 'INIT hist_in_file ', rq)
         else:           print('trm_hist  = > ', rq)
         #---------------------------------------------------------------
-        rq = cntr.cfg_alarm.read_tbl()
+        #rq = cntr.cfg_alarm.read_tbl()
+        rq = cntr.db_fut_today.op_today(rd_cfg_ALARM = True)
         if rq[0] != 0 : _err_(cntr, 'INIT cfg_ALARM ', rq)
         else:           print('cfg_alarm = > ', rq)
         #---------------------------------------------------------------
-        rq = cntr.cfg_pack.read_tbl()
+        #rq = cntr.cfg_pack.read_tbl()
+        rq = cntr.db_fut_today.op_today(rd_cfg_PACK = True)
         if rq[0] != 0 : _err_(cntr, 'INIT cfg_PACK ', rq)
         else:
             print('cfg_pack  = > ', rq)
-            if len(cntr.cfg_pack.nm) == 0:
+            if len(cntr.db_fut_today.nm) == 0:
                 _err_(cntr, 'cfg_pack.nm = 0  ', [' ', 'It can not be EMPTY !'] )
                 break
-            for item in cntr.cfg_pack.nm:
+            for item in cntr.db_fut_today.nm:
                 cntr.arr_pack.append([])
                 cntr.arr_pack_today.append([])
         #---------------------------------------------------------------
-        rq = cntr.dt_fut.read_tbl()
+        #rq = cntr.dt_fut.read_tbl()
+        rq = cntr.db_fut_today.op_today(rd_data_FUT = True)
         if rq[0] != 0:  _err_(cntr, 'INIT data_FUT ', rq)
         else:           print('data_fut        = > ', rq)
         #---------------------------------------------------------------
-        rq = cntr.h_fut_today.read_tbl()
-        if rq[0] != 0 : _err_(cntr, 'INIT h_fut_today ', rq)
-        else:           print('hist_FUT today  = > ', rq)
+        #rq = cntr.h_fut_today.read_tbl()
+        rq = cntr.db_fut_today.op_today(rd_hist_FUT_today = True)
+        if rq[0] != 0 : _err_(cntr, 'INIT hist_FUT_today ', rq)
+        else:           print('hist_FUT_today  = > ', rq)
         #---------------------------------------------------------------
-        rq = cntr.h_fut_arc.read_tbl()
+        rq = cntr.db_fut_arc.op_archiv(rd_hist_FUT = True)
         if rq[0] != 0 : _err_(cntr, 'INIT hist_fut_archiv ', rq)
         else:           print('hist_FUT archiv = > ', rq)
         #---------------------------------------------------------------
         print('calculating hist_PACK . . . .')
-        for i_pack, item in enumerate(cntr.cfg_pack.nm):
+        for i_pack, item in enumerate(cntr.db_fut_today.nm):
             calc_hist_PACK(cntr, i_pack)
             sg.OneLineProgressMeter('calc_hist_PACK',
                                     i_pack+1,
-                                    len(cntr.cfg_pack.nm),
+                                    len(cntr.db_fut_today.nm),
                                     'key', orientation='h')
-        cntr.cfg_pack.rewrite_tbl()
+        #cntr.cfg_pack.rewrite_tbl()
+        rq = cntr.db_fut_today.op_today(wr_cfg_PACK = True)
         print('writing hist_PACK . . . . . .')
         wr_hist_PACK(cntr)
+
         #---------------------------------------------------------------
         # init MENU
         menu_def = [
@@ -1587,7 +1941,9 @@ def main():
                 ['srv send E-MAIL',
                  'srv data TERM',    'srv hist TERM',
                  'srv config ALARM', 'srv config PACK',    'srv config SOFT',
-                 'srv data FUT',     'srv hist FUT today', 'srv hist FUT arch' ],
+                 'srv data FUT',     'srv hist FUT today', #'srv hist FUT arch',
+                 'test hist FUT arch', 'test hist PACK arch',
+                 ],
                 ],
             ['Print',
                 ['prn TERM data_in_file', 'prn TERM hist_in_file',
@@ -1618,7 +1974,7 @@ def main():
                     [sg.T('',size=(60,2), font='Helvetica 8', key='txt_status'), sg.Quit(auto_size_button=True)],
                  ]
         sg.SetOptions(element_padding=(0,0))
-        window = sg.Window(cntr.cfg_soft.titul, grab_anywhere=True).Layout(layout).Finalize()
+        window = sg.Window(cntr.db_fut_today.titul, grab_anywhere=True).Layout(layout).Finalize()
         break
 
     mode = 'manual'
@@ -1666,19 +2022,24 @@ def main():
                 tmr = cntr.trm_data.account.acc_date
                 dt_minute = datetime.strptime(str(tmr.split('|')[0]), frm).minute
                 if cntr.tm_wrt_new_data == dt_minute:
-                    req = cntr.dt_fut.rewrite_tbl(cntr.trm_data.data_in_file)
-                    if req[0] != 0: _err_(cntr, 'dt_fut.rewrite_tbl => ', req, PopUp = False)
+                    cntr.db_fut_today.buf_data_in_file = cntr.trm_data.data_in_file
+                    #req = cntr.dt_fut.rewrite_tbl(cntr.db_fut_today.buf_data_in_file)
+                    req = cntr.db_fut_today.op_today(wr_data_FUT = True)
+                    if req[0] != 0: _err_(cntr, 'rewrite_tbl => ', req, PopUp = False)
                     else:
-                        rq = cntr.dt_fut.read_data_in_file( cntr.trm_data.data_in_file )
-                        if rq[0] != 0 : _err_(cntr, 'dt_fut.read_data_in_file => ', rq, PopUp = False)
+                        #rq = cntr.dt_fut.read_data_in_file( cntr.trm_data.data_in_file )
+                        req = cntr.db_fut_today.op_today(rd_data_FUT_in_file = True)
+                        if rq[0] != 0 : _err_(cntr, 'read_data_in_file => ', rq, PopUp = False)
                         else:           print(60*' ', end='\r')
                 else:
                     cntr.tm_wrt_new_data = dt_minute
-                    req = cntr.h_fut_today.rewrite_tbl(cntr.trm_hist.hist_in_file)
+                    cntr.db_fut_today.buf_hist_in_file = cntr.trm_hist.hist_in_file
+                    #req = cntr.h_fut_today.rewrite_tbl(cntr.trm_hist.hist_in_file)
+                    req = cntr.db_fut_today.op_today(wr_hist_FUT_today = True)
                     if req[0] != 0: _err_(cntr, 'h_fut_today.rewrite_tbl => ', req, PopUp = False)
                     else:
                         ind_pack = 'calc_hist_PACK_today => '
-                        for i_pack, item in enumerate(cntr.cfg_pack.nm):
+                        for i_pack, item in enumerate(cntr.db_fut_today.nm):
                             calc_hist_PACK_today(cntr, i_pack)
                             ind_pack += str(i_pack) + ' '
                             print(ind_pack, end='\r')
