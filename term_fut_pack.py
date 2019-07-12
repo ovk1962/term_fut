@@ -101,115 +101,6 @@ class Class_GMAIL():
 
         return [0, 'OK']
 #=======================================================================
-#class Class_SQLite():
-    #def __init__(self, path_db):
-        #self.path_db = path_db
-        #self.table_db = []
-        #self.conn = ''
-        #self.cur = ''
-    ##-------------------------------------------------------------------
-    #def check_db(self):
-        #'''  check FILE of DB SQLite    -----------------------------'''
-        ##    return os.stat: if FILE is and size != 0
-        #r_check_db = [0, '']
-        #name_path_db = self.path_db
-        #if not os.path.isfile(name_path_db):
-            #r_check_db = [1, 'can not find file']
-        #else:
-            #buf_st = os.stat(name_path_db)
-            #if buf_st.st_size == 0:
-                #r_check_db = [1, buf_st]
-            #else:
-                #r_check_db = [0, buf_st]
-        #return r_check_db
-    ##-------------------------------------------------------------------
-    #def reset_table_db(self, name_tbl):
-        #''' reset data in table DB  ---------------------------------'''
-        #r_reset_tbl = [0, '']
-        #try:
-            #self.conn = sqlite3.connect(self.path_db)
-            #self.cur = self.conn.cursor()
-            #self.cur.execute("DELETE FROM " + name_tbl)
-            #self.conn.commit()
-            #self.conn.execute("VACUUM")
-            #self.cur.close()
-            #self.conn.close()
-            #r_reset_tbl = [0, 'OK']
-        #except Exception as ex:
-            #r_reset_tbl = [1, str(ex)]
-        #return r_reset_tbl
-    ##-------------------------------------------------------------------
-    #def rewrite_table(self, name_tbl, name_list, val = '(?, ?)'):
-        #''' rewrite data from table ARCHIV_PACK & PACK_TODAY & DATA ----'''
-        #r_rewrt_tbl = [0, '']
-        #try:
-            #self.conn = sqlite3.connect(self.path_db)
-            #self.cur = self.conn.cursor()
-            #self.cur.execute("DELETE FROM " + name_tbl)
-            #self.cur.executemany("INSERT INTO " + name_tbl + " VALUES" + val, name_list)
-            #self.conn.commit()
-            #self.cur.close()
-            #self.conn.close()
-            #r_rewrt_tbl = [0, 'OK']
-        #except Exception as ex:
-            #r_rewrt_tbl = [1, str(ex)]
-        #return r_rewrt_tbl
-    ##-------------------------------------------------------------------
-    #def write_table_db(self, name_tbl, name_list):
-        #''' write data string into table DB  ------------------------'''
-        #r_write_tbl = [0, '']
-        #try:
-            #self.conn = sqlite3.connect(self.path_db)
-            #self.cur = self.conn.cursor()
-            #self.cur.executemany("INSERT INTO " + name_tbl + " VALUES(?, ?)", name_list)
-            #self.conn.commit()
-            #self.cur.close()
-            #self.conn.close()
-            #r_write_tbl = [0, 'OK']
-        #except Exception as ex:
-            #r_write_tbl = [1, str(ex)]
-        #return r_write_tbl
-    ##-------------------------------------------------------------------
-    #def rwr_tbl_wr_tbl(self, nm_tbl_rwr, nm_lst_rwr, nm_tbl_wr, nm_lst_wr):
-        #''' rewrite data from from terminal file  -------------------'''
-        #'''   write data string into table DB  ----------------------'''
-        #r_rewrt_tbl = [0, '']
-        #try:
-            #self.conn = sqlite3.connect(self.path_db)
-            #self.cur = self.conn.cursor()
-            ##
-            ## rwr_tbl rewrite data from TERM  into table data_FUT
-            #self.cur.execute("DELETE FROM " + nm_tbl_rwr)
-            #self.cur.executemany("INSERT INTO " + nm_tbl_rwr + " VALUES(?)", nm_lst_rwr)
-            ##
-            ## wr_tbl write last string        into table hist_FUT_today
-            #self.cur.execute("DELETE FROM " + nm_tbl_wr)
-            #self.cur.executemany("INSERT INTO " + nm_tbl_wr + " VALUES(?, ?)", nm_lst_wr)
-            ##
-            #self.conn.commit()
-            #self.cur.close()
-            #self.conn.close()
-            #r_rewrt_tbl = [0, 'OK']
-        #except Exception as ex:
-            #r_rewrt_tbl = [1, str(ex)]
-        #return r_rewrt_tbl
-    ##-------------------------------------------------------------------
-    #def get_table_db_with(self, name_tbl):
-        #''' read one table DB  --------------------------------------'''
-        #r_get_table_db = []
-        #self.conn = sqlite3.connect(self.path_db)
-        #try:
-            #with self.conn:
-                #self.cur = self.conn.cursor()
-                ##self.cur.execute("PRAGMA busy_timeout = 3000")   # 3 s
-                #self.cur.execute("SELECT * from " + name_tbl)
-                #self.table_db = self.cur.fetchall()    # read table name_tbl
-                #r_get_table_db = [0, self.table_db]
-        #except Exception as ex:
-            #r_get_table_db = [1, name_tbl + str(ex)]
-
-        #return r_get_table_db
-#=======================================================================
 class Class_TERM_data():
     #///////////////////////////////////////////////////////////////////
     def __init__(self, path_trm):
@@ -462,6 +353,7 @@ class Class_term_fut_archiv():
         self.table_db = []
         self.conn = ''
         self.cur  = ''
+        self.buf_hist_fut_archiv = []
         self.hist_fut_archiv  = []  # list of [[ind_sec string] ... ]
         self.arr_fut_archiv   = []  # list period 1 minute
         self.hist_pack_archiv = []  # list of [[ind_sec string] ... ]
@@ -494,7 +386,8 @@ class Class_term_fut_archiv():
                         self.arr_fut_archiv.append(arr_jtem)
 
                 if wr_hist_FUT:
-                    pass
+                    self.cur.executemany("INSERT INTO " + 'hist_FUT' + " VALUES(?, ?)", self.buf_hist_fut_archiv)
+                    self.conn.commit()
 
                 if rd_hist_PACK:
                     self.cur.execute('SELECT * from ' + 'hist_PACK')
@@ -783,8 +676,7 @@ class Class_CONTROLER():
         self.db_fut_today = Class_term_fut_today(path_TERM_FUT_PACK)
         self.db_fut_arc   = Class_term_fut_archiv(path_TERM_FUT_ARCHIV)
         rq = self.db_fut_today.op(rd_cfg_SOFT = True)
-        #self.cfg_soft = Class_TABLE_cfg_soft(path_TERM_FUT_PACK)
-        #rq = self.cfg_soft.read_tbl()
+
         if rq[0] != 0:
             err_msg = 'Can not init TBL cfg_SOFT !' + '  '.join(str(e) for e in rq)
             sg.PopupError('Error !', err_msg)
@@ -793,17 +685,8 @@ class Class_CONTROLER():
         else:
             print('cfg_SOFT = > ', rq)
 
-        #self.trm_data = Class_TERM_data(self.cfg_soft.path_file_DATA)
-        #self.trm_hist = Class_TERM_hist(self.cfg_soft.path_file_HIST)
         self.trm_data = Class_TERM_data(self.db_fut_today.path_file_DATA)
         self.trm_hist = Class_TERM_hist(self.db_fut_today.path_file_HIST)
-
-        #self.cfg_alarm = Class_TABLE_cfg_alarm(path_TERM_FUT_PACK)
-        #self.cfg_pack = Class_TABLE_cfg_pack(path_TERM_FUT_PACK)
-
-        #self.dt_fut   = Class_TABLE_data_fut(path_TERM_FUT_PACK)
-        #self.h_fut_today  = Class_TABLE_hist_fut_today(path_TERM_FUT_PACK)
-        #self.h_pack_today = Class_TABLE_hist_pack_today(path_TERM_FUT_PACK)
 
         self.e_mail     = Class_GMAIL('mobile.ovk', '20066002', 'mobile.ovk@gmail.com')
 
@@ -1273,41 +1156,29 @@ def calc_hist_PACK_today(cntr, i_pack):
 def TODAY_copy_ARCHIV(cntr):
     os.system('cls')  # on windows
     print('Copy fut TODAY in ARCHIV .  .  .  .  .')
-    hist = cntr.h_fut_today.hist_1_fut_today
+    hist = cntr.db_fut_today.hist_1_fut_today
     print('len(hist_1_fut_today) => ', len(hist))
     if len(hist) > 4:
-        print('hist_1_fut_today[0] => ',  hist[0])
-        print('hist_1_fut_today[1] => ',  hist[1][1].split('|')[0])
-        print('hist_1_fut_today[2] => ',  hist[2][1].split('|')[0])
-        print('. . . . .')
-        print('hist_1_fut_today[-2] => ', hist[-2][1].split('|')[0])
+        print('hist_1_fut_today[0] => ',  hist[0][1].split('|')[0])
+        print('. . .')
         print('hist_1_fut_today[-1] => ', hist[-1][1].split('|')[0])
-    print('. . . . .')
+    print('___________________________________')
     last_1_fut_today = hist[-1][1].split('|')[0].split(' ')[0]
-    print('last_1_fut_today => ', last_1_fut_today)
 
-    print('Status BEFORE')
     hist = cntr.db_fut_arc.hist_fut_archiv
     print('len(hist_fut_archiv)   => ', len(hist))
     if len(hist) > 4:
-        print('hist_fut_archiv[0] => ',  hist[0])
-        print('hist_fut_archiv[1] => ',  hist[1][1].split('|')[0])
-        print('hist_fut_archiv[2] => ',  hist[2][1].split('|')[0])
-        print('. . . . .')
-        print('hist_fut_archiv[-2] => ', hist[-2][1].split('|')[0])
+        print('hist_fut_archiv[0] => ',  hist[0][1].split('|')[0])
+        print('. . .')
         print('hist_fut_archiv[-1] => ', hist[-1][1].split('|')[0])
-    print('. . . . .')
+    print('___________________________________')
     last_fut_archiv = hist[-1][1].split('|')[0].split(' ')[0]
-    print('last_fut_archiv => ', last_fut_archiv)
     if last_1_fut_today != last_fut_archiv:
-        buf_list = []
-        if len(cntr.h_fut_today.hist_1_fut_today) < 520:
-            rq = cntr.h_fut_arc.obj_table.write_table_db('hist_FUT', cntr.h_fut_today.hist_1_fut_today)
-            if rq[0] != 0: _err_(cntr, 'TODAY_copy_ARCHIV ', rq)
-        else:
-            rq = cntr.h_fut_arc.obj_table.write_table_db('hist_FUT', cntr.h_fut_today.hist_1_fut_today[:520])
-            if rq[0] != 0: _err_(cntr, 'TODAY_copy_ARCHIV ', rq)
-        print('. . . . .')
+        cntr.db_fut_arc.buf_hist_fut_archiv = []
+        cntr.db_fut_arc.buf_hist_fut_archiv = cntr.db_fut_today.hist_1_fut_today[:520]
+        rq = cntr.db_fut_arc.op(wr_hist_FUT = True)
+        if rq[0] != 0: _err_(cntr, 'TODAY_copy_ARCHIV ', rq)
+        print('ok . . .')
     else:
         print('\n' + str (last_1_fut_today) + ' have copy already. Check it \n')
     print('Press Test & Print for STATUS')
