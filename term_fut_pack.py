@@ -1331,8 +1331,6 @@ def event_menu(event, cntr):
     if event == 'Convert tbl TODAY' : convert_tbl_TODAY(cntr)
     #---------------------------------------------------------------
     if event == 'TODAY to ARCHIV'   : TODAY_copy_ARCHIV(cntr)
-    #---------------------------------------------------------------
-    if event == 'VACUUM tbl TODAY'  : TODAY_clear_VACUUM(cntr)
 
 #=======================================================================
 def main():
@@ -1383,22 +1381,23 @@ def main():
                 ['auto', 'manual', ],
                 ],
             ['Service',
-                ['srv send E-MAIL',
-                 'srv data TERM',    'srv hist TERM',
-                 'srv config ALARM', 'srv config PACK',    'srv config SOFT',
-                 'srv data FUT',     'srv hist FUT today', #'srv hist FUT arch',
-                 'test hist FUT arch', 'test hist PACK arch',
-                 'calc PACK arc',    'calc PACK today'
+                [
+                 'srv data TERM',    'srv hist TERM',        '---',
+                 'srv config ALARM', 'srv config PACK',      'srv config SOFT',
+                 'srv data FUT',     'srv hist FUT today',   '---',
+                 'test hist FUT arch', 'test hist PACK arch','---',
+                 'calc PACK arc',    'calc PACK today',      '---',
+                 'srv send E-MAIL',
                  ],
                 ],
             ['Print',
-                ['prn TERM data_in_file', 'prn TERM hist_in_file',
-                 'prn TERM data_fut',     'prn TERM account',
+                ['prn TERM data_in_file', 'prn TERM hist_in_file', 'prn TERM data_fut', 'prn TERM account', '---',
                  'prn FUT cfg_ALARM',     'prn FUT cfg_SOFT',       'prn FUT cfg_PACK',
-                 'prn FUT data_FUT',      'prn FUT hist_FUT_today', 'prn FUT hist_FUT_arch'],
+                 'prn FUT data_FUT',      'prn FUT hist_FUT_today','---',
+                 'prn FUT hist_FUT_arch'],
                 ],
             ['Hist FUT',
-                ['Convert tbl TODAY', 'TODAY to ARCHIV', 'VACUUM tbl TODAY'],
+                ['Convert tbl TODAY', 'TODAY to ARCHIV'],
                 ],
             ['Help', 'About...'],
             ['Exit', 'Exit']
