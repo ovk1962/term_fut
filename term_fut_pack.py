@@ -1222,10 +1222,19 @@ def convert_tbl_TODAY(cntr):
     wr_file(path_file, hist_out, 'Archiv for ', cntr)
     #
     print('.  .  .  .  .')
-    print('start  => ', hist_out[0].split(';')[1].split('|')[0])
-    print('finish => ', hist_out[-1].split(';')[1].split('|')[0])
+    cnt_tm = lambda x: datetime.strptime(str(x.split(';')[1].split('|')[0]), "%d.%m.%Y %H:%M:%S")
+    nmb_ms = lambda h, m: 60 * h + m
+    dtm    = lambda t: t.split(';')[1].split('|')[0]
+    print('start  => ', dtm(hist_out[0]))
+    for i, item in enumerate(hist_out[1:]):
+        c = cnt_tm(hist_out[i+1])
+        p = cnt_tm(hist_out[i])
+        if nmb_ms(c.hour, c.minute) - nmb_ms(p.hour, p.minute) != 1:
+            print('delay  => ', dtm(hist_out[i]), ' ... ', dtm(hist_out[i+1]))
+    print('finish => ', dtm(hist_out[-1]))
     print('lench  => ', len(hist_out))
     print('.  .  .  .  .')
+
 #=======================================================================
 def prepair_hist_PACK(cntr, b_today = False):
     name_list =[]
