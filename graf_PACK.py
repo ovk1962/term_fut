@@ -339,6 +339,11 @@ class Class_term_fut_today():
                     self.hist_1_fut_today = []
                     self.arr_1_fut_today  = []
                     self.hist_pack_today  = []
+                    self.arr_pack_today   = []
+                    for item in self.nm:
+                        #self.hist_pack_today.append([])
+                        self.arr_pack_today.append([])
+                    #print('clr_hist_FUT_today / len(arr_pack_today) = ', len(self.arr_pack_today))
                     self.cur.execute('DELETE FROM ' + 'hist_FUT_today')
                     self.cur.execute('DELETE FROM ' + 'hist_PACK_today')
                     self.conn.commit()
@@ -348,7 +353,7 @@ class Class_term_fut_today():
                     self.cur.execute('SELECT * from ' + 'hist_FUT_today')
                     self.hist_fut_today = self.cur.fetchall()    # read table name_tbl
 
-                    print('read hist_fut_today => ', len(self.hist_fut_today), ' strings')
+                    #print('read hist_fut_today => ', len(self.hist_fut_today), ' strings')
 
                     self.hist_1_fut_today = []
                     if len(self.hist_fut_today) != 0:
@@ -453,7 +458,12 @@ class Class_term_fut_today():
                                 self.arr_pack_today[i_mdl].append(buf_p)
                             ind_pack += str(i_mdl) + ' '
                             print(ind_pack, end='\r')
-                    #
+                    else:
+                        pass
+                    if (len(self.arr_pack_today) == 0):
+                        for item in self.nm:
+                            self.arr_pack_today.append([])
+                    #print('rd_hist_PACK_today / len(self.arr_pack_today) = ', len(self.arr_pack_today))
 
                 if wr_hist_PACK_today:
                     #rq = self.obj_table.rewrite_table('hist_PACK_today', hist_arc, val = '(?,?)')
@@ -485,16 +495,6 @@ class Class_CONTROLER():
             return [1, err_msg]
         else:
             print('cfg_SOFT = > ', rq)
-
-        #self.trm_data = Class_TERM_data(self.db_fut_TOD.path_file_DATA)
-        #self.trm_hist = Class_TERM_hist(self.db_fut_TOD.path_file_HIST)
-
-        #self.e_mail     = Class_GMAIL('mobile.ovk', '20066002', 'mobile.ovk@gmail.com')
-
-        #self.arr_fut        = []    # массив котировок фьючей  60 s
-        #self.arr_fut_today  = []    # массив котировок фьючей  60 s
-        #self.arr_pack       = []    # массив котировок packets 60 s
-        #self.arr_pack_today = []    # массив котировок packets 60 s
 
         self.tm_wrt_new_data = 0    # minute's counter
 #=======================================================================
@@ -677,6 +677,7 @@ def dbg_srv(cntr,
         b_cfg_soft   = False,
         b_data_fut   = False,
         b_hist_fut_t = False,
+        b_hist_pack_t = False,
         b_clr_hist_fut_t = False,
         #b_hist_fut_a = False,
         t_hist_fut_a  = False,
@@ -722,6 +723,11 @@ def dbg_srv(cntr,
         rq = cntr.db_fut_TOD.op(rd_hist_FUT_today = True)
         if rq[0] != 0 : _err_(cntr, 'h_fut_today ', rq)
         else:           dbg_prn(cntr,  b_fut_today = True)
+
+    elif b_hist_pack_t:
+        rq = cntr.db_fut_TOD.op(rd_hist_PACK_today = True)
+        if rq[0] != 0 : _err_(cntr, 'h_pack_today ', rq)
+        else:           dbg_prn(cntr,  b_pack_today = True)
 
     elif b_clr_hist_fut_t:
         rq = cntr.db_fut_TOD.op(clr_hist_FUT_today = True)
@@ -984,15 +990,17 @@ def event_menu(event, cntr):
     #-------------------------------------------------------------------
     if event == 'srv data FUT'        : dbg_srv(cntr, b_data_fut   = True)
     #-------------------------------------------------------------------
-    if event == 'srv hist FUT today'  : dbg_srv(cntr, b_hist_fut_t = True)
+    if event == 'read hist FUT today'  : dbg_srv(cntr, b_hist_fut_t  = True)
+    #-------------------------------------------------------------------
+    if event == 'read hist PACK today' : dbg_srv(cntr, b_hist_pack_t = True)
     #-------------------------------------------------------------------
     if event == 'clear hist FUT today': dbg_srv(cntr, b_clr_hist_fut_t = True)
     #-------------------------------------------------------------------
     #if event == 'srv hist FUT arch'  : dbg_srv(cntr, b_hist_fut_a = True)
     #-------------------------------------------------------------------
-    if event == 'test hist FUT arch'   : dbg_srv(cntr, t_hist_fut_a  = True)
+    if event == 'read hist FUT arch'   : dbg_srv(cntr, t_hist_fut_a  = True)
     #-------------------------------------------------------------------
-    if event == 'test hist PACK arch'  : dbg_srv(cntr, t_hist_pack_a = True)
+    if event == 'read hist PACK arch'  : dbg_srv(cntr, t_hist_pack_a = True)
     #-------------------------------------------------------------------
     if event == 'srv send E-MAIL'    : dbg_srv(cntr, b_send_mail     = True)
     #-------------------------------------------------------------------
@@ -1062,9 +1070,11 @@ def main():
                 ],
             ['Print',
                 [
-                 'prn FUT cfg_ALARM',     'prn FUT cfg_SOFT',       'prn FUT cfg_PACK',
+                 'prn FUT cfg_ALARM',     'prn FUT cfg_SOFT',       'prn FUT cfg_PACK', '---',
                  'prn FUT data_FUT',      'prn FUT hist_FUT_today', 'prn FUT hist_PACK_today', '---',
-                 'prn FUT hist_FUT_arch'],
+                 'prn FUT hist_FUT_arch', '---',
+                 'read hist FUT today',   'read hist PACK today',   '---',
+                 'read hist FUT arch',    'read hist PACK arch'],
                 ],
             ['Help', 'About...'],
             ['Exit', 'Exit']
@@ -1108,7 +1118,8 @@ def main():
         #---------------------------------------------------------------
         event_menu(event, cntr)
         #---------------------------------------------------------------
-
+        if event == '__TIMEOUT__':
+            rq = read_term(cntr)
         #---------------------------------------------------------------
         window.FindElement('txt_data').Update('\n'.join(stroki))
         stts  = time.strftime(frm, time.localtime()) + '\n'

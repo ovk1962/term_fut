@@ -619,8 +619,9 @@ class Class_term_fut_today():
                     self.hist_pack_today  = []
                     self.arr_pack_today   = []
                     for item in self.nm:
-                        self.hist_pack_today.append([])
+                        #self.hist_pack_today.append([])
                         self.arr_pack_today.append([])
+                    #print('clr_hist_FUT_today / len(arr_pack_today) = ', len(self.arr_pack_today))
                     self.cur.execute('DELETE FROM ' + 'hist_FUT_today')
                     self.cur.execute('DELETE FROM ' + 'hist_PACK_today')
                     self.conn.commit()
@@ -630,7 +631,7 @@ class Class_term_fut_today():
                     self.cur.execute('SELECT * from ' + 'hist_FUT_today')
                     self.hist_fut_today = self.cur.fetchall()    # read table name_tbl
 
-                    print('read hist_fut_today => ', len(self.hist_fut_today), ' strings')
+                    #print('read hist_fut_today => ', len(self.hist_fut_today), ' strings')
 
                     self.hist_1_fut_today = []
                     if len(self.hist_fut_today) != 0:
@@ -740,7 +741,7 @@ class Class_term_fut_today():
                     if (len(self.arr_pack_today) == 0):
                         for item in self.nm:
                             self.arr_pack_today.append([])
-                    print('rd_hist_PACK_today / len(self.arr_pack_today) = ', len(self.arr_pack_today))
+                    #print('rd_hist_PACK_today / len(self.arr_pack_today) = ', len(self.arr_pack_today))
 
                 if wr_hist_PACK_today:
                     #rq = self.obj_table.rewrite_table('hist_PACK_today', hist_arc, val = '(?,?)')
@@ -1371,9 +1372,9 @@ def prepair_hist_PACK(cntr, b_today = False):
     name_list =[]
     if b_today :
         arr_hist_pack = cntr.db_fut_TOD.arr_pack_today
-        print()
-        print('len(arr_hist_pack) = ',len(arr_hist_pack ))
-        print('len(arr_hist_pack[0]) = ',len(arr_hist_pack[0]))
+        #print()
+        #print('len(arr_hist_pack) = ',len(arr_hist_pack ))
+        #print('len(arr_hist_pack[0]) = ',len(arr_hist_pack[0]))
     else:
         arr_hist_pack = cntr.db_fut_ARC.arr_pack_archiv
 
@@ -1513,8 +1514,8 @@ def main():
                     cntr.db_fut_TOD.arr_pack_today.append([])
             for item in cntr.db_fut_TOD.nm:
                 cntr.db_fut_ARC.arr_pack_archiv.append([])
-            print('init tables / len arr_pack_today  = ', len(cntr.db_fut_TOD.arr_pack_today))
-            print('init tables / len arr_pack_archiv = ', len(cntr.db_fut_ARC.arr_pack_archiv))
+            #print('init tables / len arr_pack_today  = ', len(cntr.db_fut_TOD.arr_pack_today))
+            #print('init tables / len arr_pack_archiv = ', len(cntr.db_fut_ARC.arr_pack_archiv))
         #---------------------------------------------------------------
         rq = cntr.db_fut_ARC.op(rd_hist_FUT = True)
         if rq[0] != 0 : _err_(cntr, 'INIT hist_fut_archiv ', rq)
