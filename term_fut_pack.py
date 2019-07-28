@@ -39,23 +39,23 @@ class Class_LOGGER():
 class Class_ACCOUNT():
     def __init__(self):
         self.acc_date = ''
-        self.acc_balance = 0.0
-        self.acc_profit  = 0.0
-        self.acc_go      = 0.0
-        self.acc_depo    = 0.0
+        self.acc_bal  = 0.0
+        self.acc_prf  = 0.0
+        self.acc_go   = 0.0
+        self.acc_depo = 0.0
 #=======================================================================
 class Class_FUT():
     def __init__(self):
-        self.sP_code = "-"
-        self.sRest = 0
-        self.sVar_margin = 0.0
-        self.sOpen_price = 0.0
-        self.sLast_price = 0.0
-        self.sAsk =  0.0
-        self.sBuy_qty = 0
-        self.sBid =  0.0
+        self.sP_code   = "-"
+        self.sRest     = 0
+        self.sVar_mrg  = 0.0
+        self.sOpen_prc = 0.0
+        self.sLast_prc = 0.0
+        self.sAsk      = 0.0
+        self.sBuy_qty  = 0
+        self.sBid      = 0.0
         self.sSell_qty = 0
-        self.sFut_go = 0.0
+        self.sFut_go   = 0.0
         self.sOpen_pos = 0.0
 #=======================================================================
 class Class_PACK():
@@ -66,8 +66,8 @@ class Class_PACK():
         self.pAsk = 0.0
         self.pBid = 0.0
         self.EMAf = 0.0
-        self.EMAf_rnd = 0.0
-        self.cnt_EMAf_rnd = 0.0
+        self.EMAf_r = 0.0
+        self.cnt_EMAf_r = 0.0
 #=======================================================================
 class Class_ALARM():
     def __init__(self):
@@ -108,8 +108,8 @@ class Class_TERM_data():
         #
         self.dt_file = 0        # curv stamptime data file path_trm
         self.dt_data = 0        # curv stamptime DATA/TIME from TERM
-        self.data_in_file = []  # list of strings from path_trm
-        self.data_fut = []      # list of Class_FUT() from trm
+        self.ar_file = []       # list of strings from path_trm
+        self.dt_fut  = []       # list of Class_FUT() from trm
         self.account  = ''      # obj Class_ACCOUNT() from trm
         self.delay_tm = 8       # min period to get data for DB (10 sec)
         #
@@ -145,9 +145,9 @@ class Class_TERM_data():
             #cntr.log.wr_log_error(err_msg)
             return [4, err_msg]
         #
-        self.data_in_file = []
-        self.data_in_file = buf_str[:]
-        #print(self.data_in_file)
+        self.ar_file = []
+        self.ar_file = buf_str[:]
+        #print(self.ar_file)
         #
         req = self.parse_data_in_file()
         if req[0] != 0:
@@ -208,7 +208,7 @@ class Class_TERM_data():
             return [6, err_msg]
         #
         #--- check MARKET time from 10:00 to 23:45 ---------------------
-        #term_dt = cntr.term.data_in_file[0].split('|')[0]
+        #term_dt = cntr.term.ar_file[0].split('|')[0]
         term_dt = buf_str[0].split('|')[0]
         dtt = datetime.strptime(str(term_dt), "%d.%m.%Y %H:%M:%S")
         cur_time = dtt.second + 60 * dtt.minute + 60 * 60 * dtt.hour
@@ -225,7 +225,7 @@ class Class_TERM_data():
         #
         #--- compare new DATA with old ---------------------------------
         new_data = buf_str[2:]
-        old_data = self.data_in_file[2:]
+        old_data = self.ar_file[2:]
         buf_len = len(list(set(new_data) - set(old_data)))
         if  buf_len == 0:
             err_msg = 'ASK/BID did not change'
@@ -236,9 +236,9 @@ class Class_TERM_data():
         #--- check BID != 0  -------------------------------------------
         #--- check ASK < BID -------------------------------------------
         #
-        self.data_in_file = []
-        self.data_in_file = buf_str[:]
-        #print(self.data_in_file)
+        self.ar_file = []
+        self.ar_file = buf_str[:]
+        #print(self.ar_file)
         #
         req = self.parse_data_in_file()
         if req[0] != 0:
@@ -248,26 +248,26 @@ class Class_TERM_data():
     #///////////////////////////////////////////////////////////////////
     def parse_data_in_file(self):
         try:
-            self.data_fut = []
+            self.dt_fut = []
             self.account  = Class_ACCOUNT()
             # format of list data_fut:
             #   0   => string of DATA / account.acc_date
-            #   1   => [account.acc_balance/acc_profit/acc_go/acc_depo]
+            #   1   => [account.acc_bal/acc_prf/acc_go/acc_depo]
             #   2 ... 22  => Class_FUT()
-            #print(self.data_in_file)
+            #print(self.ar_file)
 
-            for i, item in enumerate(list(self.data_in_file)):
+            for i, item in enumerate(list(self.ar_file)):
                 list_item = ''.join(item).replace(',','.').split('|')
                 if   i == 0:
                     self.account.acc_date  = list_item[0]
-                    self.data_fut.append(self.account.acc_date)
+                    self.dt_fut.append(self.account.acc_date)
                 elif i == 1:
-                    self.account.acc_balance = float(list_item[0])
-                    self.account.acc_profit  = float(list_item[1])
+                    self.account.acc_bal = float(list_item[0])
+                    self.account.acc_prf  = float(list_item[1])
                     self.account.acc_go      = float(list_item[2])
                     self.account.acc_depo    = float(list_item[3])
-                    self.data_fut.append([self.account.acc_balance,
-                                            self.account.acc_profit,
+                    self.dt_fut.append([self.account.acc_bal,
+                                            self.account.acc_prf,
                                             self.account.acc_go,
                                             self.account.acc_depo ])
                 else:
@@ -275,17 +275,17 @@ class Class_TERM_data():
                     b_fut = Class_FUT()
                     b_fut.sP_code      = list_item[0]
                     b_fut.sRest        = int  (list_item[1])
-                    b_fut.sVar_margin  = float(list_item[2])
-                    b_fut.sOpen_price  = float(list_item[3])
-                    b_fut.sLast_price  = float(list_item[4])
+                    b_fut.sVar_mrg  = float(list_item[2])
+                    b_fut.sOpen_prc  = float(list_item[3])
+                    b_fut.sLast_prc  = float(list_item[4])
                     b_fut.sAsk         = float(list_item[5])
                     b_fut.sBuy_qty     = int  (list_item[6])
                     b_fut.sBid         = float(list_item[7])
                     b_fut.sSell_qty    = int  (list_item[8])
                     b_fut.sFut_go      = float(list_item[9])
                     b_fut.sOpen_pos    = float(list_item[10])
-                    self.data_fut.append(b_fut)
-            #print('cntr.data_fut => \n', cntr.data_fut)
+                    self.dt_fut.append(b_fut)
+            #print('cntr.dt_fut => \n', cntr.dt_fut)
         except Exception as ex:
             err_msg = 'parse_data_in_file / ' + str(ex)
             print(err_msg)
@@ -353,11 +353,11 @@ class Class_term_archiv():
         self.table_db = []
         self.conn = ''
         self.cur  = ''
-        self.buf_hist_fut_archiv = []
-        self.hist_fut_archiv  = []  # list of [[ind_sec string] ... ]
-        self.arr_fut_archiv   = []  # list period 1 minute
-        self.hist_pack_archiv = []  # list of [[ind_sec string] ... ]
-        self.arr_pack_archiv  = []  # list of [[ind_sec string] ... ]
+        self.buf_arc  = []
+        self.hst_fut  = []  # list of [[ind_sec string] ... ]
+        self.arr_fut  = []  # list period 1 minute
+        self.hst_pack = []  # list of [[ind_sec string] ... ]
+        self.arr_pack = []  # list of [[ind_sec string] ... ]
 
     def op(self,
             rd_hist_FUT = False,
@@ -373,33 +373,33 @@ class Class_term_archiv():
                 self.cur = self.conn.cursor()
                 if rd_hist_FUT:
                     self.cur.execute('SELECT * from ' + 'hist_FUT')
-                    self.hist_fut_archiv = []
-                    self.arr_fut_archiv  = []
-                    self.hist_fut_archiv = self.cur.fetchall()    # read table name_tbl
+                    self.hst_fut = []
+                    self.arr_fut  = []
+                    self.hst_fut = self.cur.fetchall()    # read table name_tbl
                     #
-                    for item in self.hist_fut_archiv:
+                    for item in self.hst_fut:
                         arr_item = (item[1].replace(',', '.')).split('|')
                         arr_jtem = []
                         arr_jtem.append(item[0])
                         arr_jtem.append(arr_item[0])
                         for jtem in arr_item[1:-1]:
                             arr_jtem.append(float(jtem))
-                        self.arr_fut_archiv.append(arr_jtem)
+                        self.arr_fut.append(arr_jtem)
 
                 if wr_hist_FUT:
-                    self.cur.executemany("INSERT INTO " + 'hist_FUT' + " VALUES(?, ?)", self.buf_hist_fut_archiv)
+                    self.cur.executemany("INSERT INTO " + 'hist_FUT' + " VALUES(?, ?)", self.buf_arc)
                     self.conn.commit()
 
                 if rd_hist_PACK:
                     self.cur.execute('SELECT * from ' + 'hist_PACK')
-                    self.hist_pack_archiv = []
-                    self.hist_pack_archiv = self.cur.fetchall()    # read table name_tbl
-                    self.arr_pack_archiv  = []
-                    str_pack = self.hist_pack_archiv[0][1].split('|')
+                    self.hst_pack = []
+                    self.hst_pack = self.cur.fetchall()    # read table name_tbl
+                    self.arr_pack  = []
+                    str_pack = self.hst_pack[0][1].split('|')
                     ind_pack = ''
                     for i_mdl in range(len(str_pack) - 1):
-                        self.arr_pack_archiv.append([])
-                        for item in self.hist_pack_archiv:
+                        self.arr_pack.append([])
+                        for item in self.hst_pack:
                             str_pack = item[1].replace(',','.').split('|')
                             del str_pack[-1]
                             str_mdl  = str_pack[0].split(' ')   # dt tm for all packets
@@ -412,25 +412,25 @@ class Class_term_archiv():
                                 buf_p.pAsk = float(str_mdl[2])
                                 buf_p.pBid = float(str_mdl[3])
                                 buf_p.EMAf = float(str_mdl[4])
-                                buf_p.EMAf_rnd     = float(str_mdl[5])
-                                buf_p.cnt_EMAf_rnd = float(str_mdl[6])
+                                buf_p.EMAf_r     = float(str_mdl[5])
+                                buf_p.cnt_EMAf_r = float(str_mdl[6])
 
                             else:
                                 str_mdl  = str_pack[i_mdl].split(' ')
                                 buf_p.pAsk = float(str_mdl[0])
                                 buf_p.pBid = float(str_mdl[1])
                                 buf_p.EMAf = float(str_mdl[2])
-                                buf_p.EMAf_rnd     = float(str_mdl[3])
-                                buf_p.cnt_EMAf_rnd = float(str_mdl[4])
+                                buf_p.EMAf_r     = float(str_mdl[3])
+                                buf_p.cnt_EMAf_r = float(str_mdl[4])
 
-                            self.arr_pack_archiv[i_mdl].append(buf_p)
+                            self.arr_pack[i_mdl].append(buf_p)
                         ind_pack += str(i_mdl) + ' '
                         print(ind_pack, end='\r')
 
                 if wr_hist_PACK:
                     ''' rewrite data from table ARCHIV_PACK & PACK_TODAY & DATA ----'''
                     self.cur.execute('DELETE FROM ' + 'hist_PACK')
-                    self.cur.executemany('INSERT INTO ' + 'hist_PACK' + ' VALUES' + '(?,?)', self.hist_pack_archiv)
+                    self.cur.executemany('INSERT INTO ' + 'hist_PACK' + ' VALUES' + '(?,?)', self.hst_pack)
                     self.conn.commit()
 
         except Exception as ex:
@@ -445,8 +445,8 @@ class Class_term_today():
         self.conn = ''
         self.cur  = ''
         # cfg_alarm
-        self.nm_alarm      = []  # list NM             of packets
-        self.ena_cnt_ema   = []  # list cnt_EMAf_rnd   of packets
+        self.nm_alarm    = []  # list NM             of packets
+        self.ena_cnt_ema = []  # list cnt_EMAf_r   of packets
         # cfg_pack
         self.nm   = []  # list NM   of packets
         self.koef = []  # list KOEF of packets
@@ -457,14 +457,14 @@ class Class_term_today():
         self.dt_start_sec = 0
         self.path_file_DATA = self.path_file_HIST = ''
         #
-        self.buf_data_in_file = []
-        self.data_fut = []                  # list of Class_FUT()
+        self.buf_file = []
+        self.dt_fut   = []                  # list of Class_FUT()
         self.account  = Class_ACCOUNT()     # obj Class_ACCOUNT()
         #
-        self.buf_hist_in_file = []
-        self.hist_fut_today   = []  # list of [[ind_sec string] ... ]
-        self.hist_1_fut_today = []  # list period 1 minute
-        self.arr_1_fut_today  = []  # list period 1 minute
+        self.buf_file = []
+        self.hst_fut  = []  # list of [[ind_sec string] ... ]
+        self.hst_1_fut = []  # list period 1 minute
+        self.arr_1_fut = []  # list period 1 minute
         self.sec_10_00 = 36000      # seconds from 00:00 to 10:00
         self.sec_14_00 = 50400      # seconds from 00:00 to 14:00
         self.sec_14_05 = 50700      # seconds from 00:00 to 14:05
@@ -472,8 +472,8 @@ class Class_term_today():
         self.sec_19_05 = 68700      # seconds from 00:00 to 19:05
         self.sec_23_45 = 85500      # seconds from 00:00 to 23:45
         #
-        self.hist_pack_today  = []  # list of [[ind_sec string] ... ]
-        self.arr_pack_today   = []  # list of [[ind_sec string] ... ]
+        self.hst_pack  = []  # list of [[ind_sec string] ... ]
+        self.arr_pack  = []  # list of [[ind_sec string] ... ]
 
     def op(self,
             rd_cfg_SOFT  = False,
@@ -547,7 +547,7 @@ class Class_term_today():
 
                 if wr_data_FUT:
                     duf_list = []
-                    for j, jtem in enumerate(self.buf_data_in_file):
+                    for j, jtem in enumerate(self.buf_file):
                         buf = (jtem,)
                         duf_list.append(buf)
                     #rq = self.obj_table.rewrite_table('data_FUT', duf_list, val = '(?)')
@@ -560,111 +560,111 @@ class Class_term_today():
                     self.cur.execute('SELECT * from ' + 'data_FUT')
                     data = self.cur.fetchall()    # read table name_tbl
                     #
-                    self.data_fut = []
+                    self.dt_fut = []
 
                     for i, item in enumerate(list(data)):
                         list_item = ''.join(item).replace(',','.').split('|')
                         if   i == 0:
                             self.account.acc_date  = list_item[0]
                         elif i == 1:
-                            self.account.acc_balance = float(list_item[0])
-                            self.account.acc_profit  = float(list_item[1])
+                            self.account.acc_bal = float(list_item[0])
+                            self.account.acc_prf  = float(list_item[1])
                             self.account.acc_go      = float(list_item[2])
                             self.account.acc_depo    = float(list_item[3])
                         else:
                             b_fut = Class_FUT()
                             b_fut.sP_code      = list_item[0]
                             b_fut.sRest        = int  (list_item[1])
-                            b_fut.sVar_margin  = float(list_item[2])
-                            b_fut.sOpen_price  = float(list_item[3])
-                            b_fut.sLast_price  = float(list_item[4])
+                            b_fut.sVar_mrg  = float(list_item[2])
+                            b_fut.sOpen_prc  = float(list_item[3])
+                            b_fut.sLast_prc  = float(list_item[4])
                             b_fut.sAsk         = float(list_item[5])
                             b_fut.sBuy_qty     = int  (list_item[6])
                             b_fut.sBid         = float(list_item[7])
                             b_fut.sSell_qty    = int  (list_item[8])
                             b_fut.sFut_go      = float(list_item[9])
                             b_fut.sOpen_pos    = float(list_item[10])
-                            self.data_fut.append(b_fut)
+                            self.dt_fut.append(b_fut)
 
                 if rd_data_FUT_in_file:
-                    self.data_fut = []
-                    for i, item in enumerate(self.buf_data_in_file):
+                    self.dt_fut = []
+                    for i, item in enumerate(self.buf_file):
                         list_item = ''.join(item).replace(',','.').split('|')
                         if   i == 0:
                             self.account.acc_date  = list_item[0]
                         elif i == 1:
-                            self.account.acc_balance = float(list_item[0])
-                            self.account.acc_profit  = float(list_item[1])
+                            self.account.acc_bal = float(list_item[0])
+                            self.account.acc_prf  = float(list_item[1])
                             self.account.acc_go      = float(list_item[2])
                             self.account.acc_depo    = float(list_item[3])
                         else:
                             b_fut = Class_FUT()
                             b_fut.sP_code      = list_item[0]
                             b_fut.sRest        = int  (list_item[1])
-                            b_fut.sVar_margin  = float(list_item[2])
-                            b_fut.sOpen_price  = float(list_item[3])
-                            b_fut.sLast_price  = float(list_item[4])
+                            b_fut.sVar_mrg  = float(list_item[2])
+                            b_fut.sOpen_prc  = float(list_item[3])
+                            b_fut.sLast_prc  = float(list_item[4])
                             b_fut.sAsk         = float(list_item[5])
                             b_fut.sBuy_qty     = int  (list_item[6])
                             b_fut.sBid         = float(list_item[7])
                             b_fut.sSell_qty    = int  (list_item[8])
                             b_fut.sFut_go      = float(list_item[9])
                             b_fut.sOpen_pos    = float(list_item[10])
-                            self.data_fut.append(b_fut)
+                            self.dt_fut.append(b_fut)
 
                 if clr_hist_FUT_today:
-                    self.hist_fut_today   = []
-                    self.hist_1_fut_today = []
-                    self.arr_1_fut_today  = []
-                    self.hist_pack_today  = []
-                    self.arr_pack_today   = []
+                    self.hst_fut   = []
+                    self.hst_1_fut = []
+                    self.arr_1_fut = []
+                    self.hst_pack  = []
+                    self.arr_pack  = []
                     for item in self.nm:
-                        #self.hist_pack_today.append([])
-                        self.arr_pack_today.append([])
-                    #print('clr_hist_FUT_today / len(arr_pack_today) = ', len(self.arr_pack_today))
+                        #self.hst_pack.append([])
+                        self.arr_pack.append([])
+                    #print('clr_hist_FUT_today / len(arr_pack) = ', len(self.arr_pack))
                     self.cur.execute('DELETE FROM ' + 'hist_FUT_today')
                     self.cur.execute('DELETE FROM ' + 'hist_PACK_today')
                     self.conn.commit()
 
                 if rd_hist_FUT_today:
-                    self.hist_fut_today = []
+                    self.hst_fut = []
                     self.cur.execute('SELECT * from ' + 'hist_FUT_today')
-                    self.hist_fut_today = self.cur.fetchall()    # read table name_tbl
+                    self.hst_fut = self.cur.fetchall()    # read table name_tbl
 
-                    #print('read hist_fut_today => ', len(self.hist_fut_today), ' strings')
+                    #print('read hst_fut => ', len(self.hst_fut), ' strings')
 
-                    self.hist_1_fut_today = []
-                    if len(self.hist_fut_today) != 0:
-                        self.hist_1_fut_today.append(self.hist_fut_today[0])
+                    self.hst_1_fut = []
+                    if len(self.hst_fut) != 0:
+                        self.hst_1_fut.append(self.hst_fut[0])
                         frm = '%d.%m.%Y %H:%M:%S'
-                        dtt = datetime.strptime(str(self.hist_fut_today[0][1].split('|')[0]), frm)
+                        dtt = datetime.strptime(str(self.hst_fut[0][1].split('|')[0]), frm)
                         buf_60_sec = dtt.minute
-                        for item in self.hist_fut_today:
+                        for item in self.hst_fut:
                             dtt = datetime.strptime(str(item[1].split('|')[0]), frm)
                             if dtt.minute != buf_60_sec:
-                                self.hist_1_fut_today.append(item)
+                                self.hst_1_fut.append(item)
                                 buf_60_sec = dtt.minute
-                    #print('parse hist_1_fut_today => ', len(self.hist_1_fut_today), ' strings')
+                    #print('parse hst_1_fut => ', len(self.hst_1_fut), ' strings')
 
-                    self.arr_1_fut_today = []
-                    for item in self.hist_1_fut_today:
+                    self.arr_1_fut = []
+                    for item in self.hst_1_fut:
                         arr_item = (item[1].replace(',', '.')).split('|')
                         arr_jtem = []
                         arr_jtem.append(item[0])
                         arr_jtem.append(arr_item[0])
                         for jtem in arr_item[1:-1]:
                             arr_jtem.append(float(jtem))
-                        self.arr_1_fut_today.append(arr_jtem)
+                        self.arr_1_fut.append(arr_jtem)
 
                 if wr_hist_FUT_today:
-                    self.hist_fut_today = []
-                    self.hist_1_fut_today = []
+                    self.hst_fut = []
+                    self.hst_1_fut = []
 
                     buf_60_sec = 666
                     frm = '%d.%m.%Y %H:%M:%S'
 
-                    if self.buf_hist_in_file != '':
-                        for i, item in enumerate(self.buf_hist_in_file):
+                    if self.buf_file != '':
+                        for i, item in enumerate(self.buf_file):
                             list_item = item.split('|')
                             dtt = datetime.strptime(list_item[0], frm)
                             ind_sec  = int(dtt.replace(tzinfo=timezone.utc).timestamp())
@@ -676,40 +676,40 @@ class Class_term_today():
                                 cur_time < self.sec_18_45) or
                                 (cur_time > self.sec_19_05  and # from 19:05 to 23:45
                                 cur_time < self.sec_23_45)):
-                                    self.hist_fut_today.append([ind_sec, item])
+                                    self.hst_fut.append([ind_sec, item])
                                     if buf_60_sec != dtt.minute :
                                         buf_60_sec = dtt.minute
-                                        self.hist_1_fut_today.append([ind_sec, item])
+                                        self.hst_1_fut.append([ind_sec, item])
 
-                        self.arr_1_fut_today = []
-                        for item in self.hist_1_fut_today:
+                        self.arr_1_fut = []
+                        for item in self.hst_1_fut:
                             arr_item = (item[1].replace(',', '.')).split('|')
                             arr_jtem = []
                             arr_jtem.append(item[0])
                             arr_jtem.append(arr_item[0])
                             for jtem in arr_item[1:-1]:
                                 arr_jtem.append(float(jtem))
-                            self.arr_1_fut_today.append(arr_jtem)
+                            self.arr_1_fut.append(arr_jtem)
 
-                        #print('self.hist_fut_today[-1] => ', self.hist_fut_today[-1])
+                        #print('self.hst_fut[-1] => ', self.hst_fut[-1])
 
-                        #rq = self.obj_table.rewrite_table('hist_FUT_today', self.hist_fut_today, val = '(?,?)')
+                        #rq = self.obj_table.rewrite_table('hist_FUT_today', self.hst_fut, val = '(?,?)')
                         self.cur.execute('DELETE FROM ' + 'hist_FUT_today')
-                        self.cur.executemany('INSERT INTO ' + 'hist_FUT_today' + ' VALUES' + '(?,?)', self.hist_fut_today)
+                        self.cur.executemany('INSERT INTO ' + 'hist_FUT_today' + ' VALUES' + '(?,?)', self.hst_fut)
                         self.conn.commit()
 
                 if rd_hist_PACK_today:
-                    self.hist_pack_today = []
-                    self.arr_pack_today  = []
+                    self.hst_pack = []
+                    self.arr_pack = []
                     self.cur.execute('SELECT * from ' + 'hist_PACK_today')
-                    self.hist_pack_today = self.cur.fetchall()    # read table name_tbl
+                    self.hst_pack = self.cur.fetchall()    # read table name_tbl
                     #
-                    if len(self.hist_pack_today) != 0:
-                        str_pack = self.hist_pack_today[0][1].split('|')
+                    if len(self.hst_pack) != 0:
+                        str_pack = self.hst_pack[0][1].split('|')
                         ind_pack = ''
                         for i_mdl in range(len(str_pack) - 1):
-                            self.arr_pack_today.append([])
-                            for item in self.hist_pack_today:
+                            self.arr_pack.append([])
+                            for item in self.hst_pack:
                                 str_pack = item[1].replace(',','.').split('|')
                                 del str_pack[-1]
                                 str_mdl  = str_pack[0].split(' ')   # dt tm for all packets
@@ -722,31 +722,31 @@ class Class_term_today():
                                     buf_p.pAsk = float(str_mdl[2])
                                     buf_p.pBid = float(str_mdl[3])
                                     buf_p.EMAf = float(str_mdl[4])
-                                    buf_p.EMAf_rnd     = float(str_mdl[5])
-                                    buf_p.cnt_EMAf_rnd = float(str_mdl[6])
+                                    buf_p.EMAf_r     = float(str_mdl[5])
+                                    buf_p.cnt_EMAf_r = float(str_mdl[6])
 
                                 else:
                                     str_mdl  = str_pack[i_mdl].split(' ')
                                     buf_p.pAsk = float(str_mdl[0])
                                     buf_p.pBid = float(str_mdl[1])
                                     buf_p.EMAf = float(str_mdl[2])
-                                    buf_p.EMAf_rnd     = float(str_mdl[3])
-                                    buf_p.cnt_EMAf_rnd = float(str_mdl[4])
+                                    buf_p.EMAf_r     = float(str_mdl[3])
+                                    buf_p.cnt_EMAf_r = float(str_mdl[4])
 
-                                self.arr_pack_today[i_mdl].append(buf_p)
+                                self.arr_pack[i_mdl].append(buf_p)
                             ind_pack += str(i_mdl) + ' '
                             print(ind_pack, end='\r')
                     else:
                         pass
-                    if (len(self.arr_pack_today) == 0):
+                    if (len(self.arr_pack) == 0):
                         for item in self.nm:
-                            self.arr_pack_today.append([])
-                    #print('rd_hist_PACK_today / len(self.arr_pack_today) = ', len(self.arr_pack_today))
+                            self.arr_pack.append([])
+                    #print('rd_hist_PACK_today / len(self.arr_pack) = ', len(self.arr_pack))
 
                 if wr_hist_PACK_today:
                     #rq = self.obj_table.rewrite_table('hist_PACK_today', hist_arc, val = '(?,?)')
                     self.cur.execute('DELETE FROM ' + 'hist_PACK_today')
-                    self.cur.executemany('INSERT INTO ' + 'hist_PACK_today' + ' VALUES' + '(?,?)', self.hist_pack_today)
+                    self.cur.executemany('INSERT INTO ' + 'hist_PACK_today' + ' VALUES' + '(?,?)', self.hst_pack)
                     self.conn.commit()
 
         except Exception as ex:
@@ -762,9 +762,9 @@ class Class_CONTROLER():
         path_TERM_TODAY   = c_dir + '\\DB\\term_today.sqlite'
         path_TERM_ARCHIV  = c_dir + '\\DB\\term_archiv.sqlite'
 
-        self.db_fut_TOD = Class_term_today(path_TERM_TODAY)
-        self.db_fut_ARC = Class_term_archiv(path_TERM_ARCHIV)
-        rq = self.db_fut_TOD.op(rd_cfg_SOFT = True)
+        self.db_TODAY = Class_term_today(path_TERM_TODAY)
+        self.db_ARCHIV = Class_term_archiv(path_TERM_ARCHIV)
+        rq = self.db_TODAY.op(rd_cfg_SOFT = True)
 
         if rq[0] != 0:
             err_msg = 'Can not init TBL cfg_SOFT !' + '  '.join(str(e) for e in rq)
@@ -774,15 +774,15 @@ class Class_CONTROLER():
         else:
             print('cfg_SOFT = > ', rq)
 
-        self.trm_data = Class_TERM_data(self.db_fut_TOD.path_file_DATA)
-        self.trm_hist = Class_TERM_hist(self.db_fut_TOD.path_file_HIST)
+        self.trm_data = Class_TERM_data(self.db_TODAY.path_file_DATA)
+        self.trm_hist = Class_TERM_hist(self.db_TODAY.path_file_HIST)
 
         self.e_mail     = Class_GMAIL('mobile.ovk', '20066002', 'mobile.ovk@gmail.com')
 
         #self.arr_fut        = []    # массив котировок фьючей  60 s
         #self.arr_fut_today  = []    # массив котировок фьючей  60 s
         #self.arr_pack       = []    # массив котировок packets 60 s
-        #self.arr_pack_today = []    # массив котировок packets 60 s
+        #self.arr_pack = []    # массив котировок packets 60 s
 
         self.tm_wrt_new_data = 0    # minute's counter
 #=======================================================================
@@ -807,8 +807,8 @@ def read_term(cntr):
     return [0, 'ok']
 #=======================================================================
 def dbg_prn(cntr, b_clear  = True,
-        b_trm_data_in_file = False,
-        b_trm_hist_in_file = False,
+        b_trm_data_file = False,
+        b_trm_hist_file = False,
         b_trm_data_fut = False,
         b_trm_account  = False,
         b_cfg_alarm = False,
@@ -823,8 +823,8 @@ def dbg_prn(cntr, b_clear  = True,
     if b_clear:
         os.system('cls')  # on windows
 
-    if b_trm_data_in_file:
-        data_in_file = cntr.trm_data.data_in_file
+    if b_trm_data_file:
+        data_in_file = cntr.trm_data.ar_file
         print('.....Class_TERM_data.....')
         print('path_trm   => ', cntr.trm_data.path_trm)
         print('dt_file    => ', cntr.trm_data.dt_file)
@@ -835,7 +835,7 @@ def dbg_prn(cntr, b_clear  = True,
     if b_trm_data_fut:
         print('.....Class_TERM_data.....')
         print('path_trm   => ', cntr.trm_data.path_trm)
-        data_fut = cntr.trm_data.data_fut
+        data_fut = cntr.trm_data.dt_fut
         print('len(data_fut)     => ', len(data_fut))
         if len(data_fut) > 0:
             for i, item in enumerate(data_fut):
@@ -844,9 +844,9 @@ def dbg_prn(cntr, b_clear  = True,
             print('data_fut[-1] =>')
             print('     sP_code     ', data_fut[-1].sP_code)
             print('     sRest       ', data_fut[-1].sRest)
-            print('     sVar_margin ', data_fut[-1].sVar_margin)
-            print('     sOpen_price ', data_fut[-1].sOpen_price)
-            print('     sLast_price ', data_fut[-1].sLast_price)
+            print('     sVar_mrg ', data_fut[-1].sVar_mrg)
+            print('     sOpen_prc ', data_fut[-1].sOpen_prc)
+            print('     sLast_prc ', data_fut[-1].sLast_prc)
             print('     sAsk        ', data_fut[-1].sAsk)
             print('     sBuy_qty    ', data_fut[-1].sBuy_qty)
             print('     sBid        ', data_fut[-1].sBid)
@@ -854,7 +854,7 @@ def dbg_prn(cntr, b_clear  = True,
             print('     sFut_go     ', data_fut[-1].sFut_go)
             print('     sOpen_pos   ', data_fut[-1].sOpen_pos)
             print('. . . . .')
-            print('cntr.trm_data.data_in_file[-1]  =>  \n', cntr.trm_data.data_in_file[-1])
+            print('cntr.trm_data.ar_file[-1]  =>  \n', cntr.trm_data.ar_file[-1])
 
     if b_trm_account:
         print('.....Class_TERM_data.....')
@@ -864,14 +864,14 @@ def dbg_prn(cntr, b_clear  = True,
             print('. . . . .')
             print('.....Class_ACCOUNT.....')
             print('acc_date    => ', acnt.acc_date)
-            print('acc_balance => ', acnt.acc_balance)
-            print('acc_profit  => ', acnt.acc_profit)
+            print('acc_bal => ', acnt.acc_bal)
+            print('acc_prf  => ', acnt.acc_prf)
             print('acc_go      => ', acnt.acc_go)
             print('acc_depo    => ', acnt.acc_depo)
         else:
             print('account     => _')
 
-    if b_trm_hist_in_file:
+    if b_trm_hist_file:
         print('.....Class_TERM_hist.....')
         print('path_hist    => ', cntr.trm_hist.path_hist)
         hist_in_file = cntr.trm_hist.hist_in_file
@@ -884,7 +884,7 @@ def dbg_prn(cntr, b_clear  = True,
             print('trm_hist.hist_in_file[-1] => ', hist_in_file[-1].split('|')[0])
 
     if b_cfg_soft:
-        s = cntr.db_fut_TOD
+        s = cntr.db_TODAY
         print('..... cfg_SOFT .....')
         print('path_term_today => ', s.path_db)
         print('titul              => ', s.titul)
@@ -893,7 +893,7 @@ def dbg_prn(cntr, b_clear  = True,
         print('dt_start           => ', s.dt_start)
 
     if b_cfg_alarm:
-        a = cntr.db_fut_TOD
+        a = cntr.db_TODAY
         print('..... cfg_ALARM .....')
         print('path_term_today    => ', a.path_db)
         print('len(nm) => ', len(a.nm_alarm))
@@ -902,7 +902,7 @@ def dbg_prn(cntr, b_clear  = True,
                 print(item, a.ena_cnt_ema[i])
 
     if b_cfg_pack:
-        cfg_pack = cntr.db_fut_TOD
+        cfg_pack = cntr.db_TODAY
         print('..... cfg_PACK .....')
         print('path_term_today    => ', cfg_pack.path_db)
         print('len(nm) => ', len(cfg_pack.nm))
@@ -912,16 +912,16 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_dt_fut:
         print('..... data_FUT .....')
-        print('path_term_today    => ', cntr.db_fut_TOD.path_db)
-        dt_acc = cntr.db_fut_TOD.account
+        print('path_term_today    => ', cntr.db_TODAY.path_db)
+        dt_acc = cntr.db_TODAY.account
         print('.....Class_ACCOUNT.....')
         print('acc_date    => ', dt_acc.acc_date)
-        print('acc_balance => ', dt_acc.acc_balance)
-        print('acc_profit  => ', dt_acc.acc_profit)
+        print('acc_bal => ', dt_acc.acc_bal)
+        print('acc_prf  => ', dt_acc.acc_prf)
         print('acc_go      => ', dt_acc.acc_go)
         print('acc_depo    => ', dt_acc.acc_depo)
         print('. . . . .')
-        dt_fut = cntr.db_fut_TOD.data_fut
+        dt_fut = cntr.db_TODAY.dt_fut
         print('len(data_fut)     => ', len(dt_fut))
         if len(dt_fut) > 0:
             for i, item in enumerate(dt_fut):
@@ -930,9 +930,9 @@ def dbg_prn(cntr, b_clear  = True,
             print('dt_fut[-1] =>')
             print('     sP_code     ', dt_fut[-1].sP_code)
             print('     sRest       ', dt_fut[-1].sRest)
-            print('     sVar_margin ', dt_fut[-1].sVar_margin)
-            print('     sOpen_price ', dt_fut[-1].sOpen_price)
-            print('     sLast_price ', dt_fut[-1].sLast_price)
+            print('     sVar_mrg ', dt_fut[-1].sVar_mrg)
+            print('     sOpen_prc ', dt_fut[-1].sOpen_prc)
+            print('     sLast_prc ', dt_fut[-1].sLast_prc)
             print('     sAsk        ', dt_fut[-1].sAsk)
             print('     sBuy_qty    ', dt_fut[-1].sBuy_qty)
             print('     sBid        ', dt_fut[-1].sBid)
@@ -942,60 +942,60 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_fut_today:
         print('..... hist_FUT_today .....')
-        print('path_term_today    => ', cntr.db_fut_TOD.path_db)
-        hist = cntr.db_fut_TOD.hist_fut_today
-        print('len(hist_fut_today)   => ', len(hist))
+        print('path_term_today    => ', cntr.db_TODAY.path_db)
+        hist = cntr.db_TODAY.hst_fut
+        print('len(hst_fut)   => ', len(hist))
         if len(hist) > 4:
-            print('hist_fut_today[0] => ',  hist[0])
-            print('hist_fut_today[1] => ',  hist[1][1].split('|')[0])
-            print('hist_fut_today[2] => ',  hist[2][1].split('|')[0])
+            print('hst_fut[0] => ',  hist[0])
+            print('hst_fut[1] => ',  hist[1][1].split('|')[0])
+            print('hst_fut[2] => ',  hist[2][1].split('|')[0])
             print('. . . . .')
-            print('hist_fut_today[-1] => ', hist[-1][1].split('|')[0])
+            print('hst_fut[-1] => ', hist[-1][1].split('|')[0])
             print('___________________________')
-        hist = cntr.db_fut_TOD.hist_1_fut_today
-        print('len(hist_1_fut_today) => ', len(hist))
+        hist = cntr.db_TODAY.hst_1_fut
+        print('len(hst_1_fut) => ', len(hist))
         if len(hist) > 4:
-            print('hist_1_fut_today[0] => ',  hist[0])
-            print('hist_1_fut_today[1] => ',  hist[1][1].split('|')[0])
-            print('hist_1_fut_today[2] => ',  hist[2][1].split('|')[0])
+            print('hst_1_fut[0] => ',  hist[0])
+            print('hst_1_fut[1] => ',  hist[1][1].split('|')[0])
+            print('hst_1_fut[2] => ',  hist[2][1].split('|')[0])
             print('. . . . .')
-            print('hist_1_fut_today[-1] => ', hist[-1][1].split('|')[0])
+            print('hst_1_fut[-1] => ', hist[-1][1].split('|')[0])
             print('___________________________')
-        hist = cntr.db_fut_TOD.arr_1_fut_today
-        print('len(arr_1_fut_today)  => ', len(hist))
+        hist = cntr.db_TODAY.arr_1_fut
+        print('len(arr_1_fut)  => ', len(hist))
         if len(hist) > 4:
-            print('arr_1_fut_today[0] => ',  hist[0])
-            print('arr_1_fut_today[1] => ',  hist[1][1].split('|')[0])
-            print('arr_1_fut_today[2] => ',  hist[2][1].split('|')[0])
+            print('arr_1_fut[0] => ',  hist[0])
+            print('arr_1_fut[1] => ',  hist[1][1].split('|')[0])
+            print('arr_1_fut[2] => ',  hist[2][1].split('|')[0])
             print('. . . . .')
-            print('arr_1_fut_today[-1] => ', hist[-1][1].split('|')[0])
+            print('arr_1_fut[-1] => ', hist[-1][1].split('|')[0])
 
     if b_pack_today:
         print('..... hist_PACK_today .....')
-        print('path_term_today    => ', cntr.db_fut_TOD.path_db)
-        hist = cntr.db_fut_TOD.hist_pack_today
-        print('len(hist_pack_today)   => ', len(hist))
+        print('path_term_today    => ', cntr.db_TODAY.path_db)
+        hist = cntr.db_TODAY.hst_pack
+        print('len(hst_pack)   => ', len(hist))
         if len(hist) != 0:
-            print('len(hist_pack_today[0])   => ', len(hist[0]))
-        hist = cntr.db_fut_TOD.arr_pack_today
-        print('len(arr_pack_today)   => ', len(hist))
+            print('len(hst_pack[0])   => ', len(hist[0]))
+        hist = cntr.db_TODAY.arr_pack
+        print('len(arr_pack)   => ', len(hist))
         if len(hist) != 0:
-            print('len(arr_pack_today[0])   => ', len(hist[0]))
+            print('len(arr_pack[0])   => ', len(hist[0]))
 
     if b_fut_arc:
         print('..... hist_FUT_archiv .....')
-        print('path_term_archiv    => ', cntr.db_fut_ARC.path_db)
-        hist = cntr.db_fut_ARC.hist_fut_archiv
-        print('len(hist_fut_archiv)   => ', len(hist))
+        print('path_term_archiv    => ', cntr.db_ARCHIV.path_db)
+        hist = cntr.db_ARCHIV.hst_fut
+        print('len(hst_fut_arc)   => ', len(hist))
         if len(hist) > 4:
-            print('hist_fut_archiv[0] => ',  hist[0])
-            print('hist_fut_archiv[1] => ',  hist[1][1].split('|')[0])
-            print('hist_fut_archiv[2] => ',  hist[2][1].split('|')[0])
+            print('hst_fut_arc[0] => ',  hist[0])
+            print('hst_fut_arc[1] => ',  hist[1][1].split('|')[0])
+            print('hst_fut_arc[2] => ',  hist[2][1].split('|')[0])
             print('. . . . .')
-            print('hist_fut_archiv[-1] => ', hist[-1][1].split('|')[0])
+            print('hst_fut_arc[-1] => ', hist[-1][1].split('|')[0])
             print('___________________________')
-        hist = cntr.db_fut_ARC.arr_fut_archiv
-        print('len(arr_fut_archiv)  => ', len(hist))
+        hist = cntr.db_ARCHIV.arr_fut
+        print('len(arr_fut_arc)  => ', len(hist))
         if len(hist) > 4:
             print('arr_fut_today[0] => ',  hist[0])
             print('arr_fut_today[1] => ',  hist[1][1].split('|')[0])
@@ -1005,28 +1005,28 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_pack_arc:
         print('..... hist_PACK_archiv .....')
-        print('path_term_archiv    => ', cntr.db_fut_ARC.path_db)
-        hist = cntr.db_fut_ARC.hist_pack_archiv
-        print('len(hist_pack_archiv)   => ', len(hist))
+        print('path_term_archiv    => ', cntr.db_ARCHIV.path_db)
+        hist = cntr.db_ARCHIV.hst_pack
+        print('len(hst_pack_arc)   => ', len(hist))
         if len(hist) > 4:
-            print('hist_pack_archiv[0] => ',  hist[0])
-            print('hist_pack_archiv[1] => ',  hist[1][1].split('|')[0])
-            print('hist_pack_archiv[2] => ',  hist[2][1].split('|')[0])
+            print('hst_pack_arc[0] => ',  hist[0])
+            print('hst_pack_arc[1] => ',  hist[1][1].split('|')[0])
+            print('hst_pack_arc[2] => ',  hist[2][1].split('|')[0])
             print('. . . . .')
-            print('hist_pack_archiv[-1] => ', hist[-1][1].split('|')[0])
+            print('hst_pack_arc[-1] => ', hist[-1][1].split('|')[0])
             print('___________________________')
-        hist = cntr.db_fut_ARC.arr_pack_archiv[0]
+        hist = cntr.db_ARCHIV.arr_pack[0]
         print('PACK_0 :     ')
-        print('len(arr_pack_archiv[0])  => ', len(hist))
+        print('len(arr_pack_arc[0])  => ', len(hist))
         if len(hist) > 4:
-            print('arr_pack_archiv[0][-1].ind => ' ,  hist[-1].ind)
-            print('arr_pack_archiv[0][-1].dt  => ' ,  hist[-1].dt)
-            print('arr_pack_archiv[0][-1].tm  => ' ,  hist[-1].tm)
-            print('arr_pack_archiv[0][-1].pAsk => ',  hist[-1].pAsk)
-            print('arr_pack_archiv[0][-1].pBid => ',  hist[-1].pBid)
-            print('arr_pack_archiv[0][-1].EMAf => ',  hist[-1].EMAf)
-            print('arr_pack_archiv[0][-1].EMAf_rnd     => ',  hist[-1].EMAf_rnd)
-            print('arr_pack_archiv[0][-1].cnt_EMAf_rnd => ',  hist[-1].cnt_EMAf_rnd)
+            print('arr_pack_arc[0][-1].ind => ' ,  hist[-1].ind)
+            print('arr_pack_arc[0][-1].dt  => ' ,  hist[-1].dt)
+            print('arr_pack_arc[0][-1].tm  => ' ,  hist[-1].tm)
+            print('arr_pack_arc[0][-1].pAsk => ',  hist[-1].pAsk)
+            print('arr_pack_arc[0][-1].pBid => ',  hist[-1].pBid)
+            print('arr_pack_arc[0][-1].EMAf => ',  hist[-1].EMAf)
+            print('arr_pack_arc[0][-1].EMAf_r     => ',  hist[-1].EMAf_r)
+            print('arr_pack_arc[0][-1].cnt_EMAf_r => ',  hist[-1].cnt_EMAf_r)
         print('')
 #=======================================================================
 def dbg_srv(cntr,
@@ -1049,58 +1049,58 @@ def dbg_srv(cntr,
         ):
     if b_trm_data:
         c = cntr.trm_data
-        c.dt_file, c.dt_data, c.data_in_file = 0, 0, []
+        c.dt_file, c.dt_data, c.ar_file = 0, 0, []
         rq = c.rd_term_service()
         if rq[0] != 0 : _err_(cntr, 'trm_data.rd_term_service ', rq)
-        else:           dbg_prn(cntr,  b_trm_data_in_file = True)
+        else:           dbg_prn(cntr,  b_trm_data_file = True)
 
     elif b_trm_hist:
         rq = cntr.trm_hist.rd_hist()
         if rq[0] != 0:  _err_(cntr, 'trm_hist.rd_term_service ', rq)
-        else:           dbg_prn(cntr, b_clear  = False, b_trm_hist_in_file = True)
+        else:           dbg_prn(cntr, b_clear  = False, b_trm_hist_file = True)
 
     elif b_cfg_alarm:
-        rq = cntr.db_fut_TOD.op(rd_cfg_ALARM = True)
+        rq = cntr.db_TODAY.op(rd_cfg_ALARM = True)
         if rq[0] != 0 : _err_(cntr, 'cfg_alarm ', rq)
         else:           dbg_prn(cntr,  b_cfg_alarm = True)
 
     elif b_cfg_pack:
-        rq = cntr.db_fut_TOD.op(rd_cfg_PACK = True)
+        rq = cntr.db_TODAY.op(rd_cfg_PACK = True)
         if rq[0] != 0 : _err_(cntr, 'cfg_pack ', rq)
         else:           dbg_prn(cntr,  b_cfg_pack = True)
 
     elif b_cfg_soft:
-        rq = cntr.db_fut_TOD.op(rd_cfg_SOFT = True)
+        rq = cntr.db_TODAY.op(rd_cfg_SOFT = True)
         if rq[0] != 0 : _err_(cntr, 'cfg_soft ', rq)
         else:           dbg_prn(cntr,  b_cfg_soft = True)
 
     elif b_data_fut:
-        rq = cntr.db_fut_TOD.op(rd_data_FUT = True)
+        rq = cntr.db_TODAY.op(rd_data_FUT = True)
         if rq[0] != 0 : _err_(cntr, 'dt_fut ', rq)
         else:           dbg_prn(cntr,  b_dt_fut = True)
 
     elif b_hist_fut_t:
-        rq = cntr.db_fut_TOD.op(rd_hist_FUT_today = True)
+        rq = cntr.db_TODAY.op(rd_hist_FUT_today = True)
         if rq[0] != 0 : _err_(cntr, 'h_fut_today ', rq)
         else:           dbg_prn(cntr,  b_fut_today = True)
 
     elif b_hist_pack_t:
-        rq = cntr.db_fut_TOD.op(rd_hist_PACK_today = True)
+        rq = cntr.db_TODAY.op(rd_hist_PACK_today = True)
         if rq[0] != 0 : _err_(cntr, 'h_pack_today ', rq)
         else:           dbg_prn(cntr,  b_pack_today = True)
 
     elif b_clr_hist_fut_t:
-        rq = cntr.db_fut_TOD.op(clr_hist_FUT_today = True)
+        rq = cntr.db_TODAY.op(clr_hist_FUT_today = True)
         if rq[0] != 0 : _err_(cntr, 'h_fut_today ', rq)
         else:           dbg_prn(cntr,  b_fut_today = True)
 
     elif t_hist_fut_a:
-        rq = cntr.db_fut_ARC.op(rd_hist_FUT = True)
+        rq = cntr.db_ARCHIV.op(rd_hist_FUT = True)
         if rq[0] != 0 : _err_(cntr, 'rd_hist_FUT ', rq)
         else:           dbg_prn(cntr,  b_fut_arc = True)
 
     elif t_hist_pack_a:
-        rq = cntr.db_fut_ARC.op(rd_hist_PACK = True)
+        rq = cntr.db_ARCHIV.op(rd_hist_PACK = True)
         if rq[0] != 0 : _err_(cntr, 'rd_hist_PACK ', rq)
         else:           dbg_prn(cntr,  b_pack_arc = True)
 
@@ -1115,31 +1115,31 @@ def dbg_srv(cntr,
 
     elif t_calc_PACK_arc:
         print('calc PACK arc')
-        rq = cntr.db_fut_ARC.op(rd_hist_FUT = True)
+        rq = cntr.db_ARCHIV.op(rd_hist_FUT = True)
         if rq[0] != 0 :   _err_(cntr, 'debug_calc_PACK_arc ', rq)
-        else:             arr = cntr.db_fut_ARC.hist_fut_archiv
-        for i_pack, item in enumerate(cntr.db_fut_TOD.nm):
+        else:             arr = cntr.db_ARCHIV.hst_fut
+        for i_pack, item in enumerate(cntr.db_TODAY.nm):
             calc_hist_PACK(cntr, i_pack)
             sg.OneLineProgressMeter('calc_hist_PACK',
                                     i_pack+1,
-                                    len(cntr.db_fut_TOD.nm),
+                                    len(cntr.db_TODAY.nm),
                                     'key', orientation='h')
-        rq = cntr.db_fut_TOD.op(wr_cfg_PACK = True)
+        rq = cntr.db_TODAY.op(wr_cfg_PACK = True)
         print('writing hist_PACK . . . . . .')
         wr_hist_PACK(cntr)
         print('ok. . . . . . . . . . . . . .')
 
     elif t_calc_PACK_today:
         print('calc PACK today')
-        rq = cntr.db_fut_TOD.op(rd_hist_FUT_today = True)
+        rq = cntr.db_TODAY.op(rd_hist_FUT_today = True)
         if rq[0] != 0 :
             _err_(cntr, 'debug_calc_PACK_today ', rq)
         else:
-            arr   = cntr.db_fut_TOD.hist_fut_today
-            arr1   = cntr.db_fut_TOD.hist_1_fut_today
+            arr   = cntr.db_TODAY.hst_fut
+            arr1   = cntr.db_TODAY.hst_1_fut
         if len(arr) > 0:
             ind_pack = 'debug_calc_PACK_today => '
-            for i_pack, item in enumerate(cntr.db_fut_TOD.nm):
+            for i_pack, item in enumerate(cntr.db_TODAY.nm):
                 calc_hist_PACK_today(cntr, i_pack)
                 ind_pack += str(i_pack) + ' '
                 print(ind_pack, end='\r')
@@ -1150,16 +1150,16 @@ def dbg_srv(cntr,
         print('TEST NOTHING')
 #=======================================================================
 def calc_hist_PACK(cntr, i_pack):
-    cntr.db_fut_ARC.arr_pack_archiv[i_pack] = []
-    arr_PACK = cntr.db_fut_ARC.arr_pack_archiv[i_pack]
-    arr_HIST = cntr.db_fut_ARC.arr_fut_archiv   # archiv of FUT 60 sec
+    cntr.db_ARCHIV.arr_pack[i_pack] = []
+    arr_PACK = cntr.db_ARCHIV.arr_pack[i_pack]
+    arr_HIST = cntr.db_ARCHIV.arr_fut   # archiv of FUT 60 sec
     #print('ema =  ', cntr.cfg_pack.ema[i_pack])
-    k_EMA     = int(cntr.db_fut_TOD.ema[i_pack][0])
-    k_EMA_rnd = int(cntr.db_fut_TOD.ema[i_pack][1])
+    k_EMA     = int(cntr.db_TODAY.ema[i_pack][0])
+    k_EMA_rnd = int(cntr.db_TODAY.ema[i_pack][1])
     koef_EMA = round(2/(1+k_EMA),5)
     ind, kf = [], []
     #print('koef =  ', cntr.cfg_pack.koef[i_pack])
-    for elem in cntr.db_fut_TOD.koef[i_pack]:
+    for elem in cntr.db_TODAY.koef[i_pack]:
         ind.append(int(elem.split(':')[0]))
         kf.append(int(elem.split(':')[1]))
     #print('arr_HIST[-1] => ', arr_HIST[-1])
@@ -1183,10 +1183,10 @@ def calc_hist_PACK(cntr, i_pack):
         ask_bid_AVR = 0
         if idx == 0:
             null_prc = int((ask_p + bid_p)/2)
-            cntr.db_fut_TOD.nul[i_pack] = null_prc
+            cntr.db_TODAY.nul[i_pack] = null_prc
             buf_c_pack.pAsk, buf_c_pack.pBid = 0, 0
-            buf_c_pack.EMAf, buf_c_pack.EMAf_rnd = 0, 0
-            buf_c_pack.cnt_EMAf_rnd = 0
+            buf_c_pack.EMAf, buf_c_pack.EMAf_r = 0, 0
+            buf_c_pack.cnt_EMAf_r = 0
 
         else:
             ask_p = int(ask_p - null_prc)
@@ -1197,30 +1197,30 @@ def calc_hist_PACK(cntr, i_pack):
 
             prev_EMAf = arr_PACK[idx-1].EMAf
             buf_c_pack.EMAf = round(prev_EMAf + (ask_bid_AVR - prev_EMAf) * koef_EMA, 1)
-            buf_c_pack.EMAf_rnd = k_EMA_rnd * math.ceil(buf_c_pack.EMAf / k_EMA_rnd )
+            buf_c_pack.EMAf_r = k_EMA_rnd * math.ceil(buf_c_pack.EMAf / k_EMA_rnd )
 
-            prev_EMAf_rnd = arr_PACK[idx-1].EMAf_rnd
-            i_cnt = arr_PACK[idx-1].cnt_EMAf_rnd
-            if prev_EMAf_rnd > buf_c_pack.EMAf_rnd:
-                buf_c_pack.cnt_EMAf_rnd = 0 if i_cnt > 0 else i_cnt-1
-            elif prev_EMAf_rnd < buf_c_pack.EMAf_rnd:
-                buf_c_pack.cnt_EMAf_rnd = 0 if i_cnt < 0 else i_cnt+1
+            prev_EMAf_r = arr_PACK[idx-1].EMAf_r
+            i_cnt = arr_PACK[idx-1].cnt_EMAf_r
+            if prev_EMAf_r > buf_c_pack.EMAf_r:
+                buf_c_pack.cnt_EMAf_r = 0 if i_cnt > 0 else i_cnt-1
+            elif prev_EMAf_r < buf_c_pack.EMAf_r:
+                buf_c_pack.cnt_EMAf_r = 0 if i_cnt < 0 else i_cnt+1
             else:
-                buf_c_pack.cnt_EMAf_rnd = i_cnt
+                buf_c_pack.cnt_EMAf_r = i_cnt
 
         arr_PACK.append(buf_c_pack)
 #=======================================================================
 def calc_hist_PACK_today(cntr, i_pack):
-    cntr.db_fut_TOD.arr_pack_today[i_pack] = []
-    arr_PACK = cntr.db_fut_TOD.arr_pack_today[i_pack]
-    arr_PACK_arc = cntr.db_fut_ARC.arr_pack_archiv[i_pack]
-    arr_HIST = cntr.db_fut_TOD.arr_1_fut_today   # today of FUT 60 sec
-    k_EMA     = int(cntr.db_fut_TOD.ema[i_pack][0])
-    k_EMA_rnd = int(cntr.db_fut_TOD.ema[i_pack][1])
+    cntr.db_TODAY.arr_pack[i_pack] = []
+    arr_PACK = cntr.db_TODAY.arr_pack[i_pack]
+    arr_PACK_arc = cntr.db_ARCHIV.arr_pack[i_pack]
+    arr_HIST = cntr.db_TODAY.arr_1_fut   # today of FUT 60 sec
+    k_EMA     = int(cntr.db_TODAY.ema[i_pack][0])
+    k_EMA_rnd = int(cntr.db_TODAY.ema[i_pack][1])
     koef_EMA = round(2/(1+k_EMA),5)
     ind, kf = [], []
     #print('koef =  ', cntr.cfg_pack.koef[i_pack])
-    for elem in cntr.db_fut_TOD.koef[i_pack]:
+    for elem in cntr.db_TODAY.koef[i_pack]:
         ind.append(int(elem.split(':')[0]))
         kf.append(int(elem.split(':')[1]))
     #print('arr_HIST[-1] => ', arr_HIST[-1])
@@ -1242,7 +1242,7 @@ def calc_hist_PACK_today(cntr, i_pack):
 
         ask_bid_AVR = 0
         if idx == 0:
-            null_prc = cntr.db_fut_TOD.nul[i_pack]
+            null_prc = cntr.db_TODAY.nul[i_pack]
             ask_p = int(ask_p - null_prc)
             bid_p = int(bid_p - null_prc)
             buf_c_pack.pAsk = ask_p
@@ -1251,16 +1251,16 @@ def calc_hist_PACK_today(cntr, i_pack):
 
             prev_EMAf = arr_PACK_arc[idx-1].EMAf
             buf_c_pack.EMAf = round(prev_EMAf + (ask_bid_AVR - prev_EMAf) * koef_EMA, 1)
-            buf_c_pack.EMAf_rnd = k_EMA_rnd * math.ceil(buf_c_pack.EMAf / k_EMA_rnd )
+            buf_c_pack.EMAf_r = k_EMA_rnd * math.ceil(buf_c_pack.EMAf / k_EMA_rnd )
 
-            prev_EMAf_rnd = arr_PACK_arc[idx-1].EMAf_rnd
-            i_cnt = arr_PACK_arc[idx-1].cnt_EMAf_rnd
-            if prev_EMAf_rnd > buf_c_pack.EMAf_rnd:
-                buf_c_pack.cnt_EMAf_rnd = 0 if i_cnt > 0 else i_cnt-1
-            elif prev_EMAf_rnd < buf_c_pack.EMAf_rnd:
-                buf_c_pack.cnt_EMAf_rnd = 0 if i_cnt < 0 else i_cnt+1
+            prev_EMAf_r = arr_PACK_arc[idx-1].EMAf_r
+            i_cnt = arr_PACK_arc[idx-1].cnt_EMAf_r
+            if prev_EMAf_r > buf_c_pack.EMAf_r:
+                buf_c_pack.cnt_EMAf_r = 0 if i_cnt > 0 else i_cnt-1
+            elif prev_EMAf_r < buf_c_pack.EMAf_r:
+                buf_c_pack.cnt_EMAf_r = 0 if i_cnt < 0 else i_cnt+1
             else:
-                buf_c_pack.cnt_EMAf_rnd = i_cnt
+                buf_c_pack.cnt_EMAf_r = i_cnt
 
         else:
             ask_p = int(ask_p - null_prc)
@@ -1271,44 +1271,44 @@ def calc_hist_PACK_today(cntr, i_pack):
 
             prev_EMAf = arr_PACK[idx-1].EMAf
             buf_c_pack.EMAf = round(prev_EMAf + (ask_bid_AVR - prev_EMAf) * koef_EMA, 1)
-            buf_c_pack.EMAf_rnd = k_EMA_rnd * math.ceil(buf_c_pack.EMAf / k_EMA_rnd )
+            buf_c_pack.EMAf_r = k_EMA_rnd * math.ceil(buf_c_pack.EMAf / k_EMA_rnd )
 
-            prev_EMAf_rnd = arr_PACK[idx-1].EMAf_rnd
-            i_cnt = arr_PACK[idx-1].cnt_EMAf_rnd
-            if prev_EMAf_rnd > buf_c_pack.EMAf_rnd:
-                buf_c_pack.cnt_EMAf_rnd = 0 if i_cnt > 0 else i_cnt-1
-            elif prev_EMAf_rnd < buf_c_pack.EMAf_rnd:
-                buf_c_pack.cnt_EMAf_rnd = 0 if i_cnt < 0 else i_cnt+1
+            prev_EMAf_r = arr_PACK[idx-1].EMAf_r
+            i_cnt = arr_PACK[idx-1].cnt_EMAf_r
+            if prev_EMAf_r > buf_c_pack.EMAf_r:
+                buf_c_pack.cnt_EMAf_r = 0 if i_cnt > 0 else i_cnt-1
+            elif prev_EMAf_r < buf_c_pack.EMAf_r:
+                buf_c_pack.cnt_EMAf_r = 0 if i_cnt < 0 else i_cnt+1
             else:
-                buf_c_pack.cnt_EMAf_rnd = i_cnt
+                buf_c_pack.cnt_EMAf_r = i_cnt
 
         arr_PACK.append(buf_c_pack)
 #=======================================================================
 def TODAY_copy_ARCHIV(cntr):
     os.system('cls')  # on windows
     print('Copy fut TODAY in ARCHIV .  .  .  .  .')
-    hist = cntr.db_fut_TOD.hist_1_fut_today
-    print('len(hist_1_fut_today) => ', len(hist))
+    hist = cntr.db_TODAY.hst_1_fut
+    print('len(hst_1_fut) => ', len(hist))
     if len(hist) > 4:
-        print('hist_1_fut_today[0] => ',  hist[0][1].split('|')[0])
+        print('hst_1_fut[0] => ',  hist[0][1].split('|')[0])
         print('. . .')
-        print('hist_1_fut_today[-1] => ', hist[-1][1].split('|')[0])
+        print('hst_1_fut[-1] => ', hist[-1][1].split('|')[0])
     print('___________________________________')
     if len(hist) > 10:
         last_1_fut_today = hist[-1][1].split('|')[0].split(' ')[0]
 
-        hist = cntr.db_fut_ARC.hist_fut_archiv
-        print('len(hist_fut_archiv)   => ', len(hist))
+        hist = cntr.db_ARCHIV.hst_fut
+        print('len(hst_fut_arc)   => ', len(hist))
         if len(hist) > 4:
-            print('hist_fut_archiv[0] => ',  hist[0][1].split('|')[0])
+            print('hst_fut_arc[0] => ',  hist[0][1].split('|')[0])
             print('. . .')
-            print('hist_fut_archiv[-1] => ', hist[-1][1].split('|')[0])
+            print('hst_fut_arc[-1] => ', hist[-1][1].split('|')[0])
         print('___________________________________')
         last_fut_archiv = hist[-1][1].split('|')[0].split(' ')[0]
         if last_1_fut_today != last_fut_archiv:
-            cntr.db_fut_ARC.buf_hist_fut_archiv = []
-            cntr.db_fut_ARC.buf_hist_fut_archiv = cntr.db_fut_TOD.hist_1_fut_today[:520]
-            rq = cntr.db_fut_ARC.op(wr_hist_FUT = True)
+            cntr.db_ARCHIV.buf_arc = []
+            cntr.db_ARCHIV.buf_arc = cntr.db_TODAY.hst_1_fut[:520]
+            rq = cntr.db_ARCHIV.op(wr_hist_FUT = True)
             if rq[0] != 0: _err_(cntr, 'TODAY_copy_ARCHIV ', rq)
             print('ok . . .')
         else:
@@ -1328,7 +1328,7 @@ def convert_tbl_TODAY(cntr):
     #
     dbg_srv(cntr,  b_hist_fut_t = True) #read & print
     #
-    arr_hist = cntr.db_fut_TOD.hist_fut_today
+    arr_hist = cntr.db_TODAY.hst_fut
     if len(arr_hist) > 10:
         term_dt = arr_hist[-1][1].split('|')[0]
         dtt = datetime.strptime(str(term_dt), "%d.%m.%Y %H:%M:%S")
@@ -1339,10 +1339,10 @@ def convert_tbl_TODAY(cntr):
         # write in file HISTORY  10 sec ------------------------------------
         hist_out = []           # convert TUPLE in LIST & delete last '|'
         for item in arr_hist: hist_out.append(''.join(list(item[1])[0:-1]))
-        path_file = str_dt + '_hist_' + cntr.db_fut_TOD.titul + '.txt'
+        path_file = str_dt + '_hist_' + cntr.db_TODAY.titul + '.txt'
         wr_file(path_file, hist_out, 'Hist export for ', cntr)
         #
-        arr_hist = cntr.db_fut_TOD.hist_1_fut_today
+        arr_hist = cntr.db_TODAY.hst_1_fut
         term_dt = arr_hist[-1][1].split('|')[0]
         dtt = datetime.strptime(str(term_dt), "%d.%m.%Y %H:%M:%S")
         # write in file HISTORY  60 sec ------------------------------------
@@ -1351,7 +1351,7 @@ def convert_tbl_TODAY(cntr):
             dt_buf = datetime.strptime(str(item[1].split('|')[0]), "%d.%m.%Y %H:%M:%S")
             if dt_buf.hour < 19:
                 hist_out.append(str(int(item[0])) + ';' + ''.join(list(item[1])[0:-1]))
-        path_file = cntr.db_fut_TOD.titul + '_' + str_dt + '_hist_FUT' + '.csv'
+        path_file = cntr.db_TODAY.titul + '_' + str_dt + '_hist_FUT' + '.csv'
         wr_file(path_file, hist_out, 'Archiv for ', cntr)
         #
         print('.  .  .  .  .')
@@ -1371,12 +1371,12 @@ def convert_tbl_TODAY(cntr):
 def prepair_hist_PACK(cntr, b_today = False):
     name_list =[]
     if b_today :
-        arr_hist_pack = cntr.db_fut_TOD.arr_pack_today
+        arr_hist_pack = cntr.db_TODAY.arr_pack
         #print()
         #print('len(arr_hist_pack) = ',len(arr_hist_pack ))
         #print('len(arr_hist_pack[0]) = ',len(arr_hist_pack[0]))
     else:
-        arr_hist_pack = cntr.db_fut_ARC.arr_pack_archiv
+        arr_hist_pack = cntr.db_ARCHIV.arr_pack
 
     if len(arr_hist_pack) > 0:
         for i_hist, item_hist in enumerate(arr_hist_pack[0]):
@@ -1385,16 +1385,16 @@ def prepair_hist_PACK(cntr, b_today = False):
             for i_mdl, item_mdl in enumerate(arr_hist_pack):
                 buf = arr_hist_pack[i_mdl][i_hist]
                 buf_s += str(buf.pAsk) + ' ' + str(buf.pBid)     + ' '
-                buf_s += str(buf.EMAf) + ' ' + str(buf.EMAf_rnd) + ' ' + str(buf.cnt_EMAf_rnd) + '|'
+                buf_s += str(buf.EMAf) + ' ' + str(buf.EMAf_r) + ' ' + str(buf.cnt_EMAf_r) + '|'
                 #buf_s += str(buf.AMA)  + ' ' + str(buf.AMA_rnd)  + ' ' + str(buf.cnt_AMA_rnd) + '|'
             name_list.append((item_hist.ind, buf_dt + buf_s.replace('.', ',')))
 
     return name_list
 #=======================================================================
 def wr_hist_PACK(cntr):
-    cntr.db_fut_ARC.hist_pack_archiv = []
-    cntr.db_fut_ARC.hist_pack_archiv = prepair_hist_PACK(cntr)
-    rq = cntr.db_fut_ARC.op(wr_hist_PACK = True)
+    cntr.db_ARCHIV.hst_pack = []
+    cntr.db_ARCHIV.hst_pack = prepair_hist_PACK(cntr)
+    rq = cntr.db_ARCHIV.op(wr_hist_PACK = True)
 
     if rq[0] != 0:
         _err_(cntr, 'hist_PACK ', rq, PopUp = False)
@@ -1406,9 +1406,9 @@ def wr_hist_PACK_today(cntr):
     name_list = []
     name_list = prepair_hist_PACK(cntr, b_today = True)
 
-    cntr.db_fut_TOD.hist_pack_today = []
-    cntr.db_fut_TOD.hist_pack_today = name_list[:]
-    rq = cntr.db_fut_TOD.op(wr_hist_PACK_today = True)
+    cntr.db_TODAY.hst_pack = []
+    cntr.db_TODAY.hst_pack = name_list[:]
+    rq = cntr.db_TODAY.op(wr_hist_PACK_today = True)
     if rq[0] != 0:
         _err_(cntr, 'hist_PACK_today ', rq, PopUp = True)
         return [1, 'wr_hist_PACK_today']
@@ -1452,13 +1452,13 @@ def event_menu(event, cntr):
     #-------------------------------------------------------------------
     if event == 'srv send E-MAIL'    : dbg_srv(cntr, b_send_mail     = True)
     #-------------------------------------------------------------------
-    if event == 'prn TERM data_in_file'  : dbg_prn(cntr, b_trm_data_in_file = True)
+    if event == 'prn TERM data_in_file'  : dbg_prn(cntr, b_trm_data_file = True)
     #---------------------------------------------------------------
     if event == 'prn TERM data_fut'      : dbg_prn(cntr, b_trm_data_fut     = True)
     #---------------------------------------------------------------
     if event == 'prn TERM account'       : dbg_prn(cntr, b_trm_account      = True)
     #---------------------------------------------------------------
-    if event == 'prn TERM hist_in_file'  : dbg_prn(cntr, b_trm_hist_in_file = True)
+    if event == 'prn TERM hist_in_file'  : dbg_prn(cntr, b_trm_hist_file = True)
     #---------------------------------------------------------------
     if event == 'prn FUT cfg_ALARM'      : dbg_prn(cntr, b_cfg_alarm        = True)
     #---------------------------------------------------------------
@@ -1496,7 +1496,7 @@ def main():
         if rq[0] != 0:  _err_(cntr, 'INIT hist_in_file ', rq)
         else:           print('trm_hist  = > ', rq)
         #---------------------------------------------------------------
-        rq = cntr.db_fut_TOD.op(
+        rq = cntr.db_TODAY.op(
                                     rd_cfg_ALARM = True,
                                     rd_cfg_PACK  = True,
                                     rd_data_FUT  = True,
@@ -1506,28 +1506,28 @@ def main():
         if rq[0] != 0 : _err_(cntr, 'INIT cfg_data_hist TODAY', rq)
         else:
             print('INIT cfg_data_hist TODAY = > ', rq)
-            if len(cntr.db_fut_TOD.nm) == 0:
+            if len(cntr.db_TODAY.nm) == 0:
                 _err_(cntr, 'cfg_pack.nm = 0  ', [' ', 'It can not be EMPTY !'] )
                 break
-            if (len(cntr.db_fut_TOD.arr_pack_today) == 0):
-                for item in cntr.db_fut_TOD.nm:
-                    cntr.db_fut_TOD.arr_pack_today.append([])
-            for item in cntr.db_fut_TOD.nm:
-                cntr.db_fut_ARC.arr_pack_archiv.append([])
-            #print('init tables / len arr_pack_today  = ', len(cntr.db_fut_TOD.arr_pack_today))
-            #print('init tables / len arr_pack_archiv = ', len(cntr.db_fut_ARC.arr_pack_archiv))
+            if (len(cntr.db_TODAY.arr_pack) == 0):
+                for item in cntr.db_TODAY.nm:
+                    cntr.db_TODAY.arr_pack.append([])
+            for item in cntr.db_TODAY.nm:
+                cntr.db_ARCHIV.arr_pack.append([])
+            #print('init tables / len arr_pack  = ', len(cntr.db_TODAY.arr_pack))
+            #print('init tables / len arr_pack_arc = ', len(cntr.db_ARCHIV.arr_pack))
         #---------------------------------------------------------------
-        rq = cntr.db_fut_ARC.op(rd_hist_FUT = True)
-        if rq[0] != 0 : _err_(cntr, 'INIT hist_fut_archiv ', rq)
+        rq = cntr.db_ARCHIV.op(rd_hist_FUT = True)
+        if rq[0] != 0 : _err_(cntr, 'INIT hst_fut_arc ', rq)
         else:           print('hist_FUT archiv = > ', rq)
         print('calculating hist_PACK . . . .')
-        for i_pack, item in enumerate(cntr.db_fut_TOD.nm):
+        for i_pack, item in enumerate(cntr.db_TODAY.nm):
             calc_hist_PACK(cntr, i_pack)
             sg.OneLineProgressMeter('calc_hist_PACK',
                                     i_pack+1,
-                                    len(cntr.db_fut_TOD.nm),
+                                    len(cntr.db_TODAY.nm),
                                     'key', orientation='h')
-        rq = cntr.db_fut_TOD.op(wr_cfg_PACK = True) #rewrite NUL price
+        rq = cntr.db_TODAY.op(wr_cfg_PACK = True) #rewrite NUL price
         print('writing hist_PACK . . . . . .')
         wr_hist_PACK(cntr)
         break
@@ -1573,7 +1573,7 @@ def main():
                     [sg.T('',size=(60,2), font='Helvetica 8', key='txt_status'), sg.Quit(auto_size_button=True)],
                  ]
         sg.SetOptions(element_padding=(0,0))
-        window = sg.Window(cntr.db_fut_TOD.titul, grab_anywhere=True).Layout(layout).Finalize()
+        window = sg.Window(cntr.db_TODAY.titul, grab_anywhere=True).Layout(layout).Finalize()
         break
 
     mode = 'manual'
@@ -1615,28 +1615,28 @@ def main():
                 stroki.append(rq[1])
             else:
                 tm_out = 7550
-                print('Time new DATA:  ' + cntr.trm_data.data_in_file[0].split('|')[0])
-                stroki.append('Time DATA:  ' + cntr.trm_data.data_in_file[0].split('|')[0])
+                print('Time new DATA:  ' + cntr.trm_data.ar_file[0].split('|')[0])
+                stroki.append('Time DATA:  ' + cntr.trm_data.ar_file[0].split('|')[0])
                 stroki.append('Have got new data/hist')
                 tmr = cntr.trm_data.account.acc_date
                 dt_minute = datetime.strptime(str(tmr.split('|')[0]), frm).minute
                 if cntr.tm_wrt_new_data == dt_minute:
-                    cntr.db_fut_TOD.buf_data_in_file = cntr.trm_data.data_in_file
-                    req = cntr.db_fut_TOD.op(wr_data_FUT = True)
+                    cntr.db_TODAY.buf_file = cntr.trm_data.ar_file
+                    req = cntr.db_TODAY.op(wr_data_FUT = True)
                     if req[0] != 0: _err_(cntr, 'rewrite_tbl => ', req, PopUp = False)
                     else:
-                        rq = cntr.db_fut_TOD.op(rd_data_FUT_in_file = True)
+                        rq = cntr.db_TODAY.op(rd_data_FUT_in_file = True)
                         if rq[0] != 0 : _err_(cntr, 'read_data_in_file => ', rq, PopUp = False)
                         else:           print(60*' ', end='\r')
                 else:
                     cntr.tm_wrt_new_data = dt_minute
-                    cntr.db_fut_TOD.buf_hist_in_file = cntr.trm_hist.hist_in_file
-                    req = cntr.db_fut_TOD.op(wr_hist_FUT_today = True)
+                    cntr.db_TODAY.buf_file = cntr.trm_hist.hist_in_file
+                    req = cntr.db_TODAY.op(wr_hist_FUT_today = True)
                     if req[0] != 0: _err_(cntr, 'h_fut_today.rewrite_tbl => ', req, PopUp = False)
                     else:
                         ind_pack = 'calc_hist_PACK_today => '
-                        print('__TIMEOUT__ / len arr_pack_today  = ', len(cntr.db_fut_TOD.arr_pack_today))
-                        for i_pack, item in enumerate(cntr.db_fut_TOD.nm):
+                        print('__TIMEOUT__ / len arr_pack  = ', len(cntr.db_TODAY.arr_pack))
+                        for i_pack, item in enumerate(cntr.db_TODAY.nm):
                             calc_hist_PACK_today(cntr, i_pack)
                             ind_pack += str(i_pack) + ' '
                             print(ind_pack, end='\r')
