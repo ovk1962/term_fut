@@ -69,9 +69,9 @@ class Class_PACK():
         self.EMAf_rnd = 0.0
         self.cnt_EMAf_rnd = 0.0
 #=======================================================================
-class Class_term_fut_archiv():
-    def __init__(self, path_term_fut_archiv):
-        self.path_db = path_term_fut_archiv
+class Class_term_archiv():
+    def __init__(self, path_term_archiv):
+        self.path_db = path_term_archiv
         self.table_db = []
         self.conn = ''
         self.cur  = ''
@@ -160,9 +160,9 @@ class Class_term_fut_archiv():
 
         return r_op_archiv
 #=======================================================================
-class Class_term_fut_today():
-    def __init__(self, path_term_fut_pack):
-        self.path_db = path_term_fut_pack
+class Class_term_today():
+    def __init__(self, path_term_today):
+        self.path_db = path_term_today
         self.table_db = []
         self.conn = ''
         self.cur  = ''
@@ -481,11 +481,11 @@ class Class_CONTROLER():
     def __init__(self):
         c_dir = os.path.abspath(os.curdir)
         self.log = Class_LOGGER(c_dir + '\\LOG\\term_fut_pack_logger.log')
-        path_TERM_FUT_PACK    = c_dir + '\\DB\\term_fut_pack.sqlite'
-        path_TERM_FUT_ARCHIV  = c_dir + '\\DB\\term_fut_archiv.sqlite'
+        path_TODAY   = c_dir + '\\DB\\term_today.sqlite'
+        path_ARCHIV  = c_dir + '\\DB\\term_archiv.sqlite'
 
-        self.db_fut_TOD = Class_term_fut_today(path_TERM_FUT_PACK)
-        self.db_fut_ARC = Class_term_fut_archiv(path_TERM_FUT_ARCHIV)
+        self.db_fut_TOD = Class_term_today(path_TODAY)
+        self.db_fut_ARC = Class_term_archiv(path_ARCHIV)
         rq = self.db_fut_TOD.op(rd_cfg_SOFT = True)
 
         if rq[0] != 0:
@@ -514,7 +514,7 @@ def dbg_prn(cntr, b_clear  = True,
     if b_cfg_soft:
         s = cntr.db_fut_TOD
         print('..... cfg_SOFT .....')
-        print('path_term_fut_pack => ', s.path_db)
+        print('path_term_TODAY => ', s.path_db)
         print('titul              => ', s.titul)
         print('path_file_DATA     => ', s.path_file_DATA)
         print('path_file_HIST     => ', s.path_file_HIST)
@@ -523,7 +523,7 @@ def dbg_prn(cntr, b_clear  = True,
     if b_cfg_alarm:
         a = cntr.db_fut_TOD
         print('..... cfg_ALARM .....')
-        print('path_term_fut_pack    => ', a.path_db)
+        print('path_term_TODAY    => ', a.path_db)
         print('len(nm) => ', len(a.nm_alarm))
         if len(a.nm_alarm) > 0:
             for i, item in enumerate(a.nm_alarm):
@@ -532,7 +532,7 @@ def dbg_prn(cntr, b_clear  = True,
     if b_cfg_pack:
         cfg_pack = cntr.db_fut_TOD
         print('..... cfg_PACK .....')
-        print('path_term_fut_pack    => ', cfg_pack.path_db)
+        print('path_term_TODAY    => ', cfg_pack.path_db)
         print('len(nm) => ', len(cfg_pack.nm))
         if len(cfg_pack.nm) > 0:
             for i, item in enumerate(cfg_pack.nm):
@@ -540,7 +540,7 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_dt_fut:
         print('..... data_FUT .....')
-        print('path_term_fut_pack    => ', cntr.db_fut_TOD.path_db)
+        print('path_term_TODAY    => ', cntr.db_fut_TOD.path_db)
         dt_acc = cntr.db_fut_TOD.account
         print('.....Class_ACCOUNT.....')
         print('acc_date    => ', dt_acc.acc_date)
@@ -570,7 +570,7 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_fut_today:
         print('..... hist_FUT_today .....')
-        print('path_term_fut_pack    => ', cntr.db_fut_TOD.path_db)
+        print('path_term_TODAY    => ', cntr.db_fut_TOD.path_db)
         hist = cntr.db_fut_TOD.hist_fut_today
         print('len(hist_fut_today)   => ', len(hist))
         if len(hist) > 4:
@@ -600,7 +600,7 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_pack_today:
         print('..... hist_PACK_today .....')
-        print('path_term_fut_pack    => ', cntr.db_fut_TOD.path_db)
+        print('path_term_TODAY    => ', cntr.db_fut_TOD.path_db)
         hist = cntr.db_fut_TOD.hist_pack_today
         print('len(hist_pack_today)   => ', len(hist))
         if len(hist) > 4:
@@ -624,7 +624,7 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_fut_arc:
         print('..... hist_FUT_archiv .....')
-        print('path_term_fut_archiv    => ', cntr.db_fut_ARC.path_db)
+        print('path_term_archiv    => ', cntr.db_fut_ARC.path_db)
         hist = cntr.db_fut_ARC.hist_fut_archiv
         print('len(hist_fut_archiv)   => ', len(hist))
         if len(hist) > 4:
@@ -645,7 +645,7 @@ def dbg_prn(cntr, b_clear  = True,
 
     if b_pack_arc:
         print('..... hist_PACK_archiv .....')
-        print('path_term_fut_archiv    => ', cntr.db_fut_ARC.path_db)
+        print('path_term_archiv    => ', cntr.db_fut_ARC.path_db)
         hist = cntr.db_fut_ARC
         print('len(hist_pack_archiv)   => ', len(hist.hist_pack_archiv))
         if len(hist.hist_pack_archiv) > 4:
@@ -1082,8 +1082,8 @@ def main():
 
         def_txt = []
         frm = '{: <15}  => {: ^15}\n'
-        def_txt.append(frm.format('TODAY' , '\\DB\\term_fut_pack.sqlite'))
-        def_txt.append(frm.format('ARCHV' , '\\DB\\term_fut_archiv.sqlite'))
+        def_txt.append(frm.format('TODAY' , '\\DB\\term_today.sqlite'))
+        def_txt.append(frm.format('ARCHV' , '\\DB\\term_archiv.sqlite'))
 
         # Display data
         layout = [
