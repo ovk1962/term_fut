@@ -1425,6 +1425,7 @@ def _err_(cntr, msg, rq, Log = True, Prn = True, PopUp = True):
         print(err_msg)
 #=======================================================================
 def event_menu(event, cntr):
+    print(event)
     #-------------------------------------------------------------------
     if event == 'srv data TERM'       : dbg_srv(cntr, b_trm_data   = True)
     #-------------------------------------------------------------------
@@ -1595,17 +1596,13 @@ def main():
         stroki = []
         event, values = window.Read(timeout=tm_out )
         #---------------------------------------------------------------
-        if event == 'auto'   :
-            tm_out = 1550
-            mode = 'auto'
-        #---------------------------------------------------------------
-        if event == 'manual' :
-            tm_out = 240000
-            mode = 'manual'
-        #---------------------------------------------------------------
         event_menu(event, cntr)
         #---------------------------------------------------------------
         if event is None or event == 'Quit' or event == 'Exit': break
+        #---------------------------------------------------------------
+        if event == 'auto'   :    tm_out, mode = 1550,   'auto'
+        #---------------------------------------------------------------
+        if event == 'manual' :    tm_out, mode = 240000, 'manual'
         #---------------------------------------------------------------
         if event == '__TIMEOUT__':
             rq = read_term(cntr)
@@ -1635,7 +1632,6 @@ def main():
                     if req[0] != 0: _err_(cntr, 'h_fut_today.rewrite_tbl => ', req, PopUp = False)
                     else:
                         ind_pack = 'calc_hist_PACK_today => '
-                        print('__TIMEOUT__ / len arr_pack  = ', len(cntr.db_TODAY.arr_pack))
                         for i_pack, item in enumerate(cntr.db_TODAY.nm):
                             calc_hist_PACK_today(cntr, i_pack)
                             ind_pack += str(i_pack) + ' '

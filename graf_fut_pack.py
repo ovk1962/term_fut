@@ -574,8 +574,8 @@ class Class_CONTROLER():
     def __init__(self):
         c_dir = os.path.abspath(os.curdir)
         self.log = Class_LOGGER(c_dir + '\\LOG\\term_fut_pack_logger.log')
-        path_TERM_FUT_PACK    = c_dir + '\\DB\\term_fut_pack.sqlite'
-        path_TERM_FUT_ARCHIV  = c_dir + '\\DB\\term_fut_archiv.sqlite'
+        path_TERM_FUT_PACK    = c_dir + '\\DB\\term_today.sqlite'
+        path_TERM_FUT_ARCHIV  = c_dir + '\\DB\\term_archiv.sqlite'
 
         self.cfg_soft = Class_TABLE_cfg_soft(path_TERM_FUT_PACK)
         rq = self.cfg_soft.read_tbl()

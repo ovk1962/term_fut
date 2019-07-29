@@ -977,6 +977,7 @@ def _err_(cntr, msg, rq, Log = True, Prn = True, PopUp = True):
         print(err_msg)
 #=======================================================================
 def event_menu(event, cntr):
+    print(event)
     #-------------------------------------------------------------------
     if event == 'srv data TERM'       : dbg_srv(cntr, b_trm_data   = True)
     #-------------------------------------------------------------------
@@ -1096,8 +1097,7 @@ def main():
         window = sg.Window(cntr.db_TODAY.titul, grab_anywhere=True).Layout(layout).Finalize()
         break
 
-    mode = 'manual'
-    tm_out = 360000
+    tm_out, mode = 360000,   'manual'
     frm = '%d.%m.%Y %H:%M:%S'
     stts  = time.strftime(frm, time.localtime()) + '\n' + 'event = manual'
     window.FindElement('txt_status').Update(stts)
@@ -1106,17 +1106,13 @@ def main():
         stroki = []
         event, values = window.Read(timeout=tm_out )
         #---------------------------------------------------------------
-        if event == 'auto'   :
-            tm_out = 1550
-            mode = 'auto'
-        #---------------------------------------------------------------
-        if event == 'manual' :
-            tm_out = 240000
-            mode = 'manual'
+        event_menu(event, cntr)
         #---------------------------------------------------------------
         if event is None or event == 'Quit' or event == 'Exit': break
         #---------------------------------------------------------------
-        event_menu(event, cntr)
+        if event == 'auto'   :    tm_out, mode = 1550,   'auto'
+        #---------------------------------------------------------------
+        if event == 'manual' :    tm_out, mode = 240000, 'manual'
         #---------------------------------------------------------------
         if event == '__TIMEOUT__':
             rq = read_term(cntr)
