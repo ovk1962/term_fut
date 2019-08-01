@@ -1606,6 +1606,7 @@ def main():
         #---------------------------------------------------------------
         if event == '__TIMEOUT__':
             rq = read_term(cntr)
+            stroki.append('Profit = ' + str(cntr.trm_data.account.acc_prf))
             if rq[0] != 0:
                 dbg_prn(cntr)
                 tm_out = 1550
