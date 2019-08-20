@@ -4,14 +4,34 @@
 #  db_archiv.py
 #
 #=======================================================================
-import os, sys, math, time
-import sqlite3
+import os, sys, math, time, sqlite3, logging
+import ipdb
 if sys.version_info[0] >= 3:
     import PySimpleGUI as sg
 else:
     import PySimpleGUI27 as sg
-import ipdb
+#=======================================================================
+class Class_LOGGER():
+    def __init__(self, path_log):
+        #self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('__main__')
+        self.logger.setLevel(logging.INFO)
+        # create a file handler
+        self.handler = logging.FileHandler(path_log)
+        self.handler.setLevel(logging.INFO)
+        # create a logging format
+        #self.formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        self.formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        self.handler.setFormatter(self.formatter)
 
+        # add the handlers to the logger
+        self.logger.addHandler(self.handler)
+    #-------------------------------------------------------------------
+    def wr_log_info(self, msg):
+        self.logger.info(msg)
+    #-------------------------------------------------------------------
+    def wr_log_error(self, msg):
+        self.logger.error(msg)
 #=======================================================================
 class Class_STR_PACK():
     def __init__(self):
@@ -19,6 +39,20 @@ class Class_STR_PACK():
         self.dt = ''
         self.tm = ''
         self.pk = []    # list of obj Class_sPACK()
+
+    def prn(self):
+        s = ''
+        frm = '{: ^14}{: ^12}{: ^12}'
+        s =  frm.format('ind','dt','tm') + '\n'
+        s += frm.format(self.ind, self.dt, self.tm) + '\n'
+        if len(self.pk) == 0:
+            s += 'len(self.pk) = 0'
+        else:
+            frm = '{:^12}{:^12}{:^12}{:^12}{:^4}'
+            s += frm.format('pAsk','pBid','EMAf','EMAf_r','cnt_EMAf_r') + '\n'
+            for item in self.pk:
+                s += frm.format(item.pAsk, item.pBid, item.EMAf, item.EMAf_r, item.cnt_EMAf_r) + '\n'
+        return s
 #=======================================================================
 class Class_sPACK():
     def __init__(self):
@@ -27,17 +61,12 @@ class Class_sPACK():
         self.EMAf = 0.0
         self.EMAf_r = 0.0
         self.cnt_EMAf_r = 0.0
-#=======================================================================
-class Class_PACK():
-    def __init__(self):
-        self.ind= 0
-        self.dt = ''
-        self.tm = ''
-        self.pAsk = 0.0
-        self.pBid = 0.0
-        self.EMAf = 0.0
-        self.EMAf_r = 0.0
-        self.cnt_EMAf_r = 0.0
+
+    def prn(self):
+        frm = '{:^8}{:^8}{:^8}{:^6}{:^4}'
+        s = frm.format('pAsk','pBid','EMAf','EMAf_r','cnt_EMAf_r') + '\n'
+        s += frm.format(self.pAsk, self.pBid, self.EMAf, self.EMAf_r, self.cnt_EMAf_r)
+        return s
 #=======================================================================
 class Class_term_archiv():
     def __init__(self, path_term_archiv):
@@ -59,36 +88,74 @@ class Class_term_archiv():
         #self.arr_pack = []  # list of [[ind_sec string] ... ]
         self.arr_pk   = []  # list of obj [Class_STR_PACK ... ]
 
-    def prn(self,p_clear = True,
+    def prn(self,
             p_cfg_PACK   = False,
-            p_hist_FUT   = False,
-            p_hist_PACK  = False
+            p_hst_fut   = False,
+            p_arr_fut   = False,
+            p_hst_pack  = False,
+            p_arr_pk    = False
             ):
-        r_prn = [0, 'ok']
+        s = ''
         try:
-            if p_clear:
-                os.system('cls')  # on windows
-
             if p_cfg_PACK:
-                print('..... cfg_PACK ..... ')
-                print(self.path_db)
-                print('len(cfg_PACK) => ', len(self.nm))
+                s += ' cfg_PACK _________________________________' + '\n'
                 if len(self.nm) > 0:
-                    print('\n  nm       nul     ema[]     koef[]\n')
+                    frm = '{: ^5}{: ^15}{}{}{}'
+                    s += frm.format('nm','nul','ema[]','        ','koef[]') + '\n'
                     for i, item in enumerate(self.nm):
-                        print('{: ^5}{: ^15}{}{}'.format(self.nm[i], self.nul[i], self.ema[i], self.koef[i]))
-                    print()
+                        s += frm.format(self.nm[i], str(self.nul[i]), self.ema[i], '   ', self.koef[i])+ '\n'
 
-            if p_hist_FUT:
-                pass
+            if p_hst_fut:
+                s += ' hst_fut __________________________________' + '\n'
+                hist = self.hst_fut
+                s += 'len(hst_fut)   => ' + str(len(hist)) + '\n'
+                if len(hist) > 4:
+                    s += 'hst_fut[i] TURPLE (float, str_fut) => ' + '\n'
+                    s += '0    => '  +  ' '.join(str(h) for h in hist[0]) + '\n'
+                    for i in range(1,4):
+                        s += str(i) + '    => ' + hist[i][1].split('|')[0] + '\n'
+                    s += '. . . . . . . . . . . . . .' + '\n'
+                    s += str(len(hist)-1) + ' => ' + hist[-1][1].split('|')[0] + '\n'
 
-            if p_hist_PACK:
-                pass
+            if p_arr_fut:
+                s += ' arr_fut __________________________________' + '\n'
+                hist = self.arr_fut
+                s += 'len(arr_fut)   => ' + str(len(hist)) + '\n'
+                if len(hist) > 4:
+                    s += 'arr_fut[i] LIST [float, dt_tm, floats] => \n'
+                    s += '0    => '  + ' '.join(list(map(lambda x:str(x), hist[0]))) + '\n'
+                    for i in range(1,4):
+                        s += str(i) + '    => ' + hist[i][1] + '\n'
+                    s += '. . . . . . . . . . . . . .' + '\n'
+                    s += str(len(hist)-1) + '    => ' + hist[-1][1] + '\n'
+
+            if p_hst_pack:
+                s += ' hst_pack _________________________________' + '\n'
+                hist = self.hst_pack
+                s += 'len(hst_pack)   => ' + str(len(hist)) + '\n'
+                if len(hist) > 4:
+                    s += 'hst_pack[i] TURPLE (float, str_pack) => ' + '\n'
+                    s += '0    => '  +  ' '.join(str(h) for h in hist[0]) + '\n'
+                    for i in range(1,4):
+                        s += str(i) + '    => ' + hist[i][1].split('|')[0] + '\n'
+                    s += '. . . . . . . . . . . . . .' + '\n'
+                    s += str(len(hist)-1) + ' => ' + hist[-1][1].split('|')[0] + '\n'
+
+            if p_arr_pk:
+                s += ' arr_pk ___________________________________' + '\n'
+                hist = self.arr_pk
+                s += 'len(arr_pk)   => ' + str(len(hist)) + '\n'
+                #ipdb.set_trace()
+                if len(hist) > 4:
+                    for i in range(1,2):
+                        s += 'arr_pk[' + str(i) + ']   =>\n' + hist[i].prn()
+                    s += '. . . . . . . . . . . . . .' + '\n'
+                    s += 'arr_pk[' + str(len(hist)-1) + '] => \n' + hist[-1].prn()
 
         except Exception as ex:
             r_prn = [1, 'op_archiv / ' + str(ex)]
 
-        return r_prn
+        return [0, s]
 
     def op(self,
             rd_cfg_PACK  = False,
@@ -161,26 +228,27 @@ class Class_term_archiv():
                     #for i_str in self.hst_pack:
                     for cnt, i_str in enumerate(self.hst_pack):
                         #self.ind / dt / tm / pk = 0, '', '', []
-                        buf_pack = Class_STR_PACK()
-                        buf_pack.ind = int(i_str[0])
+                        bp = Class_STR_PACK()
+                        bp.ind = int(i_str[0])
                         buf = i_str[1].split('|')[0].split(' ')
-                        buf_pack.dt, buf_pack.tm  = buf[0], buf[1]
+                        bp.dt, bp.tm  = buf[0], buf[1]
                         #
-                        buf_pack.pk = [] # list of obj Class_PACK()
+                        bp.pk = [] # list of obj Class_PACK()
                         buf = i_str[1].replace(',','.').split('|')
                         del buf[-1]
-                        for cnt, item in enumerate(buf):
-                            str_mdl  = item.split(' ')
+                        for cn, item in enumerate(buf):
                             ind_0 = 0
-                            if cnt == 0: ind_0 = 2
-                            buf_p = Class_sPACK()
-                            buf_p.pAsk       = float(str_mdl[0+ind_0])
-                            buf_p.pBid       = float(str_mdl[1+ind_0])
-                            buf_p.EMAf       = float(str_mdl[2+ind_0])
-                            buf_p.EMAf_r     = float(str_mdl[3+ind_0])
-                            buf_p.cnt_EMAf_r = float(str_mdl[4+ind_0])
-                            buf_pack.pk.append(buf_p)
-                        self.arr_pk.append(buf_pack)
+                            if cn == 0: ind_0 = 2
+                            str_mdl  = item.split(' ')
+                            bpp = Class_sPACK()
+                            bpp.pAsk       = float(str_mdl[0+ind_0])
+                            bpp.pBid       = float(str_mdl[1+ind_0])
+                            bpp.EMAf       = float(str_mdl[2+ind_0])
+                            bpp.EMAf_r     = float(str_mdl[3+ind_0])
+                            bpp.cnt_EMAf_r = float(str_mdl[4+ind_0])
+                            bp.pk.append(bpp)
+                        #ipdb.set_trace()
+                        self.arr_pk.append(bp)
                         if len(self.arr_pk) % 10000 == 0:  print(len(self.arr_pk), end='\r')
 
                 if wr_hist_PACK:
@@ -203,13 +271,13 @@ class Class_term_archiv():
                     ''' init  table ARCHIV_PACK  --------------------'''
                     self.arr_pk  = []
                     for idx, item in enumerate(self.arr_fut):
-                        ipdb.set_trace()
                         if idx % 1000 == 0:  print(idx, end='\r')
-                        buf_pack = Class_STR_PACK()
-                        buf_pack.ind = int(item[0])
-                        buf_pack.dt, buf_pack.tm  = item[1].split(' ')
+                        bp = Class_STR_PACK()
+                        bp.ind = int(item[0])
+                        bp.dt, bp.tm  = item[1].split(' ')
+                        #ipdb.set_trace()
                         #
-                        buf_pack.pk = [] # list of obj Class_PACK()
+                        bp.pk = [] # list of obj Class_PACK()
                         for p, ptem in enumerate(self.nm):
                             ask_p = bid_p = 0
                             for jdx, jtem in enumerate(self.koef[p]):
@@ -225,22 +293,22 @@ class Class_term_archiv():
                                     ask_p = ask_p + k_koef * bid_j
                                     bid_p = bid_p + k_koef * ask_j
                             #
-                            buf_pack.pk.append(Class_sPACK())
+                            bp.pk.append(Class_sPACK())
                             ask_bid_AVR = 0
                             if idx == 0:
                                 null_prc = int((ask_p + bid_p)/2)
                                 self.nul[p] = null_prc
-                                buf_pack.pk[p].pAsk, buf_pack.pk[p].pBid = 0, 0
-                                buf_pack.pk[p].EMAf, buf_pack.pk[p].EMAf_r = 0, 0
-                                buf_pack.pk[p].cnt_EMAf_r = 0
+                                bp.pk[p].pAsk, bp.pk[p].pBid = 0, 0
+                                bp.pk[p].EMAf, bp.pk[p].EMAf_r = 0, 0
+                                bp.pk[p].cnt_EMAf_r = 0
                             else:
                                 null_prc = self.nul[p]
                                 ask_p = int(ask_p - null_prc)
                                 bid_p = int(bid_p - null_prc)
                                 ask_bid_AVR = int((ask_p + bid_p)/2)
-                                buf_pack.pk[p].pAsk = ask_p
-                                buf_pack.pk[p].pBid = bid_p
-                        self.arr_pk.append(buf_pack)
+                                bp.pk[p].pAsk = ask_p
+                                bp.pk[p].pBid = bid_p
+                        self.arr_pk.append(bp)
                         ''' self.arr_pk[nom_stroki].dt/tm/pk[nom_pack] '''
 
                     # update self.nul[i_pack] in table cfg_PACK ----
@@ -285,19 +353,19 @@ class Class_term_archiv():
             r_op_archiv = [1, 'op_archiv / ' + str(ex)]
 
         return r_op_archiv
-
 #=======================================================================
-def _err_(msg, rq, Prn = True):
+def prn_rq(msg, rq, Prn = True):
     err_msg  = msg
-    err_msg += '  '.join(str(e) for e in rq)
+    err_msg += '\n'.join(str(e) for e in rq)
     if Prn  :
         #os.system('cls')  # on windows
-        print(err_msg)
+        print(err_msg + '\n')
 #=======================================================================
-def dbg_prn(db_ARCHIV, b_clear = True,
+def menu_PRINT(db_ARCHIV, b_clear = True,
         b_cfg_pack  = False,
-        b_fut_arc   = False,
-        b_pack_arc  = False,
+        b_hst_fut   = False,
+        b_arr_fut   = False,
+        b_hst_pack  = False,
         b_arr_pk    = False,
 
         ):
@@ -305,94 +373,58 @@ def dbg_prn(db_ARCHIV, b_clear = True,
         os.system('cls')  # on windows
 
     if b_cfg_pack:
-        rq = db_ARCHIV.prn(p_cfg_PACK   = True)
-        if rq[0] != 0 : _err_('PRINT cfg_hist ARCHIV', rq)
+        #ipdb.set_trace()
+        rq = db_ARCHIV.prn(p_cfg_PACK = True)
+        prn_rq('PRINT p_cfg_PACK ARCHIV\n', rq)
 
-    if b_fut_arc:
-        print('..... hist_FUT_archiv .....')
-        print('path_ARCHIV    => ', db_ARCHIV.path_db)
-        hist = db_ARCHIV.hst_fut
-        print('len(hst_fut_arc)   => ', len(hist))
-        if len(hist) > 4:
-            print('hst_fut_arc[0] => ',  hist[0])
-            print('hst_fut_arc[1] => ',  hist[1][1].split('|')[0])
-            print('hst_fut_arc[2] => ',  hist[2][1].split('|')[0])
-            print('. . . . .')
-            print('hst_fut_arc[-1] => ', hist[-1][1].split('|')[0])
-            print('___________________________')
-        hist = db_ARCHIV.arr_fut
-        print('len(arr_fut_arc)  => ', len(hist))
-        if len(hist) > 4:
-            print('arr_fut_today[0] => ',  hist[0])
-            print('arr_fut_today[1] => ',  hist[1][1].split('|')[0])
-            print('arr_fut_today[2] => ',  hist[2][1].split('|')[0])
-            print('. . . . .')
-            print('arr_fut_today[-1] => ', hist[-1][1].split('|')[0])
+    if b_hst_fut:
+        rq = db_ARCHIV.prn(p_hst_fut  = True)
+        if rq[0] != 0 : prn_rq('PRINT b_hst_fut ARCHIV', rq)
+        else: print(rq[1])
 
-    if b_pack_arc:
-        print('..... hist_PACK_archiv .....')
-        print('path_term_archiv    => ', db_ARCHIV.path_db)
-        hist = db_ARCHIV.hst_pack
-        print('len(hst_pack_arc)   => ', len(hist))
-        if len(hist) > 4:
-            print('hst_pack_arc[0] => ',  hist[0])
-            print('hst_pack_arc[1] => ',  hist[1][1].split('|')[0])
-            print('hst_pack_arc[2] => ',  hist[2][1].split('|')[0])
-            print('. . . . .')
-            print('hst_pack_arc[-1] => ', hist[-1][1].split('|')[0])
-            print('___________________________')
-        print('len(arr_pk)  => ', len(db_ARCHIV.arr_pk))
-        if len(db_ARCHIV.arr_pk) > 4:
-            h = db_ARCHIV.arr_pk[0]
-            print('arr_pk[0].ind => ',  h.ind)
-            print('arr_pk[0].dt => ' ,  h.dt)
-            print('arr_pk[0].tm => ' ,  h.tm)
-            print('arr_pk[0].pk[0].ask/bid => ' ,  h.pk[0].pAsk, h.pk[0].pBid, h.pk[0].EMAf, h.pk[0].EMAf_r, h.pk[0].cnt_EMAf_r)
-            print('arr_pk[0].pk[1].ask/bid => ' ,  h.pk[1].pAsk, h.pk[1].pBid, h.pk[1].EMAf, h.pk[1].EMAf_r, h.pk[1].cnt_EMAf_r)
-            print('arr_pk[0].pk[2].ask/bid => ' ,  h.pk[2].pAsk, h.pk[2].pBid, h.pk[2].EMAf, h.pk[2].EMAf_r, h.pk[2].cnt_EMAf_r)
-            print('. . . . .')
-            h = db_ARCHIV.arr_pk[1]
-            print('arr_pk[1].ind => ',  h.ind)
-            print('arr_pk[1].dt => ' ,  h.dt)
-            print('arr_pk[1].tm => ' ,  h.tm)
-            print('arr_pk[1].pk[0].ask/bid => ' ,  h.pk[0].pAsk, h.pk[0].pBid, h.pk[0].EMAf, h.pk[0].EMAf_r, h.pk[0].cnt_EMAf_r)
-            print('arr_pk[1].pk[1].ask/bid => ' ,  h.pk[1].pAsk, h.pk[1].pBid, h.pk[1].EMAf, h.pk[1].EMAf_r, h.pk[1].cnt_EMAf_r)
-            print('arr_pk[1].pk[2].ask/bid => ' ,  h.pk[2].pAsk, h.pk[2].pBid, h.pk[2].EMAf, h.pk[2].EMAf_r, h.pk[2].cnt_EMAf_r)
-            print('. . . . .')
-            h = db_ARCHIV.arr_pk[-1]
-            print('arr_pk[-1].ind => ',  h.ind)
-            print('arr_pk[-1].dt => ' ,  h.dt)
-            print('arr_pk[-1].tm => ' ,  h.tm)
-            print('arr_pk[-1].pk[0].ask/bid => ',  h.pk[0].pAsk, h.pk[0].pBid, h.pk[0].EMAf, h.pk[0].EMAf_r, h.pk[0].cnt_EMAf_r)
-            print('arr_pk[-1].pk[1].ask/bid => ',  h.pk[1].pAsk, h.pk[1].pBid, h.pk[1].EMAf, h.pk[1].EMAf_r, h.pk[1].cnt_EMAf_r)
-            print('arr_pk[-1].pk[2].ask/bid => ',  h.pk[2].pAsk, h.pk[2].pBid, h.pk[2].EMAf, h.pk[2].EMAf_r, h.pk[2].cnt_EMAf_r)
-        print('')
+    if b_arr_fut:
+        rq = db_ARCHIV.prn(p_arr_fut  = True)
+        if rq[0] != 0 : prn_rq('PRINT b_arr_fut ARCHIV', rq)
+        else: print(rq[1])
+
+    if b_hst_pack:
+        rq = db_ARCHIV.prn(p_hst_pack = True)
+        if rq[0] != 0 : prn_rq('PRINT b_hst_pack ARCHIV', rq)
+        else: print(rq[1])
+
+    if b_arr_pk:
+        rq = db_ARCHIV.prn(p_arr_pk   = True)
+        if rq[0] != 0 : prn_rq('PRINT b_arr_pk ARCHIV', rq)
+        else: print(rq[1])
 #=======================================================================
 def event_menu(event, db_ARCHIV):
     #-------------------------------------------------------------------
     if event == 'prn cfg_PACK'  :
-        dbg_prn(db_ARCHIV, b_cfg_pack = True)
+        menu_PRINT(db_ARCHIV, b_cfg_pack = True)
     #-------------------------------------------------------------------
     if event == 'prn hist_FUT'  :
-        dbg_prn(db_ARCHIV, b_fut_arc  = True)
+        menu_PRINT(db_ARCHIV, b_hst_fut  = True)
+    #-------------------------------------------------------------------
+    if event == 'prn arr_FUT'  :
+        menu_PRINT(db_ARCHIV, b_arr_fut = True)
     #-------------------------------------------------------------------
     if event == 'prn hist_PACK'  :
-        dbg_prn(db_ARCHIV, b_pack_arc = True)
+        menu_PRINT(db_ARCHIV, b_hst_pack = True)
+    #-------------------------------------------------------------------
+    if event == 'prn arr_PACK'  :
+        menu_PRINT(db_ARCHIV, b_arr_pk = True)
     #-------------------------------------------------------------------
     if event == 'rd cfg_PACK'  :
         rq = db_ARCHIV.op(rd_cfg_PACK = True)
-        if rq[0] != 0 : _err_('db_ARCHIV / rd cfg_PACK', rq)
-        else:           dbg_prn(db_ARCHIV, b_cfg_pack = True)
+        prn_rq('db_ARCHIV / rd cfg_PACK', rq)
     #-------------------------------------------------------------------
     if event == 'rd hist_FUT'   :
         rq = db_ARCHIV.op(rd_hist_FUT = True)
-        if rq[0] != 0 : _err_('db_ARCHIV / rd_hist_FUT ', rq)
-        else:           dbg_prn(db_ARCHIV, b_fut_arc = True)
+        prn_rq('db_ARCHIV / rd_hist_FUT ', rq)
     #-------------------------------------------------------------------
     if event == 'rd hist_PACK'  :
         rq = db_ARCHIV.op(rd_hist_PACK = True)
-        if rq[0] != 0 : _err_('db_ARCHIV / rd_hist_PACK ', rq)
-        else:           dbg_prn(db_ARCHIV, b_clear = False, b_pack_arc = True)
+        prn_rq('db_ARCHIV / rd_hist_PACK ', rq)
     #-------------------------------------------------------------------
     if event == 'wr cfg_PACK'  :
         print('pass reserv / wr cfg_PACK')
@@ -403,43 +435,40 @@ def event_menu(event, db_ARCHIV):
         [1564771509, '02.08.2019 18:45:09|22330|22334|23042|23048|51207|51244|41607|41631|4238|4240|5662|5669|144912|145063|19623|19645|129450|129460|2693,65|2694|129605|129983|18198|18220|73876|74066|32303|32384|27099|27138|7990|7998|8286|8308|98810|99112|26222|26273|157054|157864|'],
         ]
         rq = db_ARCHIV.op(wr_hist_FUT = True)
-        if rq[0] != 0 : _err_('db_ARCHIV / wr_hist_FUT ', rq)
-        else:           dbg_prn(db_ARCHIV, b_fut_arc = True)
+        prn_rq('db_ARCHIV / wr_hist_FUT ', rq)
     #-------------------------------------------------------------------
     if event == 'wr hist_PACK'  :
         rq = db_ARCHIV.op(wr_hist_PACK = True)
-        if rq[0] != 0 : _err_('db_ARCHIV / wr_hist_PACK ', rq)
-        else:           dbg_prn(db_ARCHIV, b_pack_arc = True)
+        prn_rq('db_ARCHIV / wr_hist_PACK ', rq)
     #-------------------------------------------------------------------
     if event == 'ASK_BID'  :
-        #rq = db_ARCHIV.op(calc_ASK_BID = True)
         rq = db_ARCHIV.op(calc_ASK_BID_pk = True)
-        if rq[0] != 0 : _err_('db_ARCHIV / calc_ASK_BID ', rq)
-        else:           dbg_prn(db_ARCHIV, b_clear = False, b_pack_arc = True)
+        prn_rq('db_ARCHIV / calc_ASK_BID ', rq)
     #-------------------------------------------------------------------
     if event == 'EMA_f'  :
         rq = db_ARCHIV.op(calc_EMA_pk = True)
-        if rq[0] != 0 : _err_('db_ARCHIV / calc_EMA_pk ', rq)
-        else:           dbg_prn(db_ARCHIV, b_clear = False, b_pack_arc = True)
+        prn_rq('db_ARCHIV / calc_EMA_pk ', rq)
 #=======================================================================
 def main():
     while True:  # init db_ARCHIV --------------------------------------
+        #ipdb.set_trace()
         c_dir = os.path.abspath(os.curdir)
         path_ARCHIV = c_dir + '\\DB\\term_archiv.sqlite'
         print(path_ARCHIV)
         db_ARCHIV = Class_term_archiv(path_ARCHIV)
+        lg_FILE   = Class_LOGGER(c_dir + '\\LOG\\d_logger.log')
 
         rq = db_ARCHIV.op(
                         rd_cfg_PACK  = True,
                         rd_hist_FUT  = True,
                         rd_hist_PACK = True,
                         )
-        if rq[0] != 0 : _err_('INIT cfg_hist ARCHIV', rq)
+        if rq[0] != 0 : prn_rq('INIT cfg_hist ARCHIV', rq)
 
         else:
             print('INIT cfg_data_hist ARCHIV = > ', rq)
             if len(db_ARCHIV.nm) == 0:
-                _err_('cfg_pack.nm = 0  ', [' ', 'It can not be EMPTY !'] )
+                prn_rq('cfg_pack.nm = 0  ', [' ', 'It can not be EMPTY !'] )
                 break
             #if (len(db_ARCHIV.arr_pack) == 0):
                 #for item in db_ARCHIV.nm:
@@ -454,7 +483,10 @@ def main():
 
     while True:  # init MENU -------------------------------------------
         menu_def = [
-        ['PRINT arc  ', ['prn cfg_PACK', '---', 'prn hist_FUT', '---', 'prn hist_PACK'],],
+        ['PRINT arc  ',
+            ['prn cfg_PACK', '---',
+             'prn hist_FUT', 'prn arr_FUT', '---',
+             'prn hist_PACK','prn arr_PACK'],],
         ['READ  arc  ', ['rd cfg_PACK',  '---', 'rd hist_FUT',  '---', 'rd hist_PACK'] ,],
         ['WRITE arc  ', ['wr cfg_PACK',  '---', 'wr hist_FUT',  '---', 'wr hist_PACK'] ,],
         ['CALC', ['ASK_BID',  '---', 'EMA_f',  '---', 'cnt'] ,],
