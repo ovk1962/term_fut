@@ -5,7 +5,7 @@
 #
 #=======================================================================
 import os, sys, math, time, sqlite3, logging
-import ipdb
+from ipdb import set_trace as bp    # to set breakpoints just -> bp()
 if sys.version_info[0] >= 3:
     import PySimpleGUI as sg
 else:
@@ -68,7 +68,7 @@ class Class_sPACK():
         s += frm.format(self.pAsk, self.pBid, self.EMAf, self.EMAf_r, self.cnt_EMAf_r)
         return s
 #=======================================================================
-class Class_term_archiv():
+class Class_term_ARCHIV():
     def __init__(self, path_term_archiv):
         self.path_db = path_term_archiv
         self.table_db = []
@@ -84,15 +84,15 @@ class Class_term_archiv():
         self.arr_fut  = []  # list period 1 minute
         # hist_PACK
         self.buf_arc  = []
-        self.hst_pack = []  # list of [[ind_sec string] ... ]
+        self.hst_pk = []  # list of [[ind_sec string] ... ]
         #self.arr_pack = []  # list of [[ind_sec string] ... ]
-        self.arr_pk   = []  # list of obj [Class_STR_PACK ... ]
+        self.arr_pk = []  # list of obj [Class_STR_PACK ... ]
 
     def prn(self,
             p_cfg_PACK   = False,
             p_hst_fut   = False,
             p_arr_fut   = False,
-            p_hst_pack  = False,
+            p_hst_pk    = False,
             p_arr_pk    = False
             ):
         s = ''
@@ -129,12 +129,12 @@ class Class_term_archiv():
                     s += '. . . . . . . . . . . . . .' + '\n'
                     s += str(len(hist)-1) + '    => ' + hist[-1][1] + '\n'
 
-            if p_hst_pack:
-                s += ' hst_pack _________________________________' + '\n'
-                hist = self.hst_pack
-                s += 'len(hst_pack)   => ' + str(len(hist)) + '\n'
+            if p_hst_pk:
+                s += ' hst_pk _________________________________' + '\n'
+                hist = self.hst_pk
+                s += 'len(hst_pk)   => ' + str(len(hist)) + '\n'
                 if len(hist) > 4:
-                    s += 'hst_pack[i] TURPLE (float, str_pack) => ' + '\n'
+                    s += 'hst_pk[i] TURPLE (float, str_pack) => ' + '\n'
                     s += '0    => '  +  ' '.join(str(h) for h in hist[0]) + '\n'
                     for i in range(1,4):
                         s += str(i) + '    => ' + hist[i][1].split('|')[0] + '\n'
@@ -145,7 +145,6 @@ class Class_term_archiv():
                 s += ' arr_pk ___________________________________' + '\n'
                 hist = self.arr_pk
                 s += 'len(arr_pk)   => ' + str(len(hist)) + '\n'
-                #ipdb.set_trace()
                 if len(hist) > 4:
                     for i in range(1,2):
                         s += 'arr_pk[' + str(i) + ']   =>\n' + hist[i].prn()
@@ -220,13 +219,13 @@ class Class_term_archiv():
 
                 if rd_hist_PACK:
                     self.cur.execute('SELECT * from ' + 'hist_PACK')
-                    self.hst_pack = []
-                    self.hst_pack = self.cur.fetchall()    # read table name_tbl
-                    print('len(hst_pack) = ', len(self.hst_pack))
+                    self.hst_pk = []
+                    self.hst_pk = self.cur.fetchall()    # read table name_tbl
+                    print('len(hst_pk) = ', len(self.hst_pk))
 
                     self.arr_pk  = []
-                    #for i_str in self.hst_pack:
-                    for cnt, i_str in enumerate(self.hst_pack):
+                    #for i_str in self.hst_pk:
+                    for cnt, i_str in enumerate(self.hst_pk):
                         #self.ind / dt / tm / pk = 0, '', '', []
                         bp = Class_STR_PACK()
                         bp.ind = int(i_str[0])
@@ -247,7 +246,6 @@ class Class_term_archiv():
                             bpp.EMAf_r     = float(str_mdl[3+ind_0])
                             bpp.cnt_EMAf_r = float(str_mdl[4+ind_0])
                             bp.pk.append(bpp)
-                        #ipdb.set_trace()
                         self.arr_pk.append(bp)
                         if len(self.arr_pk) % 10000 == 0:  print(len(self.arr_pk), end='\r')
 
@@ -275,7 +273,6 @@ class Class_term_archiv():
                         bp = Class_STR_PACK()
                         bp.ind = int(item[0])
                         bp.dt, bp.tm  = item[1].split(' ')
-                        #ipdb.set_trace()
                         #
                         bp.pk = [] # list of obj Class_PACK()
                         for p, ptem in enumerate(self.nm):
@@ -358,14 +355,13 @@ def prn_rq(msg, rq, Prn = True):
     err_msg  = msg
     err_msg += '\n'.join(str(e) for e in rq)
     if Prn  :
-        #os.system('cls')  # on windows
         print(err_msg + '\n')
 #=======================================================================
 def menu_PRINT(db_ARCHIV, b_clear = True,
         b_cfg_pack  = False,
         b_hst_fut   = False,
         b_arr_fut   = False,
-        b_hst_pack  = False,
+        b_hst_pk  = False,
         b_arr_pk    = False,
 
         ):
@@ -373,7 +369,6 @@ def menu_PRINT(db_ARCHIV, b_clear = True,
         os.system('cls')  # on windows
 
     if b_cfg_pack:
-        #ipdb.set_trace()
         rq = db_ARCHIV.prn(p_cfg_PACK = True)
         prn_rq('PRINT p_cfg_PACK ARCHIV\n', rq)
 
@@ -387,9 +382,9 @@ def menu_PRINT(db_ARCHIV, b_clear = True,
         if rq[0] != 0 : prn_rq('PRINT b_arr_fut ARCHIV', rq)
         else: print(rq[1])
 
-    if b_hst_pack:
-        rq = db_ARCHIV.prn(p_hst_pack = True)
-        if rq[0] != 0 : prn_rq('PRINT b_hst_pack ARCHIV', rq)
+    if b_hst_pk:
+        rq = db_ARCHIV.prn(p_hst_pk = True)
+        if rq[0] != 0 : prn_rq('PRINT b_hst_pk ARCHIV', rq)
         else: print(rq[1])
 
     if b_arr_pk:
@@ -409,7 +404,7 @@ def event_menu(event, db_ARCHIV):
         menu_PRINT(db_ARCHIV, b_arr_fut = True)
     #-------------------------------------------------------------------
     if event == 'prn hist_PACK'  :
-        menu_PRINT(db_ARCHIV, b_hst_pack = True)
+        menu_PRINT(db_ARCHIV, b_hst_pk = True)
     #-------------------------------------------------------------------
     if event == 'prn arr_PACK'  :
         menu_PRINT(db_ARCHIV, b_arr_pk = True)
@@ -451,11 +446,11 @@ def event_menu(event, db_ARCHIV):
 #=======================================================================
 def main():
     while True:  # init db_ARCHIV --------------------------------------
-        #ipdb.set_trace()
         c_dir = os.path.abspath(os.curdir)
+        #bp()
         path_ARCHIV = c_dir + '\\DB\\term_archiv.sqlite'
         print(path_ARCHIV)
-        db_ARCHIV = Class_term_archiv(path_ARCHIV)
+        db_ARCHIV = Class_term_ARCHIV(path_ARCHIV)
         lg_FILE   = Class_LOGGER(c_dir + '\\LOG\\d_logger.log')
 
         rq = db_ARCHIV.op(
@@ -464,7 +459,6 @@ def main():
                         rd_hist_PACK = True,
                         )
         if rq[0] != 0 : prn_rq('INIT cfg_hist ARCHIV', rq)
-
         else:
             print('INIT cfg_data_hist ARCHIV = > ', rq)
             if len(db_ARCHIV.nm) == 0:
@@ -477,9 +471,6 @@ def main():
                 for item in db_ARCHIV.nm:
                     db_ARCHIV.arr_pk.append([])
         break
-
-
-
 
     while True:  # init MENU -------------------------------------------
         menu_def = [

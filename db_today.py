@@ -4,34 +4,35 @@
 #  db_today.py
 #
 #=======================================================================
-import os, sys, math, time
+import os, sys, math, time, sqlite3, logging
 from datetime import datetime, timezone
-import sqlite3
+from ipdb import set_trace as bp    # to set breakpoints just -> bp()
 if sys.version_info[0] >= 3:
     import PySimpleGUI as sg
 else:
     import PySimpleGUI27 as sg
 #=======================================================================
-def _err_(msg, rq, Prn = True):
-    err_msg  = msg
-    err_msg += '  '.join(str(e) for e in rq)
-    if Prn  :
-        os.system('cls')  # on windows
-        print(err_msg)
-#=======================================================================
-def dbg_prn(db_TODAY, b_clear = True,
-        b_cfg_soft   = False,
-        ):
-    if b_clear:
-        os.system('cls')  # on windows
-    if b_cfg_soft:
-        s = db_TODAY
-        print('..... cfg_SOFT .....')
-        print('path_term_today => ', s.path_db)
-        print('titul              => ', s.titul)
-        print('path_file_DATA     => ', s.path_file_DATA)
-        print('path_file_HIST     => ', s.path_file_HIST)
-        print('dt_start           => ', s.dt_start)
+class Class_LOGGER():
+    def __init__(self, path_log):
+        #self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('__main__')
+        self.logger.setLevel(logging.INFO)
+        # create a file handler
+        self.handler = logging.FileHandler(path_log)
+        self.handler.setLevel(logging.INFO)
+        # create a logging format
+        #self.formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        self.formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        self.handler.setFormatter(self.formatter)
+
+        # add the handlers to the logger
+        self.logger.addHandler(self.handler)
+    #-------------------------------------------------------------------
+    def wr_log_info(self, msg):
+        self.logger.info(msg)
+    #-------------------------------------------------------------------
+    def wr_log_error(self, msg):
+        self.logger.error(msg)
 #=======================================================================
 class Class_ACCOUNT():
     def __init__(self):
@@ -40,8 +41,57 @@ class Class_ACCOUNT():
         self.acc_prf  = 0.0
         self.acc_go   = 0.0
         self.acc_depo = 0.0
+    def prn(self):
+        frm = '{: ^15}{: ^15}'
+        s = ''
+        s += frm.format('acc_date', self.acc_date) + '\n'
+        s += frm.format('acc_bal',  self.acc_bal) + '\n'
+        s += frm.format('acc_prf',  self.acc_prf) + '\n'
+        s += frm.format('acc_go',   self.acc_go) + '\n'
+        s += frm.format('acc_depo', self.acc_depo) + '\n'
+
+        return s
 #=======================================================================
-class Class_term_today():
+class Class_FUT():
+    def __init__(self):
+        self.sP_code   = "-"
+        self.sRest     = 0
+        self.sVar_mrg  = 0.0
+        self.sOpen_prc = 0.0
+        self.sLast_prc = 0.0
+        self.sAsk      = 0.0
+        self.sBuy_qty  = 0
+        self.sBid      = 0.0
+        self.sSell_qty = 0
+        self.sFut_go   = 0.0
+        self.sOpen_pos = 0.0
+    def prn(self):
+        frm = '{: ^15}{: ^15}'
+        s = frm.format('sP_code',  self.sP_code) + '\n'  + \
+            frm.format('sRest',    self.sRest) + '\n'    + \
+            frm.format('sVar_mrg', self.sVar_mrg) + '\n' + \
+            frm.format('sAsk',     self.sAsk) + '\n'     + \
+            frm.format('sBid',     self.sBid) + '\n'     + \
+            frm.format('sFut_go',  self.sFut_go) + '\n'
+        return s
+#=======================================================================
+class Class_PACK():
+    def __init__(self):
+        self.ind= 0
+        self.dt = ''
+        self.tm = ''
+        self.pAsk = 0.0
+        self.pBid = 0.0
+        self.EMAf = 0.0
+        self.EMAf_r = 0.0
+        self.cnt_EMAf_r = 0.0
+    def prn(self):
+        frm = '{: ^6}{: ^8}{: ^8}{: ^12}{: ^12}{: ^12}'
+        s = frm.format('ind','dt','tm','pAsk','pBid', 'EMAf')+ '\n'
+        s += frm.format(self.sP_code, self.sRest, self.sVar_mrg, self.sAsk,  self.sBid, self.sFut_go) + '\n'
+        return s
+#=======================================================================
+class Class_term_TODAY():
     def __init__(self, path_term_today):
         self.path_db = path_term_today
         self.table_db = []
@@ -64,10 +114,10 @@ class Class_term_today():
         self.dt_fut   = []                  # list of Class_FUT()
         self.account  = Class_ACCOUNT()     # obj Class_ACCOUNT()
         #
-        self.buf_file = []
-        self.hst_fut  = []  # list of [[ind_sec string] ... ]
+        self.hst_fut   = []  # list of [[ind_sec string] ... ]
         self.hst_1_fut = []  # list period 1 minute
         self.arr_1_fut = []  # list period 1 minute
+        #
         self.sec_10_00 = 36000      # seconds from 00:00 to 10:00
         self.sec_14_00 = 50400      # seconds from 00:00 to 14:00
         self.sec_14_05 = 50700      # seconds from 00:00 to 14:05
@@ -75,8 +125,8 @@ class Class_term_today():
         self.sec_19_05 = 68700      # seconds from 00:00 to 19:05
         self.sec_23_45 = 85500      # seconds from 00:00 to 23:45
         #
-        self.hst_pack  = []  # list of [[ind_sec string] ... ]
-        self.arr_pack  = []  # list of [[ind_sec string] ... ]
+        self.hst_pk_t  = []  # list of [[ind_sec string] ... ]
+        self.arr_pk_t  = []  # list of [[ind_sec string] ... ]
 
     def op(self,
             rd_cfg_SOFT  = False,
@@ -219,12 +269,12 @@ class Class_term_today():
                     self.hst_fut   = []
                     self.hst_1_fut = []
                     self.arr_1_fut = []
-                    self.hst_pack  = []
-                    self.arr_pack  = []
+                    self.hst_pk_t  = []
+                    self.arr_pk_t  = []
                     for item in self.nm:
-                        #self.hst_pack.append([])
-                        self.arr_pack.append([])
-                    #print('clr_hist_FUT_today / len(arr_pack) = ', len(self.arr_pack))
+                        #self.hst_pk_t.append([])
+                        self.arr_pk_t.append([])
+                    #print('clr_hist_FUT_today / len(arr_pk_t) = ', len(self.arr_pk_t))
                     self.cur.execute('DELETE FROM ' + 'hist_FUT_today')
                     self.cur.execute('DELETE FROM ' + 'hist_PACK_today')
                     self.conn.commit()
@@ -302,17 +352,17 @@ class Class_term_today():
                         self.conn.commit()
 
                 if rd_hist_PACK_today:
-                    self.hst_pack = []
-                    self.arr_pack = []
+                    self.hst_pk_t = []
+                    self.arr_pk_t = []
                     self.cur.execute('SELECT * from ' + 'hist_PACK_today')
-                    self.hst_pack = self.cur.fetchall()    # read table name_tbl
+                    self.hst_pk_t = self.cur.fetchall()    # read table name_tbl
                     #
-                    if len(self.hst_pack) != 0:
-                        str_pack = self.hst_pack[0][1].split('|')
+                    if len(self.hst_pk_t) != 0:
+                        str_pack = self.hst_pk_t[0][1].split('|')
                         ind_pack = ''
                         for i_mdl in range(len(str_pack) - 1):
-                            self.arr_pack.append([])
-                            for item in self.hst_pack:
+                            self.arr_pk_t.append([])
+                            for item in self.hst_pk_t:
                                 str_pack = item[1].replace(',','.').split('|')
                                 del str_pack[-1]
                                 str_mdl  = str_pack[0].split(' ')   # dt tm for all packets
@@ -336,20 +386,20 @@ class Class_term_today():
                                     buf_p.EMAf_r     = float(str_mdl[3])
                                     buf_p.cnt_EMAf_r = float(str_mdl[4])
 
-                                self.arr_pack[i_mdl].append(buf_p)
+                                self.arr_pk_t[i_mdl].append(buf_p)
                             ind_pack += str(i_mdl) + ' '
                             print(ind_pack, end='\r')
                     else:
                         pass
-                    if (len(self.arr_pack) == 0):
+                    if (len(self.arr_pk_t) == 0):
                         for item in self.nm:
-                            self.arr_pack.append([])
-                    #print('rd_hist_PACK_today / len(self.arr_pack) = ', len(self.arr_pack))
+                            self.arr_pk_t.append([])
+                    #print('rd_hist_PACK_today / len(self.arr_pk_t) = ', len(self.arr_pk_t))
 
                 if wr_hist_PACK_today:
                     #rq = self.obj_table.rewrite_table('hist_PACK_today', hist_arc, val = '(?,?)')
                     self.cur.execute('DELETE FROM ' + 'hist_PACK_today')
-                    self.cur.executemany('INSERT INTO ' + 'hist_PACK_today' + ' VALUES' + '(?,?)', self.hst_pack)
+                    self.cur.executemany('INSERT INTO ' + 'hist_PACK_today' + ' VALUES' + '(?,?)', self.hst_pk_t)
                     self.conn.commit()
 
         except Exception as ex:
@@ -357,20 +407,94 @@ class Class_term_today():
 
         return r_op_today
 #=======================================================================
+def prn_rq(msg, rq, Prn = True):
+    err_msg  = msg
+    err_msg += '\n'.join(str(e) for e in rq)
+    if Prn  :
+        print(err_msg + '\n')
+#=======================================================================
+def dbg_prn(db_TODAY, b_clear = True,
+        b_cfg_soft   = False,
+        ):
+    if b_clear:
+        os.system('cls')  # on windows
+    if b_cfg_soft:
+        s = db_TODAY
+        print('..... cfg_SOFT .....')
+        print('path_term_today => ', s.path_db)
+        print('titul              => ', s.titul)
+        print('path_file_DATA     => ', s.path_file_DATA)
+        print('path_file_HIST     => ', s.path_file_HIST)
+        print('dt_start           => ', s.dt_start)
+#=======================================================================
 def main():
-    print('start')
-    c_dir = os.path.abspath(os.curdir)
+    while True:  # init db_ARCHIV --------------------------------------
+        c_dir = os.path.abspath(os.curdir)
+        #bp()
+        path_TODAY = c_dir + '\\DB\\term_today.sqlite'
+        print(path_TODAY)
+        db_TODAY = Class_term_TODAY(path_TODAY)
+        lg_FILE  = Class_LOGGER(c_dir + '\\LOG\\d_logger.log')
 
-    #path_DEBUG  = c_dir + '\\DEBUG\\debug_file.txt'
-    #dbg = Class_DEBUG_FILE(path_DEBUG)
+        rq = db_TODAY.op(
+                        rd_cfg_SOFT  = True,
+                        rd_cfg_PACK  = True,
+                        rd_cfg_ALARM = True,
+                        rd_data_FUT  = True,
+                        rd_hist_PACK_today = True
+                        )
+        if rq[0] != 0 : prn_rq('INIT rd_cfg_SOFT TODAY', rq)
+        else:
+            print('INIT cfg_data_hist TODAY = > ', rq)
+            if len(db_TODAY.nm) == 0:
+                prn_rq('cfg_pack.nm = 0  ', [' ', 'It can not be EMPTY !'] )
+                break
+            if (len(db_TODAY.arr_pk_t) == 0):
+                for item in db_TODAY.nm:
+                    db_TODAY.arr_pk_t.append([])
+        break
 
-    path_TODAY = c_dir + '\\DB\\term_today.sqlite'
-    db_TODAY = Class_term_today(path_TODAY)
+    while True:  # init MENU -------------------------------------------
+        menu_def = [
+        ['PRINT',
+            ['prn cfg_PACK', '---',
+             'prn hist_FUT', 'prn arr_FUT', '---',
+             'prn hist_PACK','prn arr_PACK'],],
+        ['READ  today', ['rd cfg_PACK',  '---', 'rd hist_FUT',  '---', 'rd hist_PACK'] ,],
+        ['WRITE today', ['wr cfg_PACK',  '---', 'wr hist_FUT',  '---', 'wr hist_PACK'] ,],
+        ['CALC', ['ASK_BID',  '---', 'EMA_f',  '---', 'cnt'] ,],
+        ['Exit', 'Exit']
+        ]
 
-    rq = db_TODAY.op(rd_cfg_SOFT = True)
-    if rq[0] != 0 : _err_('db_TODAY / rd_cfg_SOFT ', rq)
-    else:           dbg_prn(db_TODAY, b_cfg_soft = True)
+        def_txt, frm = [], '{: <15}  => {: ^15}\n'
+        def_txt.append(frm.format('TODAY' , '\\DB\\term_today.sqlite'))
+        def_txt.append(frm.format('ARCHV' , '\\DB\\term_archiv.sqlite'))
 
+        # Display data
+        layout = [
+                    [sg.Menu(menu_def, tearoff=False, key='menu_def')],
+                    [sg.Multiline( default_text=''.join(def_txt),
+                        size=(50, 5), key='txt_data', autoscroll=False, focus=False),],
+                    [sg.T('',size=(60,2), font='Helvetica 8', key='txt_status'), sg.Quit(auto_size_button=True)],
+                 ]
+        sg.SetOptions(element_padding=(0,0))
+        window = sg.Window('Test db_today', grab_anywhere=True).Layout(layout).Finalize()
+        break
+
+    frm = '%d.%m.%Y %H:%M:%S'
+    while True:  # MAIN cycle ------------------------------------------
+        stroki = []
+        event, values = window.Read(timeout=1000000 )
+        #---------------------------------------------------------------
+        event_menu(event, db_TODAY)
+        #---------------------------------------------------------------
+        if event is None or event == 'Quit' or event == 'Exit': break
+        #---------------------------------------------------------------
+        window.FindElement('txt_data').Update('\n'.join(stroki))
+        stts  = time.strftime(frm, time.localtime()) + '\n'
+        stts += 'event = ' + event
+        window.FindElement('txt_status').Update(stts)
+        #break
 
     return 0
 
