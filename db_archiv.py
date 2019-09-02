@@ -33,6 +33,26 @@ class Class_LOGGER():
     def wr_log_error(self, msg):
         self.logger.error(msg)
 #=======================================================================
+class Class_str_PCK():
+    pAsk, pBid, EMAf, EMAf_r, cnt_EMAf_r = range(5)
+    def __init__(self):
+        self.dt, self.arr   = '', []
+
+    def prnt(self):
+        print(self.dt)
+        for i, item in enumerate(self.arr): print(i, item)
+
+#=======================================================================
+class Class_str_FUT():
+    fAsk, fBid = range(2)
+    def __init__(self):
+        self.ind_s, self.dt, self.arr  = 0, '', []
+
+    def prnt(self):
+        print(self.ind_s, '  ', self.dt)
+        for i, item in enumerate(self.arr): print(i, item)
+
+#=======================================================================
 class Class_STR_PACK():
     def __init__(self):
         self.ind= 0
@@ -48,10 +68,10 @@ class Class_STR_PACK():
         if len(self.pk) == 0:
             s += 'len(self.pk) = 0'
         else:
-            frm = '{:^12}{:^12}{:^12}{:^12}{:^4}'
-            s += frm.format('pAsk','pBid','EMAf','EMAf_r','cnt_EMAf_r') + '\n'
-            for item in self.pk:
-                s += frm.format(item.pAsk, item.pBid, item.EMAf, item.EMAf_r, item.cnt_EMAf_r) + '\n'
+            frm = '{:^5}{:^12}{:^12}{:^12}{:^12}{:^4}'
+            s += frm.format('pk[i]','pAsk','pBid','EMAf','EMAf_r','cnt_EMAf_r') + '\n'
+            for i_pk, it in enumerate(self.pk):
+                s += frm.format(str(i_pk), it.pAsk, it.pBid, it.EMAf, it.EMAf_r, it.cnt_EMAf_r) + '\n'
         return s
 #=======================================================================
 class Class_sPACK():
@@ -85,7 +105,6 @@ class Class_term_ARCHIV():
         # hist_PACK
         self.buf_arc  = []
         self.hst_pk = []  # list of [[ind_sec string] ... ]
-        #self.arr_pack = []  # list of [[ind_sec string] ... ]
         self.arr_pk = []  # list of obj [Class_STR_PACK ... ]
 
     def prn(self,
@@ -110,7 +129,7 @@ class Class_term_ARCHIV():
                 hist = self.hst_fut
                 s += 'len(hst_fut)   => ' + str(len(hist)) + '\n'
                 if len(hist) > 4:
-                    s += 'hst_fut[i] TURPLE (float, str_fut) => ' + '\n'
+                    s += 'hst_fut[i] TUPLE (float, str_fut) => ' + '\n'
                     s += '0    => '  +  ' '.join(str(h) for h in hist[0]) + '\n'
                     for i in range(1,4):
                         s += str(i) + '    => ' + hist[i][1].split('|')[0] + '\n'
@@ -118,16 +137,13 @@ class Class_term_ARCHIV():
                     s += str(len(hist)-1) + ' => ' + hist[-1][1].split('|')[0] + '\n'
 
             if p_arr_fut:
-                s += ' arr_fut __________________________________' + '\n'
                 hist = self.arr_fut
+                s += ' arr_fut __________________________________' + '\n'
                 s += 'len(arr_fut)   => ' + str(len(hist)) + '\n'
                 if len(hist) > 4:
-                    s += 'arr_fut[i] LIST [float, dt_tm, floats] => \n'
-                    s += '0    => '  + ' '.join(list(map(lambda x:str(x), hist[0]))) + '\n'
-                    for i in range(1,4):
-                        s += str(i) + '    => ' + hist[i][1] + '\n'
-                    s += '. . . . . . . . . . . . . .' + '\n'
-                    s += str(len(hist)-1) + '    => ' + hist[-1][1] + '\n'
+                    hist[0].prnt()
+                    print('. . . . . . . . . . . . . .')
+                    hist[-1].prnt()
 
             if p_hst_pk:
                 s += ' hst_pk _________________________________' + '\n'
@@ -142,14 +158,13 @@ class Class_term_ARCHIV():
                     s += str(len(hist)-1) + ' => ' + hist[-1][1].split('|')[0] + '\n'
 
             if p_arr_pk:
-                s += ' arr_pk ___________________________________' + '\n'
                 hist = self.arr_pk
-                s += 'len(arr_pk)   => ' + str(len(hist)) + '\n'
+                print(' arr_pk ___________________________________')
+                print('len(arr_pk)   => ' + str(len(hist)) )
                 if len(hist) > 4:
-                    for i in range(1,2):
-                        s += 'arr_pk[' + str(i) + ']   =>\n' + hist[i].prn()
-                    s += '. . . . . . . . . . . . . .' + '\n'
-                    s += 'arr_pk[' + str(len(hist)-1) + '] => \n' + hist[-1].prn()
+                    hist[0].prnt()
+                    print('. . . . . . . . . . . . . .')
+                    hist[-1].prnt()
 
         except Exception as ex:
             r_prn = [1, 'op_archiv / ' + str(ex)]
@@ -160,8 +175,12 @@ class Class_term_ARCHIV():
             rd_cfg_PACK  = False,
             wr_cfg_PACK  = False,
             rd_hist_FUT = False,
+            rd_hst_FUT  = False,
             wr_hist_FUT = False,
+
             rd_hist_PACK  = False,
+            rd_hst_PCK = False,
+
             wr_hist_PACK  = False,
             calc_ASK_BID  = False,
             calc_ASK_BID_pk  = False,
@@ -198,6 +217,22 @@ class Class_term_ARCHIV():
                     self.cur.executemany('INSERT INTO ' + 'cfg_PACK' + ' VALUES' + '(?,?,?,?)', duf_list)
                     self.conn.commit()
 
+                if rd_hst_FUT:
+                    self.cur.execute('SELECT * from ' + 'hist_FUT')
+                    self.hst_fut = []
+                    self.hst_fut = self.cur.fetchall()    # read table name_tbl
+                    print('len(hst_pk) = ', len(self.hst_pk))
+                    self.arr_fut  = []
+                    for cnt, i_str in enumerate(self.hst_fut):
+                        arr_item = (i_str[1].replace(',', '.')).split('|')
+                        s = Class_str_FUT()
+                        s.ind_s = i_str[0]
+                        s.dt    = i_str[1].split('|')[0]
+                        arr_buf = i_str[1].replace(',', '.').split('|')[1:-1]
+                        for item in (zip(arr_buf[::2], arr_buf[1::2])):
+                            s.arr.append([float(item[0]), float(item[1])])
+                        self.arr_fut.append(s)
+
                 if rd_hist_FUT:
                     self.cur.execute('SELECT * from ' + 'hist_FUT')
                     self.hst_fut = []
@@ -216,6 +251,23 @@ class Class_term_ARCHIV():
                 if wr_hist_FUT:
                     self.cur.executemany("INSERT INTO " + 'hist_FUT' + " VALUES(?, ?)", self.buf_arc)
                     self.conn.commit()
+
+                if rd_hst_PCK:
+                    self.cur.execute('SELECT * from ' + 'hist_PACK')
+                    self.hst_pk = []
+                    self.hst_pk = self.cur.fetchall()    # read table name_tbl
+                    print('len(hst_pk) = ', len(self.hst_pk))
+                    self.arr_pk  = []
+                    for cnt, i_str in enumerate(self.hst_pk):
+                        buf = i_str[1].replace(',','.').split('|')
+                        del buf[-1]
+                        s = Class_str_PCK()
+                        for cn, item in enumerate(buf):
+                            if cn == 0 : s.dt = item.split(' ')[0:2]
+                            ind_0 = 0 if cn != 0 else 2
+                            s.arr.append([float(f) for f in item.split(' ')[ind_0:]])
+                        self.arr_pk.append(s)
+                        if len(self.arr_pk) % 10000 == 0:  print(len(self.arr_pk), end='\r')
 
                 if rd_hist_PACK:
                     self.cur.execute('SELECT * from ' + 'hist_PACK')
@@ -363,7 +415,6 @@ def menu_PRINT(db_ARCHIV, b_clear = True,
         b_arr_fut   = False,
         b_hst_pk  = False,
         b_arr_pk    = False,
-
         ):
     if b_clear:
         os.system('cls')  # on windows
@@ -374,23 +425,19 @@ def menu_PRINT(db_ARCHIV, b_clear = True,
 
     if b_hst_fut:
         rq = db_ARCHIV.prn(p_hst_fut  = True)
-        if rq[0] != 0 : prn_rq('PRINT b_hst_fut ARCHIV', rq)
-        else: print(rq[1])
+        prn_rq('PRINT b_hst_fut ARCHIV', rq)
 
     if b_arr_fut:
         rq = db_ARCHIV.prn(p_arr_fut  = True)
-        if rq[0] != 0 : prn_rq('PRINT b_arr_fut ARCHIV', rq)
-        else: print(rq[1])
+        prn_rq('PRINT b_arr_fut ARCHIV', rq)
 
     if b_hst_pk:
         rq = db_ARCHIV.prn(p_hst_pk = True)
-        if rq[0] != 0 : prn_rq('PRINT b_hst_pk ARCHIV', rq)
-        else: print(rq[1])
+        prn_rq('PRINT b_hst_pk ARCHIV', rq)
 
     if b_arr_pk:
         rq = db_ARCHIV.prn(p_arr_pk   = True)
-        if rq[0] != 0 : prn_rq('PRINT b_arr_pk ARCHIV', rq)
-        else: print(rq[1])
+        prn_rq('PRINT b_arr_pk ARCHIV', rq)
 #=======================================================================
 def event_menu(event, db_ARCHIV):
     #-------------------------------------------------------------------
@@ -407,7 +454,7 @@ def event_menu(event, db_ARCHIV):
         menu_PRINT(db_ARCHIV, b_hst_pk = True)
     #-------------------------------------------------------------------
     if event == 'prn arr_PACK'  :
-        menu_PRINT(db_ARCHIV, b_arr_pk = True)
+        menu_PRINT(db_ARCHIV, b_arr_pk = True) #b_arr_pk
     #-------------------------------------------------------------------
     if event == 'rd cfg_PACK'  :
         rq = db_ARCHIV.op(rd_cfg_PACK = True)
@@ -418,7 +465,7 @@ def event_menu(event, db_ARCHIV):
         prn_rq('db_ARCHIV / rd_hist_FUT ', rq)
     #-------------------------------------------------------------------
     if event == 'rd hist_PACK'  :
-        rq = db_ARCHIV.op(rd_hist_PACK = True)
+        rq = db_ARCHIV.op(rd_hst_PCK = True) # rd_hist_PACK
         prn_rq('db_ARCHIV / rd_hist_PACK ', rq)
     #-------------------------------------------------------------------
     if event == 'wr cfg_PACK'  :
@@ -455,8 +502,8 @@ def main():
 
         rq = db_ARCHIV.op(
                         rd_cfg_PACK  = True,
-                        rd_hist_FUT  = True,
-                        rd_hist_PACK = True,
+                        rd_hst_FUT   = True, #rd_hist_FUT
+                        rd_hst_PCK   = True, #rd_hist_PACK
                         )
         if rq[0] != 0 : prn_rq('INIT cfg_hist ARCHIV', rq)
         else:
