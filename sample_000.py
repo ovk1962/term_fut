@@ -16,7 +16,17 @@ class Class_str_FUT():
 
     def prnt(self):
         print(self.ind_s, '  ', self.dt)
-        for i, item in enumerate(self.arr): print(i, item)    
+        for i, item in enumerate(self.arr): print(i, item)  
+        
+koef = [[7, 1, 'SR'], [9, -10, 'MX']]
+arr_koef = ''
+for item in koef:
+    str_koef = ':'.join([str(f) for f in item])
+    arr_koef += str_koef + ','
+arr_koef = arr_koef[:-1]
+print(arr_koef)
+#print(str_ema)
+#[float(f) if f.replace('.','',1).isdigit() else f for f in buf]
         
 st= '30.08.2019 10:00:10 -42805 -41628 -33366,2 -33300 -111|-775 -759 -738,6 -735 -11|5322 5338 5333,2 5340 9|529 554 749,0 750 -8|-1943 -1906 -1697,1 -1695 -26|-925 -911 -811,3 -810 -10|-1281 -1222 -1096,1 -1095 -15|-8465 -8422 -8178,7 -8175 -5|-835 -799 -594,7 -585 -5|-6460 -6382 -7330,6 -7320 13|-27076 -26882 -26663,2 -26655 -4|-16116 -15764 -15362,4 -15300 -18|-18471 -18129 -17393,0 -17300 -8|'
 
