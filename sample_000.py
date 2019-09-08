@@ -1,3 +1,15 @@
+from enum import Enum, auto 
+class cst(Enum):
+    #ZOMBIE  = auto()
+    #WARRIOR = auto()
+    #BEAR    = auto()
+    pAsk, pBid, EMAf, EMAf_r, cnt_EMAf_r = range(5)
+    
+class c():
+    fAsk, fBid = range(2)
+    pAsk, pBid, EMAf, EMAf_r, cnt_EMAf_r = range(5)
+    sP_code, sRest, sVar_mrg, sOpen_prc, sLast_prc, sAsk, sBuy_qty, sBid, sSell_qty, sFut_go, sOpen_pos = range(11)
+
 class Class_sPACK():
     pAsk, pBid, EMAf, EMAf_r, cnt_EMAf_r = range(5)
     def __init__(self):  
@@ -16,8 +28,32 @@ class Class_str_FUT():
 
     def prnt(self):
         print(self.ind_s, '  ', self.dt)
-        for i, item in enumerate(self.arr): print(i, item)  
+        for i, item in enumerate(self.arr): print(i, item) 
         
+koef = '0:1:SR,9:-10:MX'  
+
+arr_koef = []
+for item_k in koef.split(','):
+#    arr_koef.append([int(item_k.split(':')[0]), int(item_k.split(':')[1]), item_k.split(':')[2]])
+    arr_koef.append([int(f) if f.replace('-','').isdigit() else f for f in item_k.split(':')])
+
+print('koef     = ', koef)
+print('arr_koef = ', arr_koef)
+print('STR arr_koef = ', str(arr_koef))  # !!!
+
+print(type(c.fAsk), 'c.fAsk = ', c.fAsk)
+print(type(c.pBid), 'c.pBid = ', c.pBid)
+print(type(c.sVar_mrg), 'c.sVar_mrg = ', c.sVar_mrg)
+        
+fut_SR = Class_str_FUT()
+SR = fut_SR
+fut_SR.arr = [1,2,3]
+print('fut_SR.arr = ', fut_SR.arr)
+print('SR.arr     = ', SR.arr)
+SR.arr = [10,20,30]
+print('fut_SR.arr = ', fut_SR.arr)
+print('SR.arr     = ', SR.arr)
+
 koef = [[7, 1, 'SR'], [9, -10, 'MX']]
 arr_koef = ''
 for item in koef:

@@ -53,7 +53,7 @@ class Class_str_FUT():
 class Class_term_ARCHIV():
     def __init__(self, path_term_archiv):
         self.path_db = path_term_archiv
-        self.table_db = []
+        #self.table_db = []
         self.conn = ''
         self.cur  = ''
         # cfg_pack
@@ -74,35 +74,30 @@ class Class_term_ARCHIV():
             ):
         try:
             if p_cfg_PACK:
-                print('____ cfg_PACK _________________________________')
                 if len(self.nm) > 0:
                     frm = '{: ^5}{: ^15}{}{}{}'
                     print(frm.format('nm','nul','ema[]','        ','koef[]'))
                     for i, item in enumerate(self.nm):
                         print(frm.format(self.nm[i], str(self.nul[i]), self.ema[i], '   ', self.koef[i]))
-
             if p_arr_fut:
                 hist = self.arr_fut
-                print('____ arr_fut __________________________________')
                 print('len(arr_fut)   => ' + str(len(hist)) )
                 if len(hist) > 4:
                     hist[1].prnt()
                     print('. . . . . . . . . . . . . .')
                     hist[-1].prnt()
-
             if p_arr_pk:
                 hist = self.arr_pk
-                print('____ arr_pk ___________________________________')
                 print('len(arr_pk)   => ' + str(len(hist)) )
                 if len(hist) > 4:
                     hist[0].prnt()
                     hist[1].prnt()
                     print('. . . . . . . . . . . . . .')
                     hist[-1].prnt()
-
         except Exception as ex:
-            r_prn = [1, 'op_archiv / ' + str(ex)]
-
+            err_msg = 'prn / ' + str(ex)
+            r_prn = [1, err_msg]
+            print(err_msg)
         return [0, 'ok']
 
     def op(self,
@@ -130,24 +125,21 @@ class Class_term_ARCHIV():
                     cfg = self.cur.fetchall()    # read table name_tbl
                     #
                     for item in cfg:
-                        self.nm.append(item[0])          # just ex ['pckt0']
-                        #self.koef.append(item[1].split(','))# just ex ['0:3:SR','9:-20:MX
-                        arr_koef = []
+                        self.nm.append(item[0])          # ['pckt0']
                         arr_k    = item[1].split(',')
-                        for item_k in arr_k:
-                            k = item_k.split(':')
-                            arr_koef.append([int(k[0]), int(k[1]), k[2]])
-                        self.koef.append(arr_koef)  # just ex [[0, 2, 'SR'],[9, -20, 'MX'], ...
-                        self.nul.append(int(item[2]))    # just ex [0]
-                        #self.ema.append(item[3].split(':')) # just ex ['1111:15']
-                        self.ema.append([int(e) for e in item[3].split(':')])# just ex [1111, 15]
+                        arr_koef = []
+                        for item_k in arr_k:             # '0:2:SR' => [0, 32, 'SR']
+                            buf_k = [int(f) if f.replace('-','').isdigit() else f for f in item_k.split(':')]
+                            arr_koef.append(buf_k)
+                        self.koef.append(arr_koef)       #  [[0, 2, 'SR'],[9, -20, 'MX'], ...
+                        self.nul.append(int(item[2]))    #  [0]
+                        self.ema.append([int(e) for e in item[3].split(':')]) # [1111, 15]
 
                 if wr_cfg_PACK:
                     duf_list = []
                     for j, jtem in enumerate(self.nm):
                         buf = (self.nm[j], ','.join(self.koef[j]), self.nul[j], ':'.join(self.ema[j]))
                         duf_list.append(buf)
-
                     self.cur.execute('DELETE FROM ' + 'cfg_PACK')
                     self.cur.executemany('INSERT INTO ' + 'cfg_PACK' + ' VALUES' + '(?,?,?,?)', duf_list)
                     self.conn.commit()
@@ -164,8 +156,9 @@ class Class_term_ARCHIV():
                         s.ind_s = i_str[0]
                         s.dt    = i_str[1].split('|')[0].split(' ')
                         arr_buf = i_str[1].replace(',', '.').split('|')[1:-1]
+                        fAsk, fBid = range(2)
                         for item in (zip(arr_buf[::2], arr_buf[1::2])):
-                            s.arr.append([float(item[0]), float(item[1])])
+                            s.arr.append([float(item[fAsk]), float(item[fBid])])
                         self.arr_fut.append(s)
                         if len(self.arr_fut) % 1000 == 0:  print(len(self.arr_fut), end='\r')
 
@@ -210,23 +203,23 @@ class Class_term_ARCHIV():
                 if clc_ASK_BID:
                     ''' init  table ARCHIV_PACK  --------------------'''
                     self.arr_pk  = []  # Class_str_PCK()
-                    for idx, item in enumerate(self.arr_fut): # .ind_s, .dt
+                    fAsk, fBid = range(2)
+                    for idx, item in enumerate(self.arr_fut): # change STRINGs
                         if idx % 1000 == 0:  print(idx, end='\r')
                         arr_bb = Class_str_PCK()
                         arr_bb.ind, arr_bb.dt  = item.ind_s, item.dt
-                        for p, ptem in enumerate(self.nm):
-                            ask_p, bid_p, arr_pp = 0, 0, []
-                            for jdx, jtem in enumerate(self.koef[p]):
+                        for p, ptem in enumerate(self.nm):    # change PACKETs
+                            ask_p, bid_p, arr_pp = 0, 0, [0, 0, 0, 0, 0]
+                            for jdx, jtem in enumerate(self.koef[p]): # calc PACK
                                 i_koef, k_koef = jtem[0], jtem[1]
                                 if k_koef > 0 :
-                                    ask_p +=  k_koef * item.arr[i_koef][0]
-                                    bid_p +=  k_koef * item.arr[i_koef][1]
+                                    ask_p +=  k_koef * item.arr[i_koef][fAsk]
+                                    bid_p +=  k_koef * item.arr[i_koef][fBid]
                                 if k_koef < 0 :
-                                    ask_p +=  k_koef * item.arr[i_koef][1]
-                                    bid_p +=  k_koef * item.arr[i_koef][0]
+                                    ask_p +=  k_koef * item.arr[i_koef][fBid]
+                                    bid_p +=  k_koef * item.arr[i_koef][fAsk]
                             if idx == 0:
                                 self.nul[p] = int((ask_p + bid_p)/2)
-                                arr_pp = [0, 0, 0, 0, 0]
                             else:
                                 arr_pp = [int(ask_p - self.nul[p]), int(bid_p - self.nul[p]), 0, 0, 0]
                             arr_bb.arr.append(arr_pp)
@@ -250,7 +243,6 @@ class Class_term_ARCHIV():
                     for kdx, ktem in enumerate(self.nm):
                         koef_EMA.append(round(2/(1+int(self.ema[kdx][0])),5))
                         k_EMA_rnd.append(int(self.ema[kdx][1]))
-
                     for idx, item in enumerate(self.arr_pk):
                         if idx % 1000 == 0:  print(idx, end='\r')
                         for pdx, ptem in enumerate(item.arr):
@@ -268,44 +260,45 @@ class Class_term_ARCHIV():
                                     cr[cnt_EMAf_r] = pr[cnt_EMAf_r]
 
         except Exception as ex:
-            r_op_archiv = [1, 'op_archiv / ' + str(ex)]
+            err_msg = 'op_archiv / ' + str(ex)
+            r_prn = [1, err_msg]
+            r_op_archiv = [1, err_msg]
+            print(err_msg)
 
         return r_op_archiv
 #=======================================================================
-def prn_rq(msg, rq, Prn = True):
-    err_msg  = msg
-    err_msg += '\n'.join(str(e) for e in rq)
-    if Prn  :
-        print(err_msg + '\n')
-#=======================================================================
 def event_menu(event, db_ARCHIV):
     #-------------------------------------------------------------------
+    os.system('cls')  # on windows
     if event == 'prn_cfg_PACK'  :
-        os.system('cls')  # on windows
+        print('prn_cfg_PACK...')
         rq = db_ARCHIV.prn(p_cfg_PACK = True)
-        prn_rq('PRINT p_cfg_PACK ARCHIV\n', rq)
+        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'prn_arr_FUT'  :
-        os.system('cls')  # on windows
+        print('prn_arr_FUT...')
         rq = db_ARCHIV.prn(p_arr_fut  = True)
-        prn_rq('PRINT b_arr_fut ARCHIV\n', rq)
+        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'prn_arr_PACK'  :
-        os.system('cls')  # on windows
+        print('prn_arr_PACK...')
         rq = db_ARCHIV.prn(p_arr_pk   = True)
-        prn_rq('PRINT b_arr_pk ARCHIV\n', rq)
+        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'rd_cfg_PACK'  :
+        print('rd_cfg_PACK...')
         rq = db_ARCHIV.op(rd_cfg_PACK = True)
-        prn_rq('db_ARCHIV / rd_cfg_PACK\n', rq)
+        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'rd_hst_FUT'   :
+        print('rd_hst_FUT...')
         rq = db_ARCHIV.op(rd_hst_FUT = True) #rd_hist_FUT
-        prn_rq('db_ARCHIV / rd_hst_FUT\n', rq)
+        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'rd_hst_PCK'  :
+        print('rd_hst_PCK...')
         rq = db_ARCHIV.op(rd_hst_PCK = True) # rd_hist_PACK
-        prn_rq('db_ARCHIV / rd_hst_PCK\n', rq)
+        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'wr cfg_PACK'  :
         print('pass reserv / wr cfg_PACK\n')
@@ -315,20 +308,24 @@ def event_menu(event, db_ARCHIV):
         db_ARCHIV.buf_arc = [
         [1564771509, '02.08.2019 18:45:09|22330|22334|23042|23048|51207|51244|41607|41631|4238|4240|5662|5669|144912|145063|19623|19645|129450|129460|2693,65|2694|129605|129983|18198|18220|73876|74066|32303|32384|27099|27138|7990|7998|8286|8308|98810|99112|26222|26273|157054|157864|'],
         ]
+        print('wr hist_FUT...')
         rq = db_ARCHIV.op(wr_hist_FUT = True)
-        prn_rq('db_ARCHIV / wr_hist_FUT ', rq)
+        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'wr hist_PACK'  :
+        print('wr hist_PACK...')
         rq = db_ARCHIV.op(wr_hist_PACK = True)
-        prn_rq('db_ARCHIV / wr_hist_PACK ', rq)
+        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'ASK_BID'  :
+        print('calc ASK_BID...')
         rq = db_ARCHIV.op(clc_ASK_BID = True)  #calc_ASK_BID_pk
-        prn_rq('db_ARCHIV / calc_ASK_BID_pk ', rq)
+        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'EMA_f'  :
+        print('calc EMA_f...')
         rq = db_ARCHIV.op(clc_EMA = True) #  calc_EMA_pk
-        prn_rq('db_ARCHIV / clc_EMA ', rq)
+        print('rq = ', rq)
 #=======================================================================
 def main():
     while True:  # init db_ARCHIV --------------------------------------
@@ -344,11 +341,13 @@ def main():
                         rd_hst_FUT   = True, #rd_hist_FUT
                         rd_hst_PCK   = True, #rd_hist_PACK
                         )
-        if rq[0] != 0 : prn_rq('INIT cfg_hist ARCHIV', rq)
+        if rq[0] != 0 :
+            print('INIT db_ARCHIV is not OK')
+            print(' '.join(str(e) for e in rq))
         else:
             print('INIT cfg_data_hist ARCHIV = > ', rq)
             if len(db_ARCHIV.nm) == 0:
-                prn_rq('cfg_pack.nm = 0  ', [' ', 'It can not be EMPTY !'] )
+                print('cfg_PACK can not be EMPTY !')
                 break
             #if (len(db_ARCHIV.arr_pack) == 0):
                 #for item in db_ARCHIV.nm:
