@@ -37,18 +37,15 @@ class Class_str_PCK():
     pAsk, pBid, EMAf, EMAf_r, cnt_EMAf_r = range(5)
     def __init__(self):
         self.ind_s, self.dt, self.arr  = 0, '', []
-    def prnt(self):
-        print(self.ind_s, '  ', self.dt)
-        for i, item in enumerate(self.arr): print(i, item)
+    def __str__(self):
+        return 'ind_s = {}, dt = {}{} arr={}'.format(self.ind_s, self.dt, '\n', str(self.arr))
 #=======================================================================
 class Class_str_FUT():
     fAsk, fBid = range(2)
     def __init__(self):
         self.ind_s, self.dt, self.arr  = 0, '', []
-
-    def prnt(self):
-        print(self.ind_s, '  ', self.dt)
-        for i, item in enumerate(self.arr): print(i, item)
+    def __str__(self):
+        return 'ind_s = {}, dt = {}{} arr={}'.format(self.ind_s, self.dt, '\n', str(self.arr))
 #=======================================================================
 class Class_term_ARCHIV():
     def __init__(self, path_term_archiv):
@@ -82,18 +79,15 @@ class Class_term_ARCHIV():
             if p_arr_fut:
                 hist = self.arr_fut
                 print('len(arr_fut)   => ' + str(len(hist)) )
-                if len(hist) > 4:
-                    hist[1].prnt()
-                    print('. . . . . . . . . . . . . .')
-                    hist[-1].prnt()
+                for i in [0,1,2]: print(hist[i])
+                print('. _ . _ . _ . _ . _ . _ .')
+                print(hist[-1])
             if p_arr_pk:
                 hist = self.arr_pk
-                print('len(arr_pk)   => ' + str(len(hist)) )
-                if len(hist) > 4:
-                    hist[0].prnt()
-                    hist[1].prnt()
-                    print('. . . . . . . . . . . . . .')
-                    hist[-1].prnt()
+                print('len(arr_pk)    => ' + str(len(hist)) )
+                for i in [0,1,2]: print(hist[i])
+                print('. _ . _ . _ . _ . _ . _ .')
+                print(hist[-1])
         except Exception as ex:
             err_msg = 'prn / ' + str(ex)
             r_prn = [1, err_msg]
@@ -180,7 +174,7 @@ class Class_term_ARCHIV():
                         for cn, item in enumerate(buf):
                             if cn == 0 : s.dt = item.split(' ')[0:2]
                             ind_0 = 0 if cn != 0 else 2
-                            s.arr.append([float(f) for f in item.split(' ')[ind_0:]])
+                            s.arr.append([int(float(f)) for f in item.split(' ')[ind_0:]])
                         self.arr_pk.append(s)
                         if len(self.arr_pk) % 1000 == 0:  print(len(self.arr_pk), end='\r')
 
@@ -300,8 +294,8 @@ def event_menu(event, db_ARCHIV):
         rq = db_ARCHIV.op(rd_hst_PCK = True) # rd_hist_PACK
         print('rq = ', rq)
     #-------------------------------------------------------------------
-    if event == 'wr cfg_PACK'  :
-        print('pass reserv / wr cfg_PACK\n')
+    if event == 'wr_cfg_PACK'  :
+        print('pass reserv / wr_cfg_PACK\n')
     #-------------------------------------------------------------------
     if event == 'wr hist_FUT'   :
         # test array to write in DB
@@ -361,7 +355,7 @@ def main():
         menu_def = [
         ['PRINT arc  ', ['prn_cfg_PACK', '---', 'prn_arr_FUT', '---', 'prn_arr_PACK'],],
         ['READ  arc  ', ['rd_cfg_PACK',  '---', 'rd_hst_FUT',  '---', 'rd_hst_PCK']  ,],
-        ['WRITE arc  ', ['wr cfg_PACK',  '---', 'wr hist_FUT', '---', 'wr hist_PACK'],],
+        ['WRITE arc  ', ['wr_cfg_PACK',  '---', 'wr hist_FUT', '---', 'wr hist_PACK'],],
         ['CALC',        ['ASK_BID',      '---', 'EMA_f',       '---', 'cnt'] ,],
         ['Exit', 'Exit']
         ]
