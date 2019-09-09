@@ -37,6 +37,8 @@ class Class_str_PCK():
     pAsk, pBid, EMAf, EMAf_r, cnt_EMAf_r = range(5)
     def __init__(self):
         self.ind_s, self.dt, self.arr  = 0, '', []
+    def __retr__(self):
+        return 'ind_s = {}, dt = {}{} arr={}'.format(self.ind_s, self.dt, '\n', str(self.arr))
     def __str__(self):
         return 'ind_s = {}, dt = {}{} arr={}'.format(self.ind_s, self.dt, '\n', str(self.arr))
 #=======================================================================
@@ -44,6 +46,8 @@ class Class_str_FUT():
     fAsk, fBid = range(2)
     def __init__(self):
         self.ind_s, self.dt, self.arr  = 0, '', []
+    def __retr__(self):
+        return 'ind_s = {}, dt = {}{} arr={}'.format(self.ind_s, self.dt, '\n', str(self.arr))
     def __str__(self):
         return 'ind_s = {}, dt = {}{} arr={}'.format(self.ind_s, self.dt, '\n', str(self.arr))
 #=======================================================================
@@ -80,13 +84,13 @@ class Class_term_ARCHIV():
                 hist = self.arr_fut
                 print('len(arr_fut)   => ' + str(len(hist)) )
                 for i in [0,1,2]: print(hist[i])
-                print('. _ . _ . _ . _ . _ . _ .')
+                print('. _ . _ . _ . _ . _ . _ . _ . _ .')
                 print(hist[-1])
             if p_arr_pk:
                 hist = self.arr_pk
                 print('len(arr_pk)    => ' + str(len(hist)) )
                 for i in [0,1,2]: print(hist[i])
-                print('. _ . _ . _ . _ . _ . _ .')
+                print('. _ . _ . _ . _ . _ . _ . _ . _ .')
                 print(hist[-1])
         except Exception as ex:
             err_msg = 'prn / ' + str(ex)
@@ -131,8 +135,17 @@ class Class_term_ARCHIV():
 
                 if wr_cfg_PACK:
                     duf_list = []
+                    # for j, jtem in enumerate(self.nm):
+                        # #bp()
+                        # buf = (self.nm[j], ','.join(self.koef[j]), self.nul[j], ':'.join(self.ema[j]))
+                        # print(j, buf)
+                        # duf_list.append(buf)
                     for j, jtem in enumerate(self.nm):
-                        buf = (self.nm[j], ','.join(self.koef[j]), self.nul[j], ':'.join(self.ema[j]))
+                        arr_koef = ''
+                        for ktem in self.koef[j]:
+                            str_koef = ':'.join([str(f) for f in ktem])
+                            arr_koef += str_koef + ','
+                        buf = (self.nm[j], arr_koef[:-1], str(self.nul[j]), ':'.join([str(f) for f in self.ema[j]]))
                         duf_list.append(buf)
                     self.cur.execute('DELETE FROM ' + 'cfg_PACK')
                     self.cur.executemany('INSERT INTO ' + 'cfg_PACK' + ' VALUES' + '(?,?,?,?)', duf_list)
@@ -180,13 +193,18 @@ class Class_term_ARCHIV():
 
                 if wr_hist_PACK:
                     name_list =[]
+                    pAsk, pBid, EMAf, EMAf_r, cnt_EMAf_r = range(5)
                     if len(self.arr_pk) > 0:
+                        print('len(self.arr_pk) = ', len(self.arr_pk))
                         for i_hist, item_hist in enumerate(self.arr_pk):
-                            buf_dt = item_hist.dt + ' ' + item_hist.tm + ' '
+                            if i_hist % 1000 == 0:  print(str(i_hist), end='\r')
+                            #bp()
+                            buf_dt = item_hist.dt[0] + ' ' + item_hist.dt[1] + ' '
                             buf_s = ''
-                            for i_pack, item_pack in enumerate(item_hist.pk):
-                                buf_s += str(item_pack.pAsk) + ' ' + str(item_pack.pBid)     + ' '
-                                buf_s += str(item_pack.EMAf) + ' ' + str(item_pack.EMAf_r) + ' ' + str(item_pack.cnt_EMAf_r) + '|'
+                            for i_pack, item_pack in enumerate(item_hist.arr):
+                                buf_s += str(item_pack[pAsk]) + ' ' + str(item_pack[pBid])   + ' '
+                                buf_s += str(item_pack[EMAf]) + ' ' + str(item_pack[EMAf_r]) + ' '
+                                buf_s += str(item_pack[cnt_EMAf_r]) + '|'
                             name_list.append((item_hist.ind, buf_dt + buf_s.replace('.', ',')))
 
                     ''' rewrite data from table ARCHIV_PACK & PACK_TODAY & DATA ----'''
@@ -295,13 +313,13 @@ def event_menu(event, db_ARCHIV):
         print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'wr_cfg_PACK'  :
-        print('pass reserv / wr_cfg_PACK\n')
+        print('wr_cfg_PACK...')
+        rq = db_ARCHIV.op(wr_cfg_PACK = True) # wr_cfg_PACK
+        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'wr hist_FUT'   :
         # test array to write in DB
-        db_ARCHIV.buf_arc = [
-        [1564771509, '02.08.2019 18:45:09|22330|22334|23042|23048|51207|51244|41607|41631|4238|4240|5662|5669|144912|145063|19623|19645|129450|129460|2693,65|2694|129605|129983|18198|18220|73876|74066|32303|32384|27099|27138|7990|7998|8286|8308|98810|99112|26222|26273|157054|157864|'],
-        ]
+        db_ARCHIV.buf_arc = [[1564771509, '02.08.2019 18:45:09|22330|22334|23042|23048|51207|51244|41607|41631|4238|4240|5662|5669|144912|145063|19623|19645|129450|129460|2693,65|2694|129605|129983|18198|18220|73876|74066|32303|32384|27099|27138|7990|7998|8286|8308|98810|99112|26222|26273|157054|157864|'],]
         print('wr hist_FUT...')
         rq = db_ARCHIV.op(wr_hist_FUT = True)
         print('rq = ', rq)
