@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 class Class_str_FUT():
     fAsk, fBid = range(2)
     def __init__(self):
@@ -26,5 +28,7 @@ for item in (zip(arr_buf[::2], arr_buf[1::2])):
 
 print(st_FUT.ind_s)
 print(st_FUT.dt)
+print('min = ', st_FUT.dt[0])
 print(st_FUT.arr)
+#dtt = datetime.strptime(str(item[1].split('|')[0]), frm)
 #st_FUT.prnt()

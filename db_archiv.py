@@ -158,7 +158,7 @@ class Class_term_ARCHIV():
                     print('len(hist_FUT) = ', len(arr_buf))
                     self.arr_fut  = []
                     for cnt, i_str in enumerate(arr_buf):
-                        arr_item = (i_str[1].replace(',', '.')).split('|')
+                        #arr_item = (i_str[1].replace(',', '.')).split('|')
                         s = Class_str_FUT()
                         s.ind_s = i_str[0]
                         s.dt    = i_str[1].split('|')[0].split(' ')
@@ -285,59 +285,53 @@ def event_menu(event, db_ARCHIV):
     if event == 'prn_cfg_PACK'  :
         print('prn_cfg_PACK...')
         rq = db_ARCHIV.prn(p_cfg_PACK = True)
-        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'prn_arr_FUT'  :
         print('prn_arr_FUT...')
         rq = db_ARCHIV.prn(p_arr_fut  = True)
-        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'prn_arr_PACK'  :
         print('prn_arr_PACK...')
         rq = db_ARCHIV.prn(p_arr_pk   = True)
-        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'rd_cfg_PACK'  :
         print('rd_cfg_PACK...')
         rq = db_ARCHIV.op(rd_cfg_PACK = True)
-        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'rd_hst_FUT'   :
         print('rd_hst_FUT...')
         rq = db_ARCHIV.op(rd_hst_FUT = True) #rd_hist_FUT
-        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'rd_hst_PCK'  :
         print('rd_hst_PCK...')
         rq = db_ARCHIV.op(rd_hst_PCK = True) # rd_hist_PACK
-        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'wr_cfg_PACK'  :
         print('wr_cfg_PACK...')
         rq = db_ARCHIV.op(wr_cfg_PACK = True) # wr_cfg_PACK
-        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'wr hist_FUT'   :
         # test array to write in DB
         db_ARCHIV.buf_arc = [[1564771509, '02.08.2019 18:45:09|22330|22334|23042|23048|51207|51244|41607|41631|4238|4240|5662|5669|144912|145063|19623|19645|129450|129460|2693,65|2694|129605|129983|18198|18220|73876|74066|32303|32384|27099|27138|7990|7998|8286|8308|98810|99112|26222|26273|157054|157864|'],]
         print('wr hist_FUT...')
         rq = db_ARCHIV.op(wr_hist_FUT = True)
-        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'wr hist_PACK'  :
         print('wr hist_PACK...')
         rq = db_ARCHIV.op(wr_hist_PACK = True)
-        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'ASK_BID'  :
         print('calc ASK_BID...')
         rq = db_ARCHIV.op(clc_ASK_BID = True)  #calc_ASK_BID_pk
-        print('rq = ', rq)
     #-------------------------------------------------------------------
     if event == 'EMA_f'  :
         print('calc EMA_f...')
         rq = db_ARCHIV.op(clc_EMA = True) #  calc_EMA_pk
-        print('rq = ', rq)
+    #-------------------------------------------------------------------
+    if event is None or event == 'Quit' or event == 'Exit':
+        rq = [0,'Finish']
+
+    print('rq = ', rq)
 #=======================================================================
 def main():
     while True:  # init db_ARCHIV --------------------------------------
