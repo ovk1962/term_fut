@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  db_today.py
+#  db_graph.py
 #
 #=======================================================================
 import os, sys, math, time, sqlite3, logging
 from datetime import datetime, timezone
+#import matplotlib.pyplot as plt
+#import matplotlib.ticker as ticker
 from ipdb import set_trace as bp    # to set breakpoints just -> bp()
 if sys.version_info[0] >= 3:
     import PySimpleGUI as sg
@@ -13,25 +15,22 @@ else:
     import PySimpleGUI27 as sg
 #=======================================================================
 menu_def = [
-    ['Mode',
-        ['auto','manual','auto_TEST', ], ],
-    ['READ  today',
-        ['rd_term_FUT',  'rd_term_HST',   '---',
-        'rd_cfg_PACK',   'rd_data_FUT',   '---',
-        'rd_hst_FUT_t',  'rd_hst_PCK_t',  '---',
-        'rd_hst_FUT',    'rd_hst_PCK'],],
-    ['WRITE today',
-        ['wr_cfg_PACK',  'wr_data_FUT',   '---', 'wr_hist_FUT_t', 'wr hist_FUT',  '---', 'wr_hst_PCK_t', 'wr_hst_PCK'],],
-    ['CALC',
-        ['ASK_BID', 'EMA_f', '---', 'ASK_BID_t', 'EMA_f_t', '---', 'cnt'] ,],
-    ['PRINT today',
-        ['prn_cfg_SOFT', 'prn_cfg_PACK', 'prn_cfg_ALARM',   '---',
-        'prn_ar_FILE',   'prn_hist_in_FILE', '---',
-        'prn_data_FUT',  '---',
-        'prn_hst_FUT_t', 'prn_arr_FUT_t', 'prn_arr_PK_t',   '---',
-        'prn_arr_FUT',   'prn_arr_PK'],],
-    ['Exit', 'Exit']
+['Mode',        ['auto','manual','auto_TEST', ], ],
+['READ  today', ['rd_term_FUT',  'rd_term_HST',   '---',
+                'rd_cfg_PACK',   'rd_data_FUT',   '---',
+                'rd_hst_FUT_t',  'rd_hst_PCK_t',  '---',
+                'rd_hst_FUT',    'rd_hst_PCK'],],
+['CALC',        ['ASK_BID', 'EMA_f', '---', 'ASK_BID_t', 'EMA_f_t', '---', 'cnt'] ,],
+['PRINT today', ['prn_cfg_SOFT', 'prn_cfg_PACK', 'prn_cfg_ALARM',   '---',
+                'prn_ar_FILE',   'prn_hist_in_FILE', '---',
+                'prn_data_FUT',  '---',
+                'prn_hst_FUT_t', 'prn_arr_FUT_t', 'prn_arr_PK_t',   '---',
+                'prn_arr_FUT',   'prn_arr_PK'],
+                ],
+['Plot', 'win2_active'],
+['Exit', 'Exit']
 ]
+
 #=======================================================================
 class Class_LOGGER():
     def __init__(self, path_log):
@@ -844,6 +843,9 @@ def event_menu(event, db_TODAY):
 
     print('rq = ', rq)
 #=======================================================================
+
+
+#=======================================================================
 def main():
     while True:  # init db_TODAY ---------------------------------------
         c_dir    = os.path.abspath(os.curdir)
@@ -872,6 +874,7 @@ def main():
     while True:  # init MENU -------------------------------------------
         def_txt, frm = [], '{: <10}  => {: ^15}\n'
         def_txt.append(frm.format('term_today' , '\\DB\\term_today.sqlite'))
+        #def_txt.append(frm.format('ARCHV' , '\\DB\\term_archiv.sqlite'))
         def_txt.append(frm.format('hst_FUT_t' , str(len(db_TODAY.arr_fut_t))))
         def_txt.append(frm.format('hst_PK_t' , str(len(db_TODAY.arr_pk_t))))
 
@@ -880,7 +883,8 @@ def main():
                     [sg.Menu(menu_def, tearoff=False, key='menu_def')],
                     [sg.Multiline( default_text=''.join(def_txt),
                         size=(50, 5), key='txt_data', autoscroll=False, focus=False),],
-                    [sg.T('',size=(60,2), font='Helvetica 8', key='txt_status'), sg.Quit(auto_size_button=True)],
+                    #[sg.T('',size=(40,1))],
+                    [sg.T('',size=(50,2), font='Helvetica 8', key='txt_status')],
                  ]
         sg.SetOptions(element_padding=(0,0))
         window = sg.Window('Test db_today', grab_anywhere=True).Layout(layout).Finalize()
@@ -890,6 +894,7 @@ def main():
     tm_out, mode, frm = 360000, 'manual', '%d.%m.%Y %H:%M:%S'
     stts  = time.strftime(frm, time.localtime()) + '\n' + 'event = manual'
     window.FindElement('txt_status').Update(stts)
+    win2_active = False
     while True:  # MAIN cycle ------------------------------------------
         stroki = []
         event, values = window.Read(timeout = tm_out )
@@ -915,12 +920,141 @@ def main():
                     )
             print('__TIMEOUT__ = > ', rq )
             #bp()
+        #-------------------------------------------------------------------
+        if event == 'win2_active' and not win2_active:
+            win2_active = True
+            window.Hide()
+
+            X_bottom_left = 0
+            Y_bottom_left = 0
+            X_top_right   = 1040
+            Y_top_right   = 500
+            nom_pckt  = 0
+            layout2 = [
+                        [sg.Graph(canvas_size=(X_top_right, Y_top_right),
+                            graph_bottom_left=(X_bottom_left, Y_bottom_left),
+                            graph_top_right  =(X_top_right,   Y_top_right),
+                            background_color='white',
+                            key='graph')],
+                        [sg.T(110*'_', size=(110,1), key='name_pckt')],
+                        [sg.Button('inc_PACK'), sg.Button('My_But_2'),  sg.Button('draw_GRAPH'), sg.Quit(auto_size_button=True)],
+                    ]
+            win2 = sg.Window('Graph of Sine Function').Layout(layout2)
+            win2.Finalize()
+
+            graph = win2.FindElement('graph')
+            graph.DrawLine((X_bottom_left,Y_bottom_left+1),  (X_top_right,Y_bottom_left+1))
+            graph.DrawLine((X_bottom_left+1, Y_bottom_left), (X_bottom_left+1,Y_top_right))
+            k_axis_Y = 900
+
+            while True:
+                ev2, vals2 = win2.Read(timeout=5000)
+                print(ev2, vals2)
+                if ev2 is None or ev2 == 'Quit':
+                    win2.Close()
+                    win2_active = False
+                    window.UnHide()
+                    break
+
+                if event == '__TIMEOUT__':
+                    pass
+
+                if ev2 in ('inc_PACK', 'My_But_2', 'draw_GRAPH'):
+                    graph.Erase()
+                    graph = win2.FindElement('graph')
+                    graph.DrawLine((X_bottom_left,Y_bottom_left+1),  (X_top_right,Y_bottom_left+1))
+                    graph.DrawLine((X_bottom_left+1, Y_bottom_left), (X_bottom_left+1,Y_top_right))
+
+                if ev2 == 'inc_PACK':
+                    nom_pckt = (nom_pckt + 1) % len(db_TODAY.nm)
+                    str_pck = db_TODAY.nm[nom_pckt] + '___'
+                    koef_pckt = db_TODAY.koef[nom_pckt]
+                    for i, item in enumerate(koef_pckt):
+                        str_pck +='_'.join(str(x) for x in koef_pckt[i]) + '___'
+                    win2.FindElement('name_pckt').Update(str_pck)
+                    print(str_pck)
+
+                if ev2 == 'draw_GRAPH':
+                    k_axis_Y += 100
+                    if k_axis_Y > 900:
+                        k_axis_Y = 50
+                    for x in range(X_bottom_left, X_top_right):
+                        y = math.sin(x/5)*k_axis_Y
+                        x_prev = x - 1
+                        y_prev = math.sin(x_prev/5)*k_axis_Y
+                        graph.DrawLine((x_prev,y_prev), (x,y), width=1, color='green')
+
+                if ev2 == 'My_But_2':
+                    print('X_bottom_left = ',X_bottom_left)
+                    print('Y_bottom_left = ',Y_bottom_left)
+                    print('X_top_right = ',  X_top_right)
+                    print('Y_top_right = ',  Y_top_right)
+
+                    # Draw axis X
+                    for x in range(int(X_top_right/10), X_top_right, int(X_top_right/10)):
+                        graph.DrawLine((x, Y_bottom_left + 25), (x, Y_top_right - 25), color='lightgrey')
+                    # Draw axis Y
+                    for y in range( int(Y_top_right/10), Y_top_right , int(Y_top_right/10) ):
+                        graph.DrawLine((X_bottom_left + 25, y), (X_top_right - 25, y), color='lightgrey')
+
+                    # Select lists for GRAPH
+                    print('nom_pckt =', nom_pckt)
+                    print('db_TODAY.arr_pk[-1] = ', db_TODAY.arr_pk[-1].dt)
+                    print('len db_TODAY.arr_pk = ', len(db_TODAY.arr_pk))
+                    len_arr_pk = len(db_TODAY.arr_pk)
+                    num_start = len_arr_pk-1040
+                    num_finish= len_arr_pk-0
+                    arr_GRAPH = db_TODAY.arr_pk[num_start:num_finish]
+
+                    x_DT, y_ASK, y_BID, y_EMA, y_EMAr, y_CNT = [], [], [], [], [], []
+                    for i, item in enumerate(arr_GRAPH):
+                        x_DT.append(item.dt)
+                        y_ASK.append(item.arr[nom_pckt][0])
+                        y_BID.append(item.arr[nom_pckt][1])
+                        y_EMA.append(item.arr[nom_pckt][2])
+                        y_EMAr.append(item.arr[nom_pckt][3])
+                        y_CNT.append(item.arr[nom_pckt][4])
+
+                    k_max, k_max_y_CNT = max([max(y_ASK), max(y_BID), max(y_EMA), max(y_EMAr)]), max(y_CNT)
+                    k_min, k_min_y_CNT = min([min(y_ASK), min(y_BID), min(y_EMA), min(y_EMAr)]), min(y_CNT)
+
+                    print('origin MAX ', k_max, k_max_y_CNT)
+                    print('origin MIN ', k_min, k_min_y_CNT)
+
+                    print('Y_top_right - Y_bottom_left = ', (Y_top_right - Y_bottom_left))
+                    print('k_max - k_min = ', (k_max - k_min))
+                    koef_Y = (Y_top_right - Y_bottom_left) / (k_max - k_min)
+                    print('koef_Y  = ', koef_Y)
+
+                    y0_ASK = [int(koef_Y * (jtem - k_min)) for jtem in y_ASK]
+                    y1_BID = [int(koef_Y * (jtem - k_min)) for jtem in y_BID]
+                    y2_EMA = [int(koef_Y * (jtem - k_min)) for jtem in y_EMA]
+                    y3_EMAr = [int(koef_Y * (jtem - k_min)) for jtem in y_EMAr]
+
+                    x0_DT = []
+                    print('X_top_right - X_bottom_left   ', X_top_right - X_bottom_left)
+                    print('len(y0_ASK)                   ', len(y0_ASK))
+                    step_X = int((X_top_right - X_bottom_left) / len(y0_ASK))
+                    print('step_X                        ', step_X)
+
+                    x = 0
+                    for i, y in enumerate(y0_ASK):
+                        x0_DT.append(x)
+                        x += step_X
+
+                    for i, x_cr in enumerate(x0_DT):
+                        if i != 0:
+                            x_pr = x0_DT[i - 1]
+                            graph.DrawLine((x_pr, y0_ASK[i-1]), (x_cr, y0_ASK[i-0]),  width=1, color='blue')
+                            graph.DrawLine((x_pr, y1_BID[i-1]), (x_cr, y1_BID[i-0]),  width=1, color='red')
+                            graph.DrawLine((x_pr, y2_EMA[i-1]), (x_cr, y2_EMA[i-0]),  width=3, color='green')
+                            graph.DrawLine((x_pr, y3_EMAr[i-1]),(x_cr, y3_EMAr[i-0]), width=5, color='brown')
+
         #---------------------------------------------------------------
         window.FindElement('txt_data').Update('\n'.join(stroki))
         stts  = time.strftime(frm, time.localtime()) + '\n'
         stts += 'event = ' + event
         window.FindElement('txt_status').Update(stts)
-        #break
 
     return 0
 

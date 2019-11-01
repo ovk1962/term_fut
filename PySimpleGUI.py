@@ -7614,7 +7614,7 @@ def main():
                  num_rows=10, col0_width=10, key='_TREE_', show_expanded=True, )],
     ]
 
-    graph_elem = Graph((800, 150), (0, 0), (800, 300), key='+GRAPH+')
+    graph_elem = Graph((800, 110), (0, 0), (800, 300), key='+GRAPH+')
 
     frame6 = [
         [graph_elem],
