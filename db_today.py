@@ -14,7 +14,7 @@ else:
 #=======================================================================
 menu_def = [
     ['Mode',
-        ['auto','manual','auto_TEST', ], ],
+        ['auto','manual','auto_TEST','cnrt_TXT_HIST', ], ],
     ['READ  today',
         ['rd_term_FUT',  'rd_term_HST',   '---',
         'rd_cfg_PACK',   'rd_data_FUT',   '---',
@@ -30,6 +30,7 @@ menu_def = [
         'prn_data_FUT',  '---',
         'prn_hst_FUT_t', 'prn_arr_FUT_t', 'prn_arr_PK_t',   '---',
         'prn_arr_FUT',   'prn_arr_PK'],],
+    ['Plot', 'win2_active'],
     ['Exit', 'Exit']
 ]
 #=======================================================================
@@ -108,9 +109,11 @@ class Class_term_TODAY():
         self.ema  = []  # list EMA  of packets
         # cfg_soft
         self.titul          = ''    # term ALFA
-        self.path_file_DATA = ''    # D:\\str_log_ad_A7.txt
-        self.path_file_HIST = ''    # D:\\hist_log_ad_A7.txt
+        self.path_file_DATA = ''    # c:\\str_log_ad_A7.txt
+        self.path_file_HIST = ''    # c:\\hist_log_ad_A7.txt
         self.dt_start_sec   = 0     # 2017-01-01 00:00:00
+        self.path_file_TXT  = ''    # c:\\hist_log_ALOR.txt
+
         #
         self.dt_file = 0        # curv stamptime data file path_file_DATA
         self.dt_data = 0        # curv stamptime DATA/TIME from TERM
@@ -135,9 +138,12 @@ class Class_term_TODAY():
         self.buf_arc = []
         self.arr_pk  = []  # list of obj [Class_STR_PACK ... ]
         #
+        self.arr_pk_graph = []  # list of obj [Class_STR_PACK ... ]
+        #
         self.sec_10_00 = 36000      # seconds from 00:00 to 10:00
-        self.sec_14_00 = 50400      # seconds from 00:00 to 14:00
-        self.sec_14_05 = 50700      # seconds from 00:00 to 14:05
+        self.sec_14_00 = 50410      # seconds from 00:00 to 14:00
+        self.sec_14_05 = 50690      # seconds from 00:00 to 14:05
+        #self.sec_18_45 = 67500      # seconds from 00:00 to 18:45
         self.sec_18_45 = 67500      # seconds from 00:00 to 18:45
         self.sec_19_05 = 68700      # seconds from 00:00 to 19:05
         self.sec_23_45 = 85500      # seconds from 00:00 to 23:45
@@ -246,6 +252,8 @@ class Class_term_TODAY():
             wr_hst_PCK_t  = False,
             rd_hst_PCK_t  = False,
 
+            cnvrt_txt_hist = False,
+
             ):
         r_op_today = []
         self.conn = sqlite3.connect(self.path_db)
@@ -263,6 +271,8 @@ class Class_term_TODAY():
                         if item[0] == 'path_file_DATA': self.path_file_DATA  = item[1]
                         if item[0] == 'path_file_HIST': self.path_file_HIST  = item[1]
                         if item[0] == 'dt_start'      : self.dt_start        = item[1]
+                        if item[0] == 'path_file_TXT' : self.path_file_TXT   = item[1]
+
                     frm = '%Y-%m-%d %H:%M:%S'
                     self.dt_start_sec = \
                         int(datetime.strptime(self.dt_start, frm).replace(tzinfo=timezone.utc).timestamp())
@@ -695,6 +705,65 @@ class Class_term_TODAY():
                                     self.arr_pk_t.append([])
                     print('finish rd_hst_PCK_t! => ', str(len(self.arr_pk_t)))
 
+                if cnvrt_txt_hist:
+                    print('start cnvrt_txt_hist! ')
+                    #--- check file cntr.file_path_DATA ----------------------------
+                    if not os.path.isfile(self.path_file_TXT):
+                        err_msg = 'can not find file => ' + self.path_file_TXT
+                        #cntr.log.wr_log_error(err_msg)
+                        return [1, err_msg]
+                    buf_stat = os.stat(self.path_file_TXT)
+                    #
+                    #--- check size of file ----------------------------------------
+                    if buf_stat.st_size == 0:
+                        err_msg = 'size TXT file is NULL'
+                        return [2, err_msg]
+                    #
+                    #--- read TXT file --------------------------------------------
+                    buf_str = []
+                    with open(self.path_file_TXT,"r") as fh:
+                        buf_str = fh.read().splitlines()
+                    #
+                    #--- check size of list/file -----------------------------------
+                    if len(buf_str) == 0:
+                        err_msg = 'the size buf_str(TXT) is NULL '
+                        return [3, err_msg]
+                    #
+                    #--- check MARKET time from 10:00 to 23:45 ---------------------
+                    self.hist_in_file = []
+                    dtt_minute = -1
+                    for item in buf_str:
+                        term_dt = item.split('|')[0]
+                        dtt = datetime.strptime(str(term_dt), "%d.%m.%Y %H:%M:%S")
+                        if dtt.minute != dtt_minute:
+                            dtt_minute = dtt.minute
+                            cur_time   = dtt.second + 60 * dtt.minute + 60 * 60 * dtt.hour
+                            if (
+                                (cur_time > self.sec_10_00  and # from 10:00 to 14:00
+                                cur_time < self.sec_14_00) or
+                                (cur_time > self.sec_14_05  and # from 14:05 to 18:45
+                                cur_time < self.sec_18_45) #or
+                                #(cur_time > self.sec_19_05  and # from 19:05 to 23:45
+                                #cur_time < self.sec_23_45)
+                                ):
+                                    self.hist_in_file.append(item)
+                    print('finish rd_term_HST!  => ', str(len(self.hist_in_file)))
+
+                    print('start update to table hist_FUT! ')
+                    #--- update table 'hist_FUT' ------------------------------
+                    buf_list =[]
+                    pAsk, pBid = range(2)
+                    if len(self.hist_in_file) > 0:
+                        for it in self.hist_in_file:
+                            dtt = datetime.strptime(it.split('|')[0], '%d.%m.%Y %H:%M:%S')
+                            ind_sec  = int(dtt.replace(tzinfo=timezone.utc).timestamp())
+                            buf_list.append([ind_sec, it])
+
+                    ''' rewrite data from table hist_FUT ------'''
+                    self.cur.execute('DELETE FROM ' + 'hist_FUT')
+                    self.cur.executemany('INSERT INTO ' + 'hist_FUT' + ' VALUES' + '(?,?)', buf_list)
+                    self.conn.commit()
+                    print('finish to update table!  => ', str(len(buf_list)))
 
         except Exception as ex:
             r_op_today = [1, 'op_today / ' + str(ex)]
@@ -838,11 +907,57 @@ def event_menu(event, db_TODAY):
                         wr_hst_PCK_t  = True,
                         rd_hst_PCK_t  = True,
 
-
+                        )
+    #-------------------------------------------------------------------
+    if event == 'cnrt_TXT_HIST'  :
+        print('cnrt_TXT_HIST ...')
+        rq = db_TODAY.op(
+                        cnvrt_txt_hist  = True,
                         )
     #-------------------------------------------------------------------
 
     print('rq = ', rq)
+#=======================================================================
+def event_menu_2(ev2, db_TODAY, win2, nom_pckt):
+    rq = [0, ev2]
+    graph = win2.FindElement('graph')
+    #-------------------------------------------------------------------
+    os.system('cls')  # on windows
+    X_bot_left,  Y_bot_left  = 0, 0
+    X_top_right, Y_top_right = graph.CanvasSize
+    #-------------------------------------------------------------------
+    if ev2 in ('inc_PACK', 'My_But_2', 'draw_GRAPH'):
+        graph.Erase()
+        graph.DrawLine((X_bot_left,   Y_bot_left+1), (X_top_right, Y_bot_left+1))
+        graph.DrawLine((X_bot_left+1, Y_bot_left),   (X_bot_left+1,Y_top_right) )
+    #-------------------------------------------------------------------
+    if ev2 == 'inc_PACK':
+        nom_pckt = (nom_pckt + 1) % len(db_TODAY.nm)
+        str_pck = db_TODAY.nm[nom_pckt] + '___'
+        koef_pckt = db_TODAY.koef[nom_pckt]
+        for i, item in enumerate(koef_pckt):
+            str_pck +='_'.join(str(x) for x in koef_pckt[i]) + '___'
+        win2.FindElement('name_pckt').Update(str_pck)
+
+        db_TODAY.arr_pk_graph = []
+        if len(db_TODAY.arr_pk) > 0:
+            for item in db_TODAY.arr_pk:
+                arr_bb = Class_str_PCK()
+                arr_bb.ind_s, arr_bb.dt  = item.ind_s, item.dt
+                arr_bb.arr.append(item.arr[0])
+                arr_bb.arr.append(item.arr[nom_pckt])
+                db_TODAY.arr_pk_graph.append(arr_bb)
+        if len(db_TODAY.arr_pk_t) > 0:
+            for item in db_TODAY.arr_pk_t:
+                arr_bb = Class_str_PCK()
+                arr_bb.ind_s, arr_bb.dt  = item.ind_s, item.dt
+                arr_bb.arr.append(item.arr[0])
+                arr_bb.arr.append(item.arr[nom_pckt])
+                db_TODAY.arr_pk_graph.append(arr_bb)
+    print('db_TODAY.arr_pk_graph[-1] = ', db_TODAY.arr_pk_graph[-1])
+
+    print('rq = ', rq)
+    return nom_pckt
 #=======================================================================
 def main():
     while True:  # init db_TODAY ---------------------------------------
@@ -890,6 +1005,7 @@ def main():
     tm_out, mode, frm = 360000, 'manual', '%d.%m.%Y %H:%M:%S'
     stts  = time.strftime(frm, time.localtime()) + '\n' + 'event = manual'
     window.FindElement('txt_status').Update(stts)
+    win2_active = False
     while True:  # MAIN cycle ------------------------------------------
         stroki = []
         event, values = window.Read(timeout = tm_out )
@@ -915,6 +1031,45 @@ def main():
                     )
             print('__TIMEOUT__ = > ', rq )
             #bp()
+        #---------------------------------------------------------------
+        if event == 'win2_active' and not win2_active:
+            win2_active = True
+            window.Hide()
+
+            X_bot_left,  Y_bot_left  = 0,    0
+            X_top_right, Y_top_right = 1040, 500
+            nom_pckt  = 0
+            layout2 = [
+                        [sg.Graph(canvas_size=(X_top_right, Y_top_right),
+                            graph_bottom_left=(X_bot_left,  Y_bot_left ),
+                            graph_top_right  =(X_top_right, Y_top_right),
+                            background_color='white',
+                            key='graph')],
+                        [sg.T(110*'_', size=(110,1), key='name_pckt')],
+                        [sg.Button('inc_PACK'), sg.Button('My_But_2'),  sg.Button('draw_GRAPH'), sg.Quit(auto_size_button=True)],
+                    ]
+            win2 = sg.Window('Graph of HISTORY for packets').Layout(layout2)
+            win2.Finalize()
+
+            graph = win2.FindElement('graph')
+            graph.DrawLine((X_bot_left,   Y_bot_left+1), (X_top_right, Y_bot_left+1))
+            graph.DrawLine((X_bot_left+1, Y_bot_left),   (X_bot_left+1,Y_top_right) )
+
+            while True:
+                ev2, vals2 = win2.Read(timeout=5000)
+                print(ev2, vals2)
+                #-------------------------------------------------------
+                if ev2 == '__TIMEOUT__':
+                    pass
+                #-------------------------------------------------------
+                if ev2 is None or ev2 == 'Quit':
+                    win2.Close()
+                    win2_active = False
+                    window.UnHide()
+                    break
+                #-------------------------------------------------------
+                nom_pckt = event_menu_2(ev2, db_TODAY, win2, nom_pckt)
+
         #---------------------------------------------------------------
         window.FindElement('txt_data').Update('\n'.join(stroki))
         stts  = time.strftime(frm, time.localtime()) + '\n'
