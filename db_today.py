@@ -6,6 +6,7 @@
 #=======================================================================
 import os, sys, math, time, sqlite3, logging
 from datetime import datetime, timezone
+import math
 from ipdb import set_trace as bp    # to set breakpoints just -> bp()
 if sys.version_info[0] >= 3:
     import PySimpleGUI as sg
@@ -23,7 +24,7 @@ menu_def = [
     ['WRITE today',
         ['wr_cfg_PACK',  'wr_data_FUT',   '---', 'wr_hist_FUT_t', 'wr hist_FUT',  '---', 'wr_hst_PCK_t', 'wr_hst_PCK'],],
     ['CALC',
-        ['ASK_BID', 'EMA_f', '---', 'ASK_BID_t', 'EMA_f_t', '---', 'cnt'] ,],
+        ['ASK_BID', 'EMA_f', '---', 'ASK_BID_t', 'EMA_f_t', '---', 'cnt', '---', 'update_arr_PK', 'update_arr_PK_t'] ,],
     ['PRINT today',
         ['prn_cfg_SOFT', 'prn_cfg_PACK', 'prn_cfg_ALARM',   '---',
         'prn_ar_FILE',   'prn_hist_in_FILE', '---',
@@ -113,7 +114,6 @@ class Class_term_TODAY():
         self.path_file_HIST = ''    # c:\\hist_log_ad_A7.txt
         self.dt_start_sec   = 0     # 2017-01-01 00:00:00
         self.path_file_TXT  = ''    # c:\\hist_log_ALOR.txt
-
         #
         self.dt_file = 0        # curv stamptime data file path_file_DATA
         self.dt_data = 0        # curv stamptime DATA/TIME from TERM
@@ -139,6 +139,7 @@ class Class_term_TODAY():
         self.arr_pk  = []  # list of obj [Class_STR_PACK ... ]
         #
         self.arr_pk_graph = []  # list of obj [Class_STR_PACK ... ]
+        self.pack_graph = 0
         #
         self.sec_10_00 = 36000      # seconds from 00:00 to 10:00
         self.sec_14_00 = 50410      # seconds from 00:00 to 14:00
@@ -253,6 +254,7 @@ class Class_term_TODAY():
             rd_hst_PCK_t  = False,
 
             cnvrt_txt_hist = False,
+            get_pk_graph   = False,
 
             ):
         r_op_today = []
@@ -261,6 +263,7 @@ class Class_term_TODAY():
             with self.conn:
                 r_op_today = [0, 'ok']
                 self.cur = self.conn.cursor()
+
                 if rd_cfg_SOFT:
                     cfg = []
                     self.cur.execute('SELECT * from ' + 'cfg_SOFT')
@@ -765,6 +768,28 @@ class Class_term_TODAY():
                     self.conn.commit()
                     print('finish to update table!  => ', str(len(buf_list)))
 
+                    print('start clear tables hist_FUT_t! ')
+
+                if get_pk_graph:
+                    print('start get_pk_graph for PACK => ', self.pack_graph)
+                    self.arr_pk_graph = []
+                    if len(self.arr_pk) > 0:
+                        for item in self.arr_pk:
+                            arr_bb = Class_str_PCK()
+                            arr_bb.ind_s, arr_bb.dt  = item.ind_s, item.dt
+                            arr_bb.arr.append(item.arr[0])
+                            arr_bb.arr.append(item.arr[self.pack_graph])
+                            self.arr_pk_graph.append(arr_bb)
+                    if len(self.arr_pk_t) > 0:
+                        for item in self.arr_pk_t:
+                            arr_bb = Class_str_PCK()
+                            arr_bb.ind_s, arr_bb.dt  = item.ind_s, item.dt
+                            arr_bb.arr.append(item.arr[0])
+                            arr_bb.arr.append(item.arr[self.pack_graph])
+                            self.arr_pk_graph.append(arr_bb)
+                    if len(self.arr_pk_graph) > 0:
+                        print('arr_pk_graph[-1] = ', self.arr_pk_graph[-1])
+
         except Exception as ex:
             r_op_today = [1, 'op_today / ' + str(ex)]
 
@@ -915,10 +940,38 @@ def event_menu(event, db_TODAY):
                         cnvrt_txt_hist  = True,
                         )
     #-------------------------------------------------------------------
+    if event == 'update_arr_PK'  :
+        print('update_arr_PK ...')
+        rq = db_TODAY.op(
+                        rd_cfg_SOFT  = True,
+                        rd_cfg_PACK  = True,
+                        rd_cfg_ALARM = True,
+
+                        rd_hst_FUT  = True,
+                        clc_ASK_BID = True,
+                        clc_EMA     = True,
+                        wr_hst_PCK  = True,
+                        rd_hst_PCK  = True,
+                        )
+    #-------------------------------------------------------------------
+    if event == 'update_arr_PK_t'  :
+        print('update_arr_PK_t ...')
+        rq = db_TODAY.op(
+                        rd_cfg_SOFT  = True,
+                        rd_cfg_PACK  = True,
+                        rd_cfg_ALARM = True,
+
+                        rd_hst_FUT_t  = True,
+                        clc_ASK_BID_t = True,
+                        clc_EMA_t     = True,
+                        wr_hst_PCK_t  = True,
+                        rd_hst_PCK_t  = True,
+                        )
+    #-------------------------------------------------------------------
 
     print('rq = ', rq)
 #=======================================================================
-def event_menu_2(ev2, db_TODAY, win2, nom_pckt):
+def event_menu_2(ev2, vals2, db_TODAY, win2):
     rq = [0, ev2]
     graph = win2.FindElement('graph')
     #-------------------------------------------------------------------
@@ -926,38 +979,138 @@ def event_menu_2(ev2, db_TODAY, win2, nom_pckt):
     X_bot_left,  Y_bot_left  = 0, 0
     X_top_right, Y_top_right = graph.CanvasSize
     #-------------------------------------------------------------------
-    if ev2 in ('inc_PACK', 'My_But_2', 'draw_GRAPH'):
+    if ev2 in ('inc_PACK', 'dec_PACK', 'refresh' ):
+        if ev2 == 'inc_PACK':
+            db_TODAY.pack_graph = (db_TODAY.pack_graph + 1) % len(db_TODAY.nm)
+        if ev2 == 'dec_PACK':
+            if (db_TODAY.pack_graph - 1) < 0:
+                db_TODAY.pack_graph = len(db_TODAY.nm) - 1
+            else:
+                db_TODAY.pack_graph = db_TODAY.pack_graph - 1
+
+        if ev2 in ('inc_PACK', 'dec_PACK'):
+            str_pck = db_TODAY.nm[db_TODAY.pack_graph] + '___'
+            koef_pckt = db_TODAY.koef[db_TODAY.pack_graph]
+            for i, item in enumerate(koef_pckt):
+                str_pck +='_'.join(str(x) for x in koef_pckt[i]) + '___'
+            win2.FindElement('name_pckt').Update(str_pck)
+            #win2.FindElement('btn_graph').Update('choice & press button GRAPH ...')
+
+        rq = db_TODAY.op( get_pk_graph  = True,)
+        num_discr = 0
+        buf_arr   = []
+        if vals2['cmb_graph'] == 'GRAPH_1_day': num_discr = 1  * 520
+        if vals2['cmb_graph'] == 'GRAPH_5_day': num_discr = 5  * 520
+        if vals2['cmb_graph'] == 'GRAPH_10_day': num_discr= 10 * 520
+        if vals2['cmb_graph'] == 'GRAPH_all'  : num_discr = len(db_TODAY.arr_pk_graph)
+        #win2.FindElement('btn_graph').Update(ev2)
+
+        buf_arr = db_TODAY.arr_pk_graph[-num_discr:-1]
+        print('num_discr  = ', num_discr)
+        print('buf_arr[0] = ', buf_arr[0])
+        print('buf_arr[-1] = ', buf_arr[-1])
+        gr_X, gr_Y0, gr_ASK, gr_BID, gr_EMAf, gr_EMAf_r, gr_cnt_EMAf_r = [],[],[],[],[],[],[]
+        pAsk, pBid, EMAf, EMAf_r, cnt_EMAf_r = range(5)
+        for item in buf_arr:
+            gr_X.append(item.dt)
+            gr_Y0.append(item.arr[0][EMAf])
+            gr_ASK.append(item.arr[1][pAsk])
+            gr_BID.append(item.arr[1][pBid])
+            gr_EMAf.append(item.arr[1][EMAf])
+            gr_EMAf_r.append(item.arr[1][EMAf_r])
+            gr_cnt_EMAf_r.append(item.arr[1][cnt_EMAf_r])
+
+        print('gr_X[-1] = ', gr_X[-1])
+
         graph.Erase()
-        graph.DrawLine((X_bot_left,   Y_bot_left+1), (X_top_right, Y_bot_left+1))
-        graph.DrawLine((X_bot_left+1, Y_bot_left),   (X_bot_left+1,Y_top_right) )
+        # Draw axis X
+        step_X = int(X_top_right/10)
+        for x in range(step_X, X_top_right, step_X):
+            graph.DrawLine((x,Y_bot_left+25), (x, Y_top_right), color='lightgrey')
+
+        # Draw axis Y
+        step_Y = int(Y_top_right/10)
+        for y in range(step_Y, Y_top_right, step_Y):
+            graph.DrawLine((X_bot_left + 30,y), (X_top_right, y), color='lightgrey')
+            #graph.DrawText(str(y) , (15, y), color='black')
+
+        # Calc X for Graph
+        k_gr_X = num_discr/X_top_right
+        print('k_gr_X = ', k_gr_X)
+
+        # Draw LABELS of axis X
+        for x in range(step_X, X_top_right, step_X):
+            i_gr_X = int(x*k_gr_X)
+            graph.DrawText( gr_X[i_gr_X][0], (x,5),  color='black')
+            graph.DrawText( gr_X[i_gr_X][1], (x,18), color='black')
+
+        # Draw Graph Y
+        k_gr_Y0  = (max(gr_Y0) - min(gr_Y0))/Y_top_right
+        k_min_Y0 =  min(gr_Y0)
+
+        k_max_Y1 = max(max(gr_ASK),max(gr_BID),max(gr_EMAf),max(gr_EMAf_r) )
+        k_max_Y1 = int(math.ceil(k_max_Y1 / 1000.0)) * 1000
+        k_min_Y1 = min(min(gr_ASK),min(gr_BID),min(gr_EMAf),min(gr_EMAf_r) )
+        k_min_Y1 = int(math.ceil(k_min_Y1 / 1000.0)) * 1000 - 1000
+        k_gr_Y1  = (k_max_Y1 - k_min_Y1)/Y_top_right
+
+        # Draw LABELS of axis Y1
+        step_Y = int(Y_top_right/10)
+        for y in range(step_Y, Y_top_right, step_Y):
+            cur_ASK  = int(y*k_gr_Y1 + k_min_Y1)
+            graph.DrawText(str(cur_ASK) , (18, y + 5), color='black')
+        print('k_max_Y1  = ', k_max_Y1)
+        print('k_min_Y1  = ', k_min_Y1)
+        #print('num_discr = ',  num_discr)
+        #print('k_gr_Y1   = ', k_gr_Y1 )
+
+        if max(gr_cnt_EMAf_r) == min(gr_cnt_EMAf_r):
+            k_gr_Y2  = (max(gr_cnt_EMAf_r) + min(gr_cnt_EMAf_r))/Y_top_right
+        else:
+            k_gr_Y2  = (max(gr_cnt_EMAf_r) - min(gr_cnt_EMAf_r))/Y_top_right
+        if k_gr_Y2 == 0:
+            k_gr_Y2 = 1
+        k_min_Y2 =  min(gr_cnt_EMAf_r)
+        print('max(gr_cnt_EMAf_r)  = ', max(gr_cnt_EMAf_r))
+        print('k_min_Y2  = ', k_min_Y2)
+        print('num_discr = ', num_discr)
+        print('k_gr_Y2   = ', k_gr_Y2 )
+
+        for i, item in enumerate(gr_Y0):
+            if i > 0:
+                prev_X = int((i - 1) / k_gr_X)
+                cur_X  = int((i - 0) / k_gr_X)
+
+                prev_Y0 = int((gr_Y0[i-1] - k_min_Y0) / k_gr_Y0)
+                cur_Y0  = int((gr_Y0[i]   - k_min_Y0) / k_gr_Y0)
+                graph.DrawLine((prev_X, prev_Y0), (cur_X, cur_Y0),      width=3, color='red')
+
+                prev_ASK = int((gr_ASK[i-1] - k_min_Y1) / k_gr_Y1)
+                cur_ASK  = int((gr_ASK[i]   - k_min_Y1) / k_gr_Y1)
+                graph.DrawLine((prev_X, prev_ASK), (cur_X, cur_ASK),    width=1, color='green')
+
+                prev_BID = int((gr_BID[i-1] - k_min_Y1) / k_gr_Y1)
+                cur_BID  = int((gr_BID[i]   - k_min_Y1) / k_gr_Y1)
+                graph.DrawLine((prev_X, prev_BID), (cur_X, cur_BID),    width=1, color='green')
+
+                prev_EMAf = int((gr_EMAf[i-1] - k_min_Y1) / k_gr_Y1)
+                cur_YEMAf = int((gr_EMAf[i]   - k_min_Y1) / k_gr_Y1)
+                graph.DrawLine((prev_X, prev_EMAf), (cur_X, cur_YEMAf), width=1, color='blue')
+
+                prev_EMAf_r = int((gr_EMAf_r[i-1] - k_min_Y1) / k_gr_Y1)
+                cur_YEMAf_r = int((gr_EMAf_r[i]   - k_min_Y1) / k_gr_Y1)
+                graph.DrawLine((prev_X, prev_EMAf_r), (cur_X, cur_YEMAf_r), width=3, color='blue')
+
+                prev_Y2 = int((gr_cnt_EMAf_r[i-1] - k_min_Y2) / k_gr_Y2)
+                cur_Y2  = int((gr_cnt_EMAf_r[i]   - k_min_Y2) / k_gr_Y2)
+                graph.DrawLine((prev_X, prev_Y2), (cur_X, cur_Y2),      width=3, color='brown')
+
     #-------------------------------------------------------------------
-    if ev2 == 'inc_PACK':
-        nom_pckt = (nom_pckt + 1) % len(db_TODAY.nm)
-        str_pck = db_TODAY.nm[nom_pckt] + '___'
-        koef_pckt = db_TODAY.koef[nom_pckt]
-        for i, item in enumerate(koef_pckt):
-            str_pck +='_'.join(str(x) for x in koef_pckt[i]) + '___'
-        win2.FindElement('name_pckt').Update(str_pck)
-
-        db_TODAY.arr_pk_graph = []
-        if len(db_TODAY.arr_pk) > 0:
-            for item in db_TODAY.arr_pk:
-                arr_bb = Class_str_PCK()
-                arr_bb.ind_s, arr_bb.dt  = item.ind_s, item.dt
-                arr_bb.arr.append(item.arr[0])
-                arr_bb.arr.append(item.arr[nom_pckt])
-                db_TODAY.arr_pk_graph.append(arr_bb)
-        if len(db_TODAY.arr_pk_t) > 0:
-            for item in db_TODAY.arr_pk_t:
-                arr_bb = Class_str_PCK()
-                arr_bb.ind_s, arr_bb.dt  = item.ind_s, item.dt
-                arr_bb.arr.append(item.arr[0])
-                arr_bb.arr.append(item.arr[nom_pckt])
-                db_TODAY.arr_pk_graph.append(arr_bb)
-    print('db_TODAY.arr_pk_graph[-1] = ', db_TODAY.arr_pk_graph[-1])
-
     print('rq = ', rq)
-    return nom_pckt
+    print(ev2)
+    print(vals2)
+
+    return
 #=======================================================================
 def main():
     while True:  # init db_TODAY ---------------------------------------
@@ -1038,22 +1191,26 @@ def main():
 
             X_bot_left,  Y_bot_left  = 0,    0
             X_top_right, Y_top_right = 1040, 500
-            nom_pckt  = 0
+
             layout2 = [
+                        [sg.T(110*'_', size=(110,1), key='name_pckt')],
+                        #[sg.T(110*' ', size=(110,1), key='btn_graph')],
                         [sg.Graph(canvas_size=(X_top_right, Y_top_right),
                             graph_bottom_left=(X_bot_left,  Y_bot_left ),
                             graph_top_right  =(X_top_right, Y_top_right),
                             background_color='white',
                             key='graph')],
-                        [sg.T(110*'_', size=(110,1), key='name_pckt')],
-                        [sg.Button('inc_PACK'), sg.Button('My_But_2'),  sg.Button('draw_GRAPH'), sg.Quit(auto_size_button=True)],
+
+                        [sg.Button('dec_PACK'),  sg.T(' '),
+                         sg.Button('inc_PACK'),  sg.T(' '),
+                         sg.Button('refresh'),   sg.T(10*' '),
+                         sg.Combo(['GRAPH_1_day', 'GRAPH_5_day', 'GRAPH_10_day', 'GRAPH_all' ], default_value = 'GRAPH_1_day', key='cmb_graph'), sg.T(10*' '),
+                         sg.Quit(auto_size_button=True)],
                     ]
             win2 = sg.Window('Graph of HISTORY for packets').Layout(layout2)
             win2.Finalize()
 
-            graph = win2.FindElement('graph')
-            graph.DrawLine((X_bot_left,   Y_bot_left+1), (X_top_right, Y_bot_left+1))
-            graph.DrawLine((X_bot_left+1, Y_bot_left),   (X_bot_left+1,Y_top_right) )
+
 
             while True:
                 ev2, vals2 = win2.Read(timeout=5000)
@@ -1068,7 +1225,7 @@ def main():
                     window.UnHide()
                     break
                 #-------------------------------------------------------
-                nom_pckt = event_menu_2(ev2, db_TODAY, win2, nom_pckt)
+                event_menu_2(ev2, vals2, db_TODAY, win2)
 
         #---------------------------------------------------------------
         window.FindElement('txt_data').Update('\n'.join(stroki))
