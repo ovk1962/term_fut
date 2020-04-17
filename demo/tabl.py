@@ -46,6 +46,7 @@ while True:
     if event == 'Visible':
         window[tab_keys[int(values['-IN-'])-1]].update(visible=True)
     if event == 'Select':
+        print('values[-IN-]  ', int(values['-IN-']))
         window[tab_keys[int(values['-IN-'])-1]].select()
 
 window.close()
