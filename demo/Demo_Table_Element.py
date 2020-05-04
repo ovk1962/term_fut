@@ -13,7 +13,7 @@ import string
 class Fake():
     @classmethod
     def word(self):
-        return ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+        return ''.join(random.choice(string.ascii_lowercase) for i in range(5))
 
     @classmethod
     def number(self, max=1000):
@@ -27,11 +27,11 @@ def make_table(num_rows, num_cols):
         data[i] = [Fake.word(), *[Fake.number() for i in range(num_cols - 1)]]
     return data
 
-data = make_table(num_rows=15, num_cols=6)
+data = make_table(num_rows=5, num_cols=15)
 # sg.SetOptions(element_padding=(0,0))
 headings = [data[0][x] for x in range(len(data[0]))]
 
-layout = [[sg.Table(values=data[1:][:], headings=headings, max_col_width=25, background_color='lightblue',
+layout = [[sg.Table(values=data[1:][:], headings=headings, max_col_width=5, background_color='lightblue',
                         auto_size_columns=True, display_row_numbers=True, justification='right', num_rows=20, alternating_row_color='blue', key='_table_', tooltip='This is a table')],
           [sg.Button('Read'), sg.Button('Double'), sg.Button('Update')],
           [sg.T('Read = read which rows are selected')],[sg.T('Double = double the amount of data in the table')]]
@@ -43,7 +43,9 @@ while True:
     print(event, values)
     if event is None:
         break
-    if event == 'Double':
+    if event == 'Read':
+        print('read  ', data[values['_table_'][0]+1])
+    elif event == 'Double':
         for i in range(len(data)):
             data.append(data[i])
         window.FindElement('_table_').Update(values = data)
