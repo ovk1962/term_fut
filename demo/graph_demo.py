@@ -44,7 +44,7 @@ def main():
                                      enable_events=True, key='-SLIDER-')],
               [sg.Text('x2'), sg.Slider((1, 200), orientation='h', enable_events=True, key='-SLIDER2-')]]
 
-    window = sg.Window('Graph of Sine Function', layout)
+    window = sg.Window('Graph of Sine Function').Layout(layout)
 
     while True:
         event, values = window.Read()
